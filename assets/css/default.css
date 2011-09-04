@@ -1,0 +1,209 @@
+.post {
+	padding: 10px 30px;
+	background: url(/assets/images/topleft.png) no-repeat;
+	background-position: left top;
+}
+
+.content {
+	background: url(/assets/images/bottomright.png) no-repeat; 
+	background-position: 100% 100%;
+	padding: 0px 0px 30px 0px;
+}
+
+.content .title {
+	letter-spacing: -1px;
+	font-size: 1.6em;
+	color: #356AA0;
+}
+
+.content .meta {
+	margin: 0 0 20px 0;
+	padding: 0 0 20px 0;
+	#border-bottom: 1px solid #EFEFEF;
+	line-height: normal;
+	color: #767676;
+}
+
+body {
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-size: 0.8em;
+}
+
+h2 {
+	letter-spacing: -1px;
+	font-size: 1.4em;
+	color: #356AA0;
+}
+
+.header {
+	height: 135px;
+	margin: 0;
+	padding: 0;
+	background: url(/assets/images/header-fill.png) repeat-x;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	letter-spacing: -1px;
+	font-size: 1.4em;
+	color: #cccccc;
+}
+.header a {
+	border-bottom: 1px dotted #EFEFEF;
+	text-decoration: none;
+	color: #cccccc;
+}
+
+.header a:hover {
+	text-decoration: none;
+	color: #FFCC00;
+}
+
+.header .beginning {
+	height: 135px;
+	width: 700px;
+	margin: 0;
+	padding: 40px;
+	background: url(/assets/images/header-start.png) no-repeat;
+	color: #cccccc;
+}
+
+.header .title {
+	margin: 0;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	letter-spacing: -1px;
+	font-size: 1.5em;
+	color: #cccccc;
+}
+.header .menuitems {
+	margin: 0;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	letter-spacing: -1px;
+	font-size: 0.7em;
+	color: #cccccc;
+}
+
+table.tr-list td {
+	padding: 3px; 
+}
+
+table.tr-list th {
+	background: #cccccc;
+}
+table.tr-list tr.odd {
+	background: #EEEEEE;
+}
+table.tr-list tr.even {
+	background: #FFFFFF;
+}
+table.tr-list tr.alert {
+	background: #FFCC00;
+}
+
+.errortext {
+           background-color: white;
+           color: red;
+}
+
+
+.calendar {
+	border: 1px #6975A3 solid;
+	background-color: transparent;
+}
+.calheading {
+	background-color: #7C8BC0;
+	color: #fff;
+	font-family: Lucida Grande, Verdana, Geneva, Sans-serif;
+	font-size: 11px;
+	font-weight: bold;
+	text-align: center;
+}
+.calnavleft {
+	background-color: #7C8BC0;
+	font-family: Lucida Grande, Verdana, Geneva, Sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	color: #fff;
+	padding: 4px;
+	cursor: pointer;
+}
+.calnavright {
+	background-color: #7C8BC0;
+	font-family: Lucida Grande, Verdana, Geneva, Sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	color: #fff;
+	text-align:  right;
+	padding: 4px;
+	cursor: pointer;
+}
+.caldayheading {
+	background-color: #000;
+	color: #fff;
+	font-family: Lucida Grande, Verdana, Geneva, Sans-serif;
+	font-size: 10px;
+	text-align: center;
+	padding: 6px 2px 6px 2px;
+}
+.caldaycells{
+	color: #000;
+	background-color: #D1D7E6;
+	font-family: Lucida Grande, Verdana, Geneva, Sans-serif;
+	font-size: 11px;
+	text-align: center;
+	padding: 4px;
+	border: 1px #E0E5F1 solid;
+	cursor: pointer;
+}
+.caldaycellhover{
+	color: #fff;
+	background-color: #B3BCD4;
+	font-family: Lucida Grande, Verdana, Geneva, Sans-serif;
+	font-size: 11px;
+	text-align: center;
+	padding: 4px;
+	border: 1px #B3BCD4 solid;
+	cursor: pointer;
+}
+.caldayselected{
+	background-color: #737FAC;
+	color:	#fff;
+	font-family: Lucida Grande, Verdana, Geneva, Sans-serif;
+	font-size: 11px;
+	font-weight: bold;
+	text-align: center;
+	border: 1px #566188 solid;
+	padding: 3px;
+	cursor: pointer;
+}
+.calblanktop {
+	background-color: #fff;
+	padding: 4px;
+}
+.calblankbot {
+	background-color: #fff;
+	padding: 4px;
+}
+
+table.tr-list td {
+	padding: 3px; 
+}
+
+table.tr-list tr.odd {
+	background: #EEEEEE;
+}
+table.tr-list tr.even {
+	background: #FFFFFF;
+}
+table.tr-list td.odd_open {
+	background: #EEEEEE;
+	color: red;
+}
+table.tr-list td.even_open {
+	background: #FFFFFF;
+	color: red;
+}
+table.tr-list tr.alert {
+	background: #FFCC00;
+}
+table.tr-list td.open {
+	background: #FFAA00;
+	color: red;
+}

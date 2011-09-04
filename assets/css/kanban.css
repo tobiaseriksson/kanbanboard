@@ -1,0 +1,195 @@
+.postit1 {
+	background-attachment: scroll;
+	background-image: url("/assets/images/postit1.png");
+	background-position: 50% 50%;
+	background-repeat: no-repeat;		
+	color: #363636;
+	width: 100%;
+	height: 124px;
+}
+
+.postit2 { 
+	background-attachment: scroll;
+	background-image: url("/assets/images/postit2.png");
+	background-position: 50% 50%;
+	background-repeat: no-repeat;		
+	color: #363636;
+	width: 100%;
+	height: 124px;
+}
+
+.postit3 { 
+	background-attachment: scroll;
+	background-image: url("/assets/images/postit3.png");
+	background-position: 50% 50%;
+	background-repeat: no-repeat;		
+	color: #363636;
+	width: 100%;
+	height: 124px;
+}
+
+.inside-postit {
+	margin : 0px 0px 0px 0px;
+	padding : 0px 0px 0px 5px;
+	width: 85%;
+	height: 90%;
+	position : relative;
+}
+
+.inside-postit-header {
+	font-weight : bold;
+	margin-top: 5px;
+	width : 100%;
+    word-wrap:break-word;
+}
+
+
+.inside-postit-text {
+	width : 100%;
+	height : 60px;
+    word-wrap:break-word;
+	overflow: hidden;
+}
+
+
+.inside-postit-footer { 
+	position : absolute;
+	bottom : 0px;
+	width : 100%;
+	bottom : 0px;
+}
+
+
+.inside-postit-footer-prio {
+	width : 45%;
+	float : left;
+}
+
+.inside-postit-footer-estimation {
+	width : 45%;
+	float : left;
+}
+
+.inside-postit-footer-editicon {
+	width : 10%;
+	float : left;
+}
+
+.banner {
+	height: 140px;
+	background-image: url("/assets/images/boardmiddle.png");
+	background-repeat: repeat-x;
+}
+
+.logo {
+	height: 140px;
+	background-image: url("/assets/images/boardstart.png");
+	background-repeat:  no-repeat;
+}
+
+.projecttitle {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: xx-large;
+	font-weight: bolder;
+	position: relative;
+	left: 0px;
+	top: -115px;
+	padding-left: 220px
+
+}
+
+.subtitle {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: large;
+	font-weight: bolder;
+	position: relative;
+	left: 0px;
+	top: -115px;
+	padding-left: 220px
+}
+
+#errordiv {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: medium;
+	font-weight: bolder;
+	color: #FF0000;
+}
+
+
+#dock {
+    background-image: url("/assets/images/boardmenustart.png");
+    background-repeat:  no-repeat;
+    color:#000000;
+    float: left;
+    height: 50px;
+    position: absolute;
+    left: 500px;
+    top: 0px;
+    display: block;
+    padding: 0 9px;
+}
+
+#dock li { 
+     background-image: url("/assets/images/boardmenumiddle.png");
+     padding-bottom: 21px;
+     float: left;
+     list-style-type: none;
+}
+        
+#dock ul { 
+    background-image: url("/assets/images/boardmenuend.png");
+    background-repeat:  no-repeat;    
+        background-position: bottom right;    
+    padding: 0 10px 8px 0;
+    display: block;
+    list-style-position: outside;
+        list-style-type: none;
+        float: left;
+        margin: 0;
+}
+
+#dock ul li a:hover, #dock ul li.selected a { 
+    border-bottom-color: #ff9c08;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    color: #ff9c08;
+}
+
+#dock ul li a { 
+    color: #333333;
+    display: block;
+    float: left;
+    font-size: 12px;
+    line-height: 22px;
+    padding-bottom: 0px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 0px;
+    text-decoration: none;
+}
+
+.diagram {
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-webkit-box-shadow: 0 1px 3px #ccc;
+	background-color:#eeeeee;
+	margin: 0 auto;
+	width: 500px;
+	height: 350px;
+}
+
+#sortablegroup { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+#sortablegroup li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; padding-right: 1.5em; font-size: 1.1em; height: 18px; }
+#sortablegroup li span { position: absolute; margin-left: -1.3em; }
+
+body{ font: 62.5% "Trebuchet MS", sans-serif; margin: 0px;}
+.demoHeaders { margin-top: 2em; }
+#dialog_link {padding: .4em 1em .4em 20px;text-decoration: none;position: relative;}
+#dialog_link span.ui-icon {margin: 0 5px 0 0;position: absolute;left: .2em;top: 50%;margin-top: -8px;}
+ul#icons {margin: 0; padding: 0;}
+ul#icons li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
+ul#icons span.ui-icon {float: left; margin: 0 4px;}
+div.kanbanactions { background-color: white; color: black; border-style: none; }
+div.kanbanboard { display: block; color: black; border-style: none; margin: 50px;}
+
+
