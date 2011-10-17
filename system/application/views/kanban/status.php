@@ -90,7 +90,7 @@
 		<?php
 			$str = "";
 			$str2 = "";
-			for( $i = 0; $i < count( $days ); $i++ ) {
+			for( $i = 0; $i < count( $diagraminflow ); $i++ ) {
 				$str = $str.$days[ $i ].",";				
 				$str2 = $str2."' ',";				
 			}
@@ -116,21 +116,32 @@
 
 			$(function() {
 				var xaxis = [[<?php echo $xaxis; ?>],[<?php echo $xaxis2; ?>]];
-                var r = Raphael("diagram2"),
-					data1 = [[<?php echo $inflow; ?>],[<?php echo $outflow; ?>]],
-					fin = function () {
-                        this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
-                    },
-                    fout = function () {
-                        this.flag.animate({opacity: 0}, 300, function () {this.remove();});
-                    };
-					
-                r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
+				var yaxis = [[<?php echo $outflow; ?>],[<?php echo $inflow; ?>]];
 
-                r.g.text(160, 10, "Inflow / Outflow for <?php echo $projectname; ?> last <?php echo $dayssofar ?> days");
-				var barchart = r.g.barchart(30, 20, 450, 300, data1);
-				barchart.label(xaxis,true);
-				barchart.hover(fin, fout); 
+				var r = Raphael("diagram2"),
+                fin = function () {
+                    this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
+                },
+                fout = function () {
+                    this.flag.animate({opacity: 0}, 300, function () {this.remove();});
+                },
+                fin2 = function () {
+                    var y = [], res = [];
+                    for (var i = this.bars.length; i--;) {
+                        y.push(this.bars[i].y);
+                        res.push(this.bars[i].value || "0");
+                    }
+                    this.flag = r.g.popup(this.bars[0].x, Math.min.apply(Math, y), res.join(", ")).insertBefore(this);
+                };
+                
+            r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
+            
+            r.g.text(160, 10, "Inflow / Outflow");
+            
+            var barchart = r.g.barchart(10, 10, 450, 300, yaxis);
+            barchart.hover(fin, fout);
+            barchart.label(xaxis,true);
+
 			});
 
 		</script>
@@ -222,12 +233,12 @@ Current velocity is <?php echo $velocity; ?> points / day
 </div>
 <br>
 
-<h2>History</h2>
+<h2>Task List</h2>
 <table>
-<tr><td>Sprint</td><td>Finished</td><td>Priority</td><td>Estimation</td><td>Task</td></tr>
+<tr><td>Sprint</td><td>Started</td><td>Finished</td><td>Priority</td><td>Estimation</td><td>Task</td></tr>
 <?php
 	$name="";
-	foreach ($history as $row)
+	foreach ($legend as $row)
 	{							
 		if( $name != $row['sprintname'] ) {
 			echo "<tr><td><b>".$row['sprintname']."</b></td>";
@@ -235,7 +246,10 @@ Current velocity is <?php echo $velocity; ?> points / day
 		} else {
 			echo "<tr><td></td>";
 		}
-		echo "<td>".$row['enddate']." (".$row['weeknumber'].")</td>";
+		if( $row['startdate'] == '0000-00-00' ) echo "<td></td>";
+		else echo "<td>".$row['startdate']." (".$row['startweeknumber'].")</td>";
+		if( $row['enddate'] == '0000-00-00' ) echo "<td></td>";
+		else echo "<td>".$row['enddate']." (".$row['finishedweeknumber'].")</td>";
 		echo "<td>".$row['priority']."</td>";
 		echo "<td>".$row['estimation']."</td>";
 		echo "<td>".$row['heading']."</td>";

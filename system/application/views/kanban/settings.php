@@ -233,6 +233,27 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 			  	return false;
 			});	
 		});
+
+		$(function() {
+			$('#importtaskstosprint').submit(function() {
+				// alert("form="+$(this).attr('id')+"res="+$(this).serialize());				
+				var dataString = $("#importtaskstosprint").serialize();
+				$("#sprintresult").html("res="+dataString);
+				//alert (dataString);return false;  
+				$.ajax({  
+				  type: "POST",  
+				  url: "/kanban/importtaskstosprint",  
+				  data: dataString,  
+				  success: function(data) {  
+				    $("#sprintresult").html("This is the result"+data);  				     
+				  }, 
+				  error: function(x,e) {  
+				    $("#sprintresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				  }  
+				});  
+			  	return false;
+			});	
+		});
 												
 	</script>
 
@@ -621,6 +642,39 @@ jQuery(function($){
 						</td>
 						</tr>
 					</table>
+					<br>
+					<hr>
+					<form id="importtaskstosprint" name="importtaskstosprint" action="">
+					<input type="hidden" id="importtaskstosprint_projectid" name="importtaskstosprint_projectid" value="<?php echo $projectid; ?>" />					
+					<table>					
+					<tr><td><h4>Import Tasks :</h4></td></tr>
+						<tr>
+						  <td class="settingsleftside">To Sprint :</td>
+						  <td class="settingsrightside"><select name="importtaskstosprint_sprintid" id="importtaskstosprint_sprintid">
+							<?php						
+							foreach ($sprints as $sprint) {		
+							
+								echo ' <option value="'.$sprint['id'].'">'.$sprint['name'].'</option>';
+														
+							}						
+							?>							
+							</select>
+							</td></tr>
+						 <tr>
+							<td class="settingsleftside">Text :</td>
+						<td class="settingsrightside"><textarea name="importtaskstosprint_text" id="importtaskstosprint_text" cols="40" rows="20">heading;description;priority;estimate;color
+where
+heading is text 
+description is text
+priority an integer 0=low 100=high
+estimate an integer 
+color an integer, 1=yellow,2=green,3=red
+						</textarea>
+							</td></tr>
+						<tr><td colspan=2></td></tr>
+						<tr><td></td><td class="settingsleftside"><input type="submit"  value="Import"  /></td></tr>
+					</table>
+					</form>
 				</td>
 				</tr>
 				

@@ -139,6 +139,25 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 					});  
 					$( this ).dialog( "close" );
 				   //location.reload();
+				},
+				Del: function() {
+					var dataString = $("#updatetask").serialize();
+					//$("#errordiv").html("res="+dataString);
+					// alert (dataString);return false;  
+					$.ajax({  
+					  type: "POST",  
+					  url: "/kanban/deletetask",  
+					  data: dataString,  
+					  success: function(data) {  
+					    // $("#errordiv").html("This is the result"+data);  				     
+					    location.reload();
+					  },
+					  error: function(x,e) {  
+						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+						  }
+					});  
+					$( this ).dialog( "close" );
+				   //location.reload();
 				}
 			}
 		   });
@@ -384,8 +403,8 @@ Est:'.$row['estimation'].'
 					<input name="estimation" id="estimation" value="0" />
 				</td></tr>
 				<tr><td> Color Tag :</td><td>
-					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option></select>
-				</td></tr>
+					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
+					</td></tr>
 				<tr><td> Move To Sprint :</td><td>
 					<select name="newsprintid" id="newsprintid">
 					<?php						
@@ -421,7 +440,7 @@ Est:'.$row['estimation'].'
 						<input name="estimation" />
 					</td></tr>
 				    <tr><td> Color Tag :</td><td>
-					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option></select>
+					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
 					</td></tr>										
 				</table>
 			</div>

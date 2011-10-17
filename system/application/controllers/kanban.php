@@ -13,6 +13,8 @@ class kanban extends Controller {
 	
 	function index() {
 		$pagedata = array();
+		$pagedata['errormessage'] = '';
+		$pagedata['redirect_to_url'] = '';
 
 		$projects = array();
 
@@ -247,7 +249,6 @@ class kanban extends Controller {
 		$pagedata['daysleft'] = $daysleft;
 		
 		$sql="SELECT sum(estimation) as total FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00'";
-//		$sql="SELECT sum(estimation) as total FROM `kanban_item` where sprint_id = ".$sprintid;
 		$query = $this->db->query( $sql );
 		$subtotal=0;
 		if ($query->num_rows() > 0)	{
@@ -276,103 +277,74 @@ class kanban extends Controller {
 		$pagedata['totalestimation'] = $totalestimation;
 		$e = strtotime($enddate);
 		$s = strtotime($startdate);
-		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) – strtotime($startdate);
+		$totaldays = round( ($e - $s) / 86400 ); 
 		$pagedata['totaldays'] = $totaldays;
-		$pointsperday = $totalestimation / $totaldays;
+		$pointsperday = round( $totalestimation / $totaldays, 2 );
 		$diagrambaseline = array();
 		$days = array();
 		$baseline = $totalestimation;
 		for( $i = 0; $i < $totaldays; $i++ ) {
-			$diagrambaseline[ $i ] = floor( $baseline );
+			$diagrambaseline[ $i ] = round( $baseline, 2 );
 			$days[ $i ] = $i;
 			$baseline = $baseline - $pointsperday;
 		}
 		$pagedata['diagrambaseline'] = $diagrambaseline;
 		$pagedata['days'] = $days;
-		
-		$sql="SELECT enddate,sum(estimation) as total FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00' and estimation > 0 group by enddate order by enddate";
+		$sql="SELECT sum(estimation) as tot,datediff(enddate,'".$startdate."') as day FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00' group by day";
 		$diagramactual = array();
 		$query = $this->db->query( $sql );
 		$i=0;
 		$points = $totalestimation;
+		$diagramactual[$i] =  $points;
 		foreach ($query->result_array() as $row)
-		{			
-			$e = strtotime( $row['enddate'] );
-			$s = strtotime($startdate);
-			$day = floor( ($e - $s) / 86400 ) ; 
-			if( $day > $i ) {
-				$averageperday = floor( $row['total'] / ($day-$i) );
-				while( $i <= $day ) {									
-					$diagramactual[$i] =  $points;					
-					$points = $points - $averageperday;
-					$i++;
-				}
-			} else {
-				$points = $points - $row['total'];
-				$diagramactual[$i] = $points;
-				$i++;
-			}
+		{		
+			$day = $row['day'];
+			$pointsperday = round( $row['tot'] / ($day+1-$i), 2 );
+			do {
+				$points = $points - $pointsperday;	
+				$diagramactual[$i] =  $points;
+				$i=$i+1;
+			} while( $i <= $day && $i < $totaldays );			
 		}
 		$pagedata['diagramactual'] = $diagramactual;
 
 		
 		//
-		// Inflow/Outflow for project as a whole
+		// Inflow/Outflow for sprint
 		//
 				
-		$e = strtotime($now);
-		$s = strtotime($projectstartdate);
-		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) – strtotime($startdate);
-		$pagedata['dayssofar'] = $totaldays;
-				
 		$diagraminflow = array();
-		$sql = 'SELECT added,count(added) as total FROM kanban_item where project_id = '.$projectid.' and added > '.$projectstartdate.' and not added = "0000-00-00" group by added order by added';
+		$sql = "SELECT datediff(added,'".$startdate."') as day,count(added) as total FROM kanban_item where  sprint_id = ".$sprintid."  and added > '.$startdate.' and not added = '0000-00-00' group by day order by day";
 		$query = $this->db->query( $sql );
 		$i=0;
 		foreach ($query->result_array() as $row)
-		{			
-			$e = strtotime( $row['added'] );
-			$s = strtotime($projectstartdate);
-			$day = floor( ($e - $s) / 86400 ) ; 
-			if( $day > $i ) {
-				while( $i < $day ) {				
-					$diagraminflow[$i] = 0;
-					$i++;
-				}
+		{		
+			$day = $row['day'];
+			while( $i < $day && $i < $totaldays ) {
+				$diagraminflow[ $i ] = 0;
+				$i = $i + 1;
 			}
-			$diagraminflow[$i] = $row['total'];
-			$i++;			
+			$diagraminflow[ $i ] = $row['total'];
+			$i = $i + 1;	
 		}
-		while( $i <= $totaldays ) {
-			$diagraminflow[$i] = 0;
-			$i++;
-		}
-		
 		$pagedata['diagraminflow'] = $diagraminflow;
 		
 		$diagramoutflow = array();
-		$sql = 'SELECT enddate,count(enddate) as total FROM kanban_item where project_id = '.$projectid.' and enddate > '.$projectstartdate.' and not enddate = "0000-00-00" group by enddate order by enddate';
+		$sql = "SELECT datediff(enddate,'".$startdate."') as day,count(enddate) as total FROM kanban_item where  sprint_id = ".$sprintid."  and enddate > '.$startdate.' and not enddate = '0000-00-00' group by day order by day";
 		$query = $this->db->query( $sql );
 		$i=0;
 		foreach ($query->result_array() as $row)
-		{			
-			$e = strtotime( $row['enddate'] );
-			$s = strtotime($projectstartdate);
-			$day = floor( ($e - $s) / 86400 ) ; 
-			if( $day > $i ) {
-				while( $i < $day ) {				
-					$diagramoutflow[$i] = 0;
-					$i++;
-				}
+		{		
+			$day = $row['day'];
+			while( $i < $day && $i < $totaldays ) {
+				$diagramoutflow[ $i ] = 0;
+				$i = $i + 1;
 			}
-			$diagramoutflow[$i] = $row['total'];
-			$i++;			
-		}
-		while( $i <= $totaldays ) {
-			$diagramoutflow[$i] = 0;
-			$i++;
+			$diagramoutflow[ $i ] = $row['total'];
+			$i = $i + 1;	
 		}
 		$pagedata['diagramoutflow'] = $diagramoutflow;
+		
 		
 		$diagramoutflowperweek = array();
 		$sql = 'SELECT concat_ws("-",year(enddate),week(enddate)) as yearweek,count(enddate) as total FROM kanban_item where project_id = '.$projectid.' and enddate > "'.$projectstartdate.'" and not enddate = "0000-00-00" group by yearweek order by yearweek';
@@ -385,18 +357,80 @@ class kanban extends Controller {
 		}
 		$pagedata['diagramoutflowperweek'] = $diagramoutflowperweek;
 		
-		
-		$history=array();
-		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as weeknumber,estimation,priority FROM kanban_item i,kanban_sprint s  where i.project_id = ".$projectid." and not i.enddate = '0000-00-00' and sprint_id = s.id order by s.enddate,i.enddate";
+		$legend=array();
+		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as finishedweeknumber,i.startdate,week(i.startdate) as startweeknumber,estimation,priority FROM kanban_item i,kanban_sprint s  where i.project_id = ".$projectid." and sprint_id = s.id order by sprintname,priority";
 		$query = $this->db->query( $sql );
 		$i=0;
 		foreach ($query->result_array() as $row)
 		{			
-			$history[$i] = $row;
+			$legend[$i] = $row;
 			$i++;			
 		}		
-		$pagedata['history'] = $history;
+		$pagedata['legend'] = $legend;
+		
 		$this->load->view('kanban/status', $pagedata);
+	}
+	
+	function tasklist($projectid,$sprintid=0) {
+		if ($this->session->userdata('logged_in') != TRUE) {
+			kanban::login( uri_string() );
+			return;
+	    }
+	
+		$pagedata = array();
+		
+		if( $sprintid <=0 ) {
+			$query = $this->db->query('SELECT max(id) as id FROM `kanban_sprint` where project_id = '.$projectid);
+			$sprintid=0;
+			if ($query->num_rows() > 0)	{
+				$res = $query->result_array();		
+				$sprintid = $res[0]['id'];
+			} 
+		}
+		
+		$pagedata['projectid'] = $projectid;
+		$projectname = "no-name";
+		$projectstartdate = '2010-01-01';
+		$query = $this->db->query('SELECT id,name,startdate FROM kanban_project WHERE id = '.$projectid);
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			// print_r( $release );		
+			$projectname = $res[0]['name'];	
+			$projectstartdate =  $res[0]['startdate'];	
+		} 
+		$pagedata['projectname'] = $projectname;	
+		
+		$query = $this->db->query('SELECT id, name, startdate, enddate FROM `kanban_sprint` where id = '.$sprintid);
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			// print_r( $release );		
+			$sprintid = $res[0]['id'];
+			$sprintname = $res[0]['name'];
+			$startdate = $res[0]['startdate'];
+			$enddate = $res[0]['enddate'];	
+		} 
+		$pagedata['sprintid'] = $sprintid;	
+		$pagedata['sprintname'] = $sprintname;	
+		$pagedata['startdate'] = $startdate;	
+		$pagedata['enddate'] = $enddate;	
+		
+		$e = strtotime($enddate);
+		$s = strtotime($startdate);
+		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) – strtotime($startdate);
+		$pagedata['totaldays'] = $totaldays;
+		
+		$legend=array();
+		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as finishedweeknumber,i.startdate,week(i.startdate) as startweeknumber,estimation,priority FROM kanban_item i,kanban_sprint s  where i.project_id = ".$projectid." and sprint_id = s.id order by s.enddate,i.enddate";
+		$query = $this->db->query( $sql );
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{			
+			$legend[$i] = $row;
+			$i++;			
+		}		
+		$pagedata['legend'] = $legend;
+		$this->load->view('kanban/tasklist', $pagedata);
+	
 	}
 	
 	function settings($projectid,$sprintid=0) {
@@ -586,42 +620,34 @@ class kanban extends Controller {
 		$pagedata['totalestimation'] = $totalestimation;
 		$e = strtotime($enddate);
 		$s = strtotime($startdate);
-		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) – strtotime($startdate);
+		$totaldays = round( ($e - $s) / 86400 ); 
 		$pagedata['totaldays'] = $totaldays;
-		$pointsperday = $totalestimation / $totaldays;
+		$pointsperday = round( $totalestimation / $totaldays, 2 );
 		$diagrambaseline = array();
 		$days = array();
 		$baseline = $totalestimation;
 		for( $i = 0; $i < $totaldays; $i++ ) {
-			$diagrambaseline[ $i ] = floor( $baseline );
+			$diagrambaseline[ $i ] = round( $baseline, 2 );
 			$days[ $i ] = $i;
 			$baseline = $baseline - $pointsperday;
 		}
 		$pagedata['diagrambaseline'] = $diagrambaseline;
 		$pagedata['days'] = $days;
-		
-		$sql="SELECT enddate,sum(estimation) as total FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00' and estimation > 0 group by enddate order by enddate";
+		$sql="SELECT sum(estimation) as tot,datediff(enddate,'".$startdate."') as day FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00' group by day";
 		$diagramactual = array();
 		$query = $this->db->query( $sql );
 		$i=0;
 		$points = $totalestimation;
+		$diagramactual[$i] =  $points;
 		foreach ($query->result_array() as $row)
-		{			
-			$e = strtotime( $row['enddate'] );
-			$s = strtotime($startdate);
-			$day = floor( ($e - $s) / 86400 ) ; 
-			if( $day > $i ) {
-				$averageperday = floor( $row['total'] / ($day-$i) );
-				while( $i <= $day ) {				
-					$diagramactual[$i] =  $points;					
-					$points = $points - $averageperday;
-					$i++;
-				}
-			} else {
-				$points = $points - $row['total'];
-				$diagramactual[$i] = $points;
-				$i++;
-			}
+		{		
+			$day = $row['day'];
+			$pointsperday = round( $row['tot'] / ($day+1-$i), 2 );
+			do {
+				$points = $points - $pointsperday;	
+				$diagramactual[$i] =  $points;
+				$i=$i+1;
+			} while( $i <= $day && $i < $totaldays );			
 		}
 		$pagedata['diagramactual'] = $diagramactual;
 
@@ -691,6 +717,11 @@ class kanban extends Controller {
 		echo "inserted into db!";
 	}
 
+	function deletetask() {		
+		$taskid = $this->input->post('taskid');
+		$this->db->where('id', $taskid);
+		$this->db->delete('kanban_item');						
+	}
 
 	function updatetask() {
 		$taskid = $this->input->post('taskid');
@@ -783,28 +814,33 @@ class kanban extends Controller {
 		echo "name=".$name."<br>";
 		$projectid = $this->input->post('newgroup_projectid');
 		echo "projectid=".$projectid."<br>";
-		
-		$query = $this->db->query('SELECT min(displayorder)+1 as secondposition FROM kanban_group WHERE project_id = '.$projectid);
-		$displayorder = 10000;		
-		if ($query->num_rows() > 0)	{
-			$res = $query->result_array();		
-			// print_r( $release );		
-			$displayorder = $res[0]['secondposition'];	
-		} 
+		$sql='SELECT id FROM kanban_group WHERE project_id = '.$projectid.' order by displayorder,id;';
+		$query = $this->db->query( $sql );
+		//
+		// renumber all the existing groups
+		//
+		$order=1;
+		foreach ($query->result_array() as $row)
+		{
+		    $data = array(
+				'displayorder' => $order
+				);
+			$this->db->where('id', $row['id']);
+			$this->db->update('kanban_group', $data);	
+			$order=$order+1;
+			if($order==2) {
+				$order=3; 
+			}
+		}
+		//
+		// add the NEW group to the second position
+		//
 		$data = array(
 			'name' => $name,
 			'project_id' => $projectid,
-			'displayorder' => $displayorder
+			'displayorder' => 2
 			);
 		$this->db->insert('kanban_group', $data);	
-		$query = $this->db->query('SELECT max(id) as lastid FROM kanban_group');
-		$groupid = 0;
-		if ($query->num_rows() > 0)	{
-			$res = $query->result_array();		
-			// print_r( $release );		
-			$groupid = $res[0]['lastid'];	
-		} 
- 		echo "group-id=".$groupid."<br>";	
 		echo "inserted into db!";
 	}
 
@@ -821,6 +857,7 @@ class kanban extends Controller {
 				);
 			$this->db->where('id', $groupid);
 			$this->db->update('kanban_group', $data);	
+			echo "id=".$groupid.",order=".$index."\n<br>";
 			$index++;
 		}
  
@@ -974,7 +1011,56 @@ class kanban extends Controller {
 		$jsondata = json_encode($jsonarray);
 		echo $jsondata; 
 	}
+	
 
+	function importtaskstosprint() {
+		$projectid = $this->input->post('importtaskstosprint_projectid');
+		$sprintid = $this->input->post('importtaskstosprint_sprintid');
+		$text = $this->input->post('importtaskstosprint_text');
+		$today = date( "Y-m-d" );
+		$query = $this->db->query('SELECT id FROM kanban_group WHERE project_id = '.$projectid.' order by displayorder,id limit 1;');
+		$groupid = 1; 
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			// print_r( $release );		
+			$groupid = $res[0]['id'];	
+		} 
+		
+		$textlines = explode("\n",$text);
+		$row=0;
+		foreach($textlines as $line){
+			$heading='';
+			$description='';
+			$priority=0;
+			$estimation=0;
+			$colortag=0; // 1=Yellow,2=Green,3=Red
+			$line=trim($line);
+			if(strlen($line)<=0) continue;
+			list($heading,$description,$priority,$estimation,$color) = explode( ";", $line ) + Array( "heading","",0,0,0);
+			echo $row." line ".$line."\n";
+			echo $row.":".$heading."|".$description."|".$priority."|".$estimation."|".$color."<br>\n";
+			if( $colortag < 1 || $colortag > 5 ) {
+				$colortag = 1;
+			}
+			$data = array(
+			'project_id' => $projectid,
+			'group_id' => $groupid,
+			'heading' => $heading,
+			'priority' => $priority,
+			'description' => $description,
+			'estimation' => $estimation,
+			'colortag' => $colortag,
+			'added' => $today,
+			'startdate' => 'null',
+			'enddate' => 'null',
+			'sprint_id' => $sprintid
+			);
+			$this->db->insert('kanban_item', $data);
+			echo "added to db!\n<br>";	
+			$row=$row+1;
+		}
+	}
+	
 	function addproject() {
 		$name = $this->input->post('name');
 		// echo "name=".$name."<br>";
@@ -1097,6 +1183,8 @@ class kanban extends Controller {
 		$this->load->view('kanban/tickers', $pagedata);
 	}
 
+	
+	
 
 	function deleteticker($tickerid) {		
 		$this->db->where('id', $tickerid);
