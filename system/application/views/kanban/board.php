@@ -55,7 +55,7 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 						var last = <?php echo $lastgroupid; ?>;
 						var dataString = 'from='+ from + '&to=' + to + "&task=" + task + "&last=" + last;
 						// $("#errordiv").html("res="+dataString);
-						// alert (dataString);return false;
+						// alert ("moved");return false;
 						$.ajax({  
 						  type: "POST",  
 						  url: "/kanban/move",  
@@ -63,7 +63,10 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 						  success: function(data) {  
 						    	// $("#errordiv").html("This is the result"+data);
 							  	location.reload();
-						  }  
+						  }, 
+					  error: function(x,e) {  
+					    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					  }   
 						});  
 						return false;
 				}
@@ -80,35 +83,7 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 			
 	</script>
 
-	<script type="text/javascript">
-		$(function() {
-			$("#sortablegroup").sortable({
-				stop: function(event, ui) { 
-					
-					var grouporder='';
-					$('#sortablegroup li').each(function() {
-						grouporder=grouporder+$(this).attr('id').replace('sgroup','')+',';
-					});
-					$("#groupresult").html("order; "+grouporder);
-					var dataString = 'grouporder='+grouporder+'&'+'projectid='+<?php echo $projectid; ?>;
-					$.ajax({  
-					  type: "POST",  
-					  url: "/kanban/changegrouporder",  
-					  data: dataString,  
-					  success: function(data) {  
-					    $("#groupresult").html("This is the result"+data);  				     
-					  }, 
-					  error: function(x,e) {  
-					    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
-					  }  
-					});  
-					
-				}
-			});
-
-			$("#sortablegroup").disableSelection();
-		});
-	</script>
+	
 
 	<script type="text/javascript">
 		$(function() {
@@ -380,7 +355,7 @@ Est:'.$row['estimation'].'
 </div><!-- End kanbanboard -->
 
 
-<div id="dialog-diagrams" title="Edit Task">	
+<div id="dialog-diagrams" title="Burndown">	
 	<div id="diagram">
 	</div>
 </div>
@@ -403,7 +378,7 @@ Est:'.$row['estimation'].'
 					<input name="estimation" id="estimation" value="0" />
 				</td></tr>
 				<tr><td> Color Tag :</td><td>
-					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
+					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
 					</td></tr>
 				<tr><td> Move To Sprint :</td><td>
 					<select name="newsprintid" id="newsprintid">

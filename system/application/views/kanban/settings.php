@@ -300,15 +300,17 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 	</script>
 
 	<script type="text/javascript">
-		function fillInSprintDetails2(sprintid) {
-			alert( 'slected; '+sprintid );
-			$("#sprintresult").html( 'selected ; '+sprintid );
-			$("#editsprint_name").val( "value="+sprintid );
-		}
+		
 
 		function fillInSprintDetails(sprintid) {
 		var projectid = <?php echo $projectid; ?>;
-		sprintid = $("#editsprint_sprintid").val();
+		var sprintid = $("#editsprint_sprintid").val();
+		if( sprintid <= 0 ) {
+			$("#editsprint_name").val( "N/A" );
+			$("#editsprint_startdate").val( "" );
+			$("#editsprint_enddate").val( "" );
+			return;
+		}
 		var dataString = "";
 		$("#sprintresult").html("req: /kanban/sprintdetails/"+projectid+"/"+sprintid );
 		$.ajax({  
@@ -364,6 +366,15 @@ jQuery(function($){
 		var nowplus30 = new Date();
 		nowplus30.setDate(nowplus30.getDate()+30);
 		$( "#newsprint_enddate").datepicker('setDate', nowplus30);
+	});
+
+
+	$(function() {
+		var numberOfSprints = $("#deletesprint_sprintid option").size();
+		// $("#sprintresult").html("sprints = "+numberOfSprints);
+		if( numberOfSprints <= 1 ) {
+			$('#deletesprint input[type=submit]', this).attr('disabled', 'disabled');
+		}
 	});
 	
 	</script>
@@ -554,6 +565,7 @@ jQuery(function($){
 					<table >					
 						<tr><td><h4>Edit Sprint :</h4></td></tr>
 						<tr><td class="settingsleftside">Select : </td><td class="settingsrightside"><select name="editsprint_sprintid" id="editsprint_sprintid" onChange="fillInSprintDetails(this.selectedIndex)">
+							<option value="0">Select Sprint</option>
 							<?php						
 							foreach ($sprints as $sprint) {		
 							
@@ -571,6 +583,7 @@ jQuery(function($){
 					</form>
 					<br>
 					<hr>
+					
 					<form id="deletesprint" name="deletesprint" action="">
 					<input type="hidden" id="deletesprint_projectid" name="deletesprint_projectid" value="<?php echo $projectid; ?>" />					
 					<table>					

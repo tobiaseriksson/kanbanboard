@@ -70,6 +70,7 @@ class kanban extends Controller {
 	{
 		$pagedata['errormessage'] = '';
 		$pagedata['redirect_to_url'] = $redirect_to_url;
+		
 		if( strlen( trim( $redirect_to_url ) ) <= 0 ) {
 			$redirect_to_url = "/kanban/selectproject";
 			$pagedata['redirect_to_url'] = $redirect_to_url;
@@ -85,7 +86,8 @@ class kanban extends Controller {
 			$this->load->view('kanban/login',$pagedata);
 			return;
 		}
-
+		
+		
 		// verify username and password in the database
 		$md5password = md5( $this->input->post('password') );
 		$query = $this->db->query("SELECT id,login FROM kanban_user WHERE password = '".$md5password."' AND login = '".$this->input->post('login')."'");
@@ -191,11 +193,33 @@ class kanban extends Controller {
 	}
 	
 	
-	function status($projectid,$sprintid=0) {
-		if ($this->session->userdata('logged_in') != TRUE) {
-			kanban::login( uri_string() );
+	
+	function hasAccess( $project_id ) {
+		if ( $this->session->userdata('logged_in') != TRUE )
+		{
+			return FALSE;
+		}
+		$user_id = $this->session->userdata('id');
+		$sql="SELECT * FROM kanban_project where user_id = ? and id = ?";
+		$query = $this->db->query( $sql, array( $user_id, $project_id ) );
+		if ($query->num_rows() > 0)
+		{
+			return TRUE;
+		}
+		return FALSE;
+	}
+	
+	function redirectIfNoAccess( $project_id ) {
+		if( kanban::hasAccess(  $project_id ) != TRUE ) {
+			$redirect_to_url = "/kanban/logout";
+			header("Location: ".$redirect_to_url );
 			return;
-	    }
+		}
+	}
+	
+	function status($projectid,$sprintid=0) {
+	
+		kanban::redirectIfNoAccess( $projectid );
 	
 		$pagedata = array();
 		
@@ -236,13 +260,13 @@ class kanban extends Controller {
 		
 		$e = strtotime($enddate);
 		$s = strtotime($startdate);
-		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) – strtotime($startdate);
+		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) Ì± strtotime($startdate);
 		$pagedata['totaldays'] = $totaldays;
 		
 		$now = date( "Y-m-d" );
 		$e = strtotime($now);
 		$s = strtotime($enddate);
-		$daysleft = floor( ($s - $e) / 86400 ); // strtotime($enddate) – strtotime($startdate);
+		$daysleft = floor( ($s - $e) / 86400 ); // strtotime($enddate) Ì± strtotime($startdate);
 		if( $daysleft < 0 ) {
 			$daysleft = 0;
 		}
@@ -357,8 +381,11 @@ class kanban extends Controller {
 		}
 		$pagedata['diagramoutflowperweek'] = $diagramoutflowperweek;
 		
+		#
+		# Legend / History
+		#
 		$legend=array();
-		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as finishedweeknumber,i.startdate,week(i.startdate) as startweeknumber,estimation,priority FROM kanban_item i,kanban_sprint s  where i.project_id = ".$projectid." and sprint_id = s.id order by sprintname,priority";
+		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as finishedweeknumber,i.startdate,week(i.startdate) as startweeknumber,estimation,priority, DATEDIFF( i.enddate, i.startdate ) as leadtime FROM kanban_item i,kanban_sprint s  where i.project_id = ".$projectid." and sprint_id = s.id order by sprintname,priority";
 		$query = $this->db->query( $sql );
 		$i=0;
 		foreach ($query->result_array() as $row)
@@ -368,14 +395,37 @@ class kanban extends Controller {
 		}		
 		$pagedata['legend'] = $legend;
 		
+		#
+		# Burndown
+		#
+		$sql="SELECT sum(estimation) as tot,datediff(enddate,'".$startdate."') as day FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00' group by day";
+		$diagramactual = array();
+		$query = $this->db->query( $sql );
+		$i=0;
+		$points = $totalestimation;
+		$diagramactual[$i] =  array( 0, $totalestimation );
+		$i = $i + 1;
+		foreach ($query->result_array() as $row)
+		{		
+			$points = $points - $row['tot'];
+			$diagramactual[$i] =  array(  $row['day'],  $points );
+			$i = $i + 1;
+		}
+		$pagedata['diagramactual'] = $diagramactual;
+		$diagrambaseline = array();
+		$diagrambaseline[0] = array( 0, $totalestimation );
+		$diagrambaseline[1] = array( $totaldays, 0 );
+		
+		$pagedata['diagrambaseline'] = $diagrambaseline;
+		
 		$this->load->view('kanban/status', $pagedata);
 	}
 	
 	function tasklist($projectid,$sprintid=0) {
-		if ($this->session->userdata('logged_in') != TRUE) {
-			kanban::login( uri_string() );
-			return;
-	    }
+
+		kanban::redirectIfNoAccess( $projectid );
+	
+	
 	
 		$pagedata = array();
 		
@@ -416,7 +466,7 @@ class kanban extends Controller {
 		
 		$e = strtotime($enddate);
 		$s = strtotime($startdate);
-		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) – strtotime($startdate);
+		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) Ì± strtotime($startdate);
 		$pagedata['totaldays'] = $totaldays;
 		
 		$legend=array();
@@ -435,11 +485,10 @@ class kanban extends Controller {
 	
 	function settings($projectid,$sprintid=0) {
 	
-		if ($this->session->userdata('logged_in') != TRUE) {
-			kanban::login( uri_string() );
-			return;
-	    }
-	    
+
+		kanban::redirectIfNoAccess( $projectid );
+	
+		    
 		$pagedata = array();
 		
 		if( $sprintid <=0 ) {
@@ -503,11 +552,10 @@ class kanban extends Controller {
 
 	function project($projectid,$sprintid=0)    {
 	
-		if ($this->session->userdata('logged_in') != TRUE) {
-			kanban::login( uri_string() );
-			return;
-	    }
-	    
+
+		kanban::redirectIfNoAccess( $projectid );
+	
+		    
 		if( $sprintid <=0 ) {
 		
 			$today = date( "Y-m-d" );
@@ -531,12 +579,10 @@ class kanban extends Controller {
 	}
 
 	function sprint($projectid,$sprintid)    {
+
+		kanban::redirectIfNoAccess( $projectid );
 	
-		if ($this->session->userdata('logged_in') != TRUE) {
-			kanban::login( uri_string() );
-			return;
-	    }
-	    
+		    
 		$pagedata = array();
 		$pagedata['projectid'] = $projectid;
 		$projectname = "no-name";
@@ -681,8 +727,10 @@ class kanban extends Controller {
 		$group = $this->input->post('group');
 		$heading = $this->input->post('heading');
 		$priority = $this->input->post('priority');
+		if( is_numeric( $priority ) != TRUE )  $priority = 0;
 		$taskdescription = $this->input->post('taskdescription');
 		$estimation = $this->input->post('estimation');
+		if( is_numeric( $estimation ) != TRUE )  $estimation = 0;
 		$colortag = $this->input->post('colortag');
 		$today = date( "Y-m-d" );
 		echo "proj id=".$projectid."<br>";
@@ -701,8 +749,8 @@ class kanban extends Controller {
 			'estimation' => $estimation,
 			'colortag' => $colortag,
 			'added' => $today,
-			'startdate' => 'null',
-			'enddate' => 'null',
+			'startdate' => '0000-00-00',
+			'enddate' => '0000-00-00',
 			'sprint_id' => $sprintid
 			);
 		$this->db->insert('kanban_item', $data);	
@@ -727,8 +775,10 @@ class kanban extends Controller {
 		$taskid = $this->input->post('taskid');
 		$heading = $this->input->post('heading');
 		$priority = $this->input->post('priority');
+		if( is_numeric( $priority ) != TRUE )  $priority = 0;
 		$taskdescription = $this->input->post('taskdescription');
 		$estimation = $this->input->post('estimation');
+		if( is_numeric( $estimation ) != TRUE )  $estimation = 0;
 		$colortag = $this->input->post('colortag');
 		$newsprintid = $this->input->post('newsprintid');
 		echo "head=".$heading."<br>";
@@ -769,7 +819,7 @@ class kanban extends Controller {
 			$data = array(
 				'group_id' => $to,
 				'startdate' => $today,
-				'enddate' => 'null'
+				'enddate' => '0000-00-00'
 				);		
 		}
 		$this->db->where('id', $task);
@@ -967,9 +1017,11 @@ class kanban extends Controller {
 		echo "proj id=".$projectid."<br>";
 		echo "group=".$group."<br>";
 		echo "head=".$heading."<br>";
+		if( is_numeric( $priority ) != TRUE )  $priority = 0;
 		echo "prio=".$priority."<br>";	
 		echo "desc=".$taskdescription."<br>";
-              		echo "est=".$estimation."<br>";
+		if( is_numeric( $estimation ) != TRUE )  $estimation = 0;
+        echo "est=".$estimation."<br>";
 		echo "tag=".$colortag."<br>";
 		$data = array(
 			'project_id' => $projectid,
@@ -981,7 +1033,7 @@ class kanban extends Controller {
 			'colortag' => $colortag,
 			'added' => $added,
 			'startdate' => $startdate,
-			'enddate' => 'null',
+			'enddate' => '0000-00-00',
 			'sprint_id' => $sprintid,
 			
 			);
@@ -1036,23 +1088,24 @@ class kanban extends Controller {
 			$colortag=0; // 1=Yellow,2=Green,3=Red
 			$line=trim($line);
 			if(strlen($line)<=0) continue;
-			list($heading,$description,$priority,$estimation,$color) = explode( ";", $line ) + Array( "heading","",0,0,0);
-			echo $row." line ".$line."\n";
-			echo $row.":".$heading."|".$description."|".$priority."|".$estimation."|".$color."<br>\n";
+			list($heading,$description,$priority,$estimation,$colortag) = explode( ";", $line ) + Array( "heading","",0,0,0);
 			if( $colortag < 1 || $colortag > 5 ) {
+				echo "WARNING! colortag not supported ($colortag) will default to 1(Yellow)<br>\n";
 				$colortag = 1;
 			}
+			echo $row." line ".$line."\n";
+			echo $row.":".$heading."|".$description."|".$priority."|".$estimation."|".$colortag."<br>\n";
 			$data = array(
 			'project_id' => $projectid,
 			'group_id' => $groupid,
-			'heading' => $heading,
+			'heading' => $heading, 
 			'priority' => $priority,
 			'description' => $description,
 			'estimation' => $estimation,
 			'colortag' => $colortag,
 			'added' => $today,
-			'startdate' => 'null',
-			'enddate' => 'null',
+			'startdate' => '0000-00-00',
+			'enddate' => '0000-00-00',
 			'sprint_id' => $sprintid
 			);
 			$this->db->insert('kanban_item', $data);
@@ -1209,29 +1262,6 @@ class kanban extends Controller {
 		header("Location: ".$redirect_to_url );
 	}
 	
-	function jsonStep1() {
-		$res = array();
-		$res["php_message"] = "I am PHP";
-		echo json_encode($res);
-	}
-
-	function json() {
-		$data = array();
-		$this->load->view('kanban/json', $data);
-	}
-
-
-	function tabs() {
-		$data = array();
-		$this->load->view('kanban/tabs', $data);
-	}
-
-	function get() {
-		//$res = json_decode($_REQUEST['data'], true);
-		$res=array();
-		$res["php_message"] = "I am PHP";
-		echo json_encode($res);
-	}
 }
 
 ?>

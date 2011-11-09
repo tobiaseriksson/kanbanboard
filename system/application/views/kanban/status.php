@@ -6,11 +6,10 @@
 	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />	
 	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
-	<script src="/assets/js/raphael-min.js" type="text/javascript" charset="utf-8"></script> 
-	<script src="/assets/js/g.raphael-min.js" type="text/javascript" charset="utf-8"></script> 
-	<script src="/assets/js/g.line-min.js" type="text/javascript" charset="utf-8"></script> 
-	<script src="/assets/js/g.bar.js" type="text/javascript" charset="utf-8"></script> 
-
+	<script src="/assets/js/dojo/dojo.js" 
+				data-dojo-config="isDebug: false,parseOnLoad: true">
+	</script>
+	
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
 	<style type="text/css">
@@ -41,147 +40,72 @@
 		}
 			
     </style>
+    
+<script>
+			// http://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js
+			// Require the basic 2d chart resource: Chart2D
+			dojo.require("dojox.charting.Chart2D");
 
-<script type="text/javascript">
-			$(function() {
-                var r = Raphael("diagram");
-                r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
-
-		<?php
-			$str = "";
-			for( $i = 0; $i < count( $days ); $i++ ) {
-				$str = $str.$days[ $i ].",";				
-			}
-			$daysstring=substr($str,0,-1);
-		
-			$str = "";
-			for( $i = 0; $i < count( $diagrambaseline ); $i++ ) {
-				$str = $str.$diagrambaseline[ $i ].",";				
-			}
-			$expected=substr($str,0,-1);
+			// Require the theme of our choosing
+			//"Claro", new in Dojo 1.6, will be used
+			dojo.require("dojox.charting.themes.Claro");
 			
-			$str = "";
-			for( $i = 0; $i < count( $diagramactual ); $i++ ) {
-				$str = $str.$diagramactual[ $i ].",";				
-			}
-			$actual=substr($str,0,-1);
-		?>          
-				var days = [ <?php echo $daysstring ?> ];
-				var expected = [ <?php echo $expected ?> ];
-				var actual = [ <?php echo $actual ?> ];
-		      	if( actual.length <= 1 ) {
-					actual = [];
+			// Define the data
+			// var chartData = [ 10000,9200,11811,12000,7662,13887,14200,12222,12000,10009,11288,12099];
+			var chartData  = [ {x:1.2,y:9000},{x:2.9,y:400},{x:3,y:2811},{x:4.6,y:2000} ];
+			var chartData2 = [ {x:0.1,y:5423},{x:2,y:4000},{x:3.3,y:1900},{x:5.1,y:2700} ];
+			<?php 
+				$tmpstr = "var diagrambaseline  = [ ";
+				foreach ($diagrambaseline as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
 				}
-				if( expected.length <= 1 ) {
-					expected = [];
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+				$tmpstr = "var diagramactual  = [ ";
+				foreach ($diagramactual as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
 				}
-                r.g.text(160, 10, "Burn Down Chart for <?php echo $sprintname; ?>");
- 				if( actual.length <= 0 ) {
-	                r.g.linechart(30, 20, 450, 300, days, expected, { axis: "0 0 1 1"});						
-				} else {
-				    r.g.linechart(30, 20, 450, 300, days, [actual,expected], { axis: "0 0 1 1"});						
-				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+			?>
+			
+			// When the DOM is ready and resources are loaded...
+			dojo.ready(function() {
+				
+				// Create the chart within it's "holding" node
+				var chart = new dojox.charting.Chart2D("dojochart");
+
+				// Set the theme
+				chart.setTheme(dojox.charting.themes.Claro);
+
+				// Add the only/default plot 
+				chart.addPlot("default", {
+					type: "Lines",
+					markers: true
+				});
+				
+				// Add axes
+				chart.addAxis("x",{  min: 0, fixLower: "major", fixUpper: "major"   });
+				//chart.addAxis("y", { min: 5000, max: 15000, vertical: true, fixLower: "major", fixUpper: "major" });
+				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
+
+				// Add the series of data
+				chart.addSeries("Expected",diagrambaseline);
+				chart.addSeries("Actual",diagramactual);
+
+				//var tip = new dojox.charting.action2d.Tooltip(chart, "default");
+
+				// Render the chart!
+				chart.render();
+				
 			});
+			
 		</script>
 
-
-<script type="text/javascript">
-
-		<?php
-			$str = "";
-			$str2 = "";
-			for( $i = 0; $i < count( $diagraminflow ); $i++ ) {
-				$str = $str.$days[ $i ].",";				
-				$str2 = $str2."' ',";				
-			}
-			$str=substr($str,0,-1);
-			$xaxis = $str;
-			$str2=substr($str2,0,-1);
-			$xaxis2 = $str2;
-			
-			$str = "";
-			for( $i = 0; $i < count( $diagraminflow ); $i++ ) {
-				$str = $str.$diagraminflow[ $i ].",";				
-			}
-			$str=substr($str,0,-1);
-			$inflow=$str;
-			
-			$str = "";
-			for( $i = 0; $i < count( $diagramoutflow ); $i++ ) {
-				$str = $str.$diagramoutflow[ $i ].",";				
-			}
-			$str=substr($str,0,-1);
-			$outflow = $str;
-		?>                
-
-			$(function() {
-				var xaxis = [[<?php echo $xaxis; ?>],[<?php echo $xaxis2; ?>]];
-				var yaxis = [[<?php echo $outflow; ?>],[<?php echo $inflow; ?>]];
-
-				var r = Raphael("diagram2"),
-                fin = function () {
-                    this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
-                },
-                fout = function () {
-                    this.flag.animate({opacity: 0}, 300, function () {this.remove();});
-                },
-                fin2 = function () {
-                    var y = [], res = [];
-                    for (var i = this.bars.length; i--;) {
-                        y.push(this.bars[i].y);
-                        res.push(this.bars[i].value || "0");
-                    }
-                    this.flag = r.g.popup(this.bars[0].x, Math.min.apply(Math, y), res.join(", ")).insertBefore(this);
-                };
-                
-            r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
-            
-            r.g.text(160, 10, "Inflow / Outflow");
-            
-            var barchart = r.g.barchart(10, 10, 450, 300, yaxis);
-            barchart.hover(fin, fout);
-            barchart.label(xaxis,true);
-
-			});
-
-		</script>
-		
-		
-<script type="text/javascript">
-
-		<?php
-			$str = "";
-			$str2 = "";
-			for( $i = 0; $i < count( $diagramoutflowperweek ); $i++ ) {
-				$str = $str."'".$diagramoutflowperweek[ $i ]['yearweek']."',";				
-				$str2 = $str2.$diagramoutflowperweek[ $i ]['total'].",";				
-			}
-			$str=substr($str,0,-1);
-			$xaxis = $str;
-			$str2=substr($str2,0,-1);
-			$yaxis = $str2;
-		?>                
-
-			$(function() {
-				var xaxis = [<?php echo $xaxis; ?>];
-                var r = Raphael("diagram3"),
-					data1 = [<?php echo $yaxis; ?>],
-					fin = function () {
-                        this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
-                    },
-                    fout = function () {
-                        this.flag.animate({opacity: 0}, 300, function () {this.remove();});
-                    };
-					
-                r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
-
-                r.g.text(160, 10, "Outflow per week for <?php echo $projectname; ?>");
-				var barchart = r.g.barchart(30, 20, 450, 300, data1);
-				barchart.label(xaxis,true);
-				barchart.hover(fin, fout); 
-			});
-
-		</script>
 		
 </head>
 <body bgcolor=white>
@@ -220,22 +144,14 @@ Current velocity is <?php echo $velocity; ?> points / day
 <br><br>
 </center>
 <br>
+<h2>Burndown Chart</h2>
+<div id="dojochart" style="width:700px;height:500px;"></div>
 
-<div id="diagram" class="diagram"> 
-</div>
-<br>
-
-<div id="diagram2" class="diagram"> 
-</div>
-<br>
-
-<div id="diagram3" class="diagram"> 
-</div>
 <br>
 
 <h2>Task List</h2>
 <table>
-<tr><td>Sprint</td><td>Started</td><td>Finished</td><td>Priority</td><td>Estimation</td><td>Task</td></tr>
+<tr><td>Sprint</td><td>Started</td><td>Finished</td><td>Leadtime</td><td>Priority</td><td>Estimation</td><td>Task</td></tr>
 <?php
 	$name="";
 	foreach ($legend as $row)
@@ -250,6 +166,7 @@ Current velocity is <?php echo $velocity; ?> points / day
 		else echo "<td>".$row['startdate']." (".$row['startweeknumber'].")</td>";
 		if( $row['enddate'] == '0000-00-00' ) echo "<td></td>";
 		else echo "<td>".$row['enddate']." (".$row['finishedweeknumber'].")</td>";
+		echo "<td>".$row['leadtime']."</td>";
 		echo "<td>".$row['priority']."</td>";
 		echo "<td>".$row['estimation']."</td>";
 		echo "<td>".$row['heading']."</td>";
