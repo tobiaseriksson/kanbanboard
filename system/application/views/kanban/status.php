@@ -6,7 +6,8 @@
 	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />	
 	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
-	<script src="/assets/js/dojo/dojo.js" 
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"></script>
 				data-dojo-config="isDebug: false,parseOnLoad: true">
 	</script>
 	
@@ -51,9 +52,6 @@
 			dojo.require("dojox.charting.themes.Claro");
 			
 			// Define the data
-			// var chartData = [ 10000,9200,11811,12000,7662,13887,14200,12222,12000,10009,11288,12099];
-			var chartData  = [ {x:1.2,y:9000},{x:2.9,y:400},{x:3,y:2811},{x:4.6,y:2000} ];
-			var chartData2 = [ {x:0.1,y:5423},{x:2,y:4000},{x:3.3,y:1900},{x:5.1,y:2700} ];
 			<?php 
 				$tmpstr = "var diagrambaseline  = [ ";
 				foreach ($diagrambaseline as $row)

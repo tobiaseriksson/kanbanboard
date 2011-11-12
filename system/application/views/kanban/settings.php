@@ -675,13 +675,15 @@ jQuery(function($){
 							</td></tr>
 						 <tr>
 							<td class="settingsleftside">Text :</td>
-						<td class="settingsrightside"><textarea name="importtaskstosprint_text" id="importtaskstosprint_text" cols="40" rows="20">heading;description;priority;estimate;color
+						<td class="settingsrightside"><textarea name="importtaskstosprint_text" id="importtaskstosprint_text" cols="40" rows="20">
+heading;description;priority;estimate;color;added
 where
 heading is text 
 description is text
 priority an integer 0=low 100=high
 estimate an integer 
 color an integer, 1=yellow,2=green,3=red
+added is a date(YYYY-MM-DD)
 						</textarea>
 							</td></tr>
 						<tr><td colspan=2></td></tr>

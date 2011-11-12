@@ -260,13 +260,13 @@ class kanban extends Controller {
 		
 		$e = strtotime($enddate);
 		$s = strtotime($startdate);
-		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) ̱ strtotime($startdate);
+		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) Ã± strtotime($startdate);
 		$pagedata['totaldays'] = $totaldays;
 		
 		$now = date( "Y-m-d" );
 		$e = strtotime($now);
 		$s = strtotime($enddate);
-		$daysleft = floor( ($s - $e) / 86400 ); // strtotime($enddate) ̱ strtotime($startdate);
+		$daysleft = floor( ($s - $e) / 86400 ); // strtotime($enddate) Ã± strtotime($startdate);
 		if( $daysleft < 0 ) {
 			$daysleft = 0;
 		}
@@ -466,7 +466,7 @@ class kanban extends Controller {
 		
 		$e = strtotime($enddate);
 		$s = strtotime($startdate);
-		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) ̱ strtotime($startdate);
+		$totaldays = floor( ($e - $s) / 86400 ); // strtotime($enddate) Ã± strtotime($startdate);
 		$pagedata['totaldays'] = $totaldays;
 		
 		$legend=array();

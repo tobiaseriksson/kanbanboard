@@ -283,6 +283,16 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 			});
 		</script>	
 
+		<script type="text/javascript">
+			$(function () {
+				<?php 
+				foreach ($groups as $group) {		
+					echo "$('#grouptitle".$group['id']."').append(' ('+ ($('#sortable".$group['id']."').children().size()-1)  +')');";
+				}
+				?>
+			});
+		</script>	
+
 </head>
 <body bgcolor=white>
 <div id="dock">
@@ -323,7 +333,7 @@ $i=1;
 $groupid=-1;
 foreach ($groups as $group) {		
 	echo '<ul id="sortable'.$group['id'].'" class="connectedSortable">';
-	echo '<li class="ui-state-default rubrik">'.$group['name'].'</li>';
+	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik">'.$group['name'].'</li>';
 	$groupid = $group['id'];
 	foreach ($tasks as $row)
 	{					 
@@ -334,13 +344,16 @@ foreach ($groups as $group) {
 <div class="inside-postit-header">'.$row['heading'].'</div>
 <div class="inside-postit-text">'.$row['description'].'</div>
 <div class="inside-postit-footer">
-<div class="inside-postit-footer-prio">
-Prio:'.$row['priority'].'
+<div class="inside-postit-footer-prio" title="Prio">
+<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'.$row['priority'].'
 </div>
-<div class="inside-postit-footer-estimation">
-Est:'.$row['estimation'].'
+<div class="inside-postit-footer-estimation" title="Estimation">
+<span class="ui-icon ui-icon-clock"></span>'.$row['estimation'].'
 </div>
-<div class="inside-postit-footer-editicon">
+<div class="inside-postit-footer-age" title="Age in days">
+<span class="ui-icon ui-icon-calendar"></span>'.$row['age'].'
+</div>
+<div class="inside-postit-footer-editicon" title="Click to edit">
 <span class="ui-icon ui-icon-wrench" onclick="fillInFormTaskDetails('.$row['taskid'].'); $(\'#dialog-edit-task\').dialog(\'open\'); return false; "></span>
 </div>
 </div>
