@@ -7,7 +7,7 @@
 	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
 	
-	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"
 				data-dojo-config="isDebug: false,parseOnLoad: true">
 	</script>
 	
@@ -51,6 +51,11 @@
 			//"Claro", new in Dojo 1.6, will be used
 			dojo.require("dojox.charting.themes.Claro");
 			
+			dojo.require("dojox.charting.widget.Legend");
+
+			//
+			// Burndown chart
+			//
 			// Define the data
 			<?php 
 				$tmpstr = "var diagrambaseline  = [ ";
@@ -75,7 +80,7 @@
 			dojo.ready(function() {
 				
 				// Create the chart within it's "holding" node
-				var chart = new dojox.charting.Chart2D("dojochart");
+				var chart = new dojox.charting.Chart2D("burndownchart");
 
 				// Set the theme
 				chart.setTheme(dojox.charting.themes.Claro);
@@ -83,7 +88,8 @@
 				// Add the only/default plot 
 				chart.addPlot("default", {
 					type: "Lines",
-					markers: true
+					markers: true,
+					animate:{duration: 1000}
 				});
 				
 				// Add axes
@@ -95,13 +101,50 @@
 				chart.addSeries("Expected",diagrambaseline);
 				chart.addSeries("Actual",diagramactual);
 
-				//var tip = new dojox.charting.action2d.Tooltip(chart, "default");
-
 				// Render the chart!
 				chart.render();
+				// Add Legend to the bottom
+				var outflowinflowlegend = new dojox.charting.widget.Legend({chart: chart}, "burndownchartlegend");
 				
 			});
+
+			// 
+			// Inflow / Outflow chart
+			// 
+			<?php 
+				$tmpstr = "\nvar diagraminflow  = [ ";
+				foreach ($diagraminflow as $row)
+				{			
+					$tmpstr = $tmpstr." ".$row.",";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+				$tmpstr = "var diagramoutflow  = [ ";
+				foreach ($diagramoutflow as $row)
+				{			
+					$tmpstr = $tmpstr." ".$row.",";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+			?>
 			
+			// When the DOM is ready and resources are loaded...
+			dojo.ready(function() {
+				var chart = new dojox.charting.Chart2D("inflowoutflowchart");
+				chart.addPlot("default", {type:"ClusteredColumns",gap:2,animate:{duration: 1000} });
+				chart.addAxis("x",{  min: 0 });
+				chart.addAxis("y",{ vertical : true, min: 0, fixLower: "major", fixUpper: "major"   });
+				chart.addSeries("Inflow",diagraminflow);
+				chart.addSeries("Outflow",diagramoutflow);
+				// Set the theme
+				chart.setTheme(dojox.charting.themes.Claro);
+				// Render the chart!
+				chart.render();
+				// Add Legend to the bottom
+				var outflowinflowlegend = new dojox.charting.widget.Legend({chart: chart}, "inflowoutflowlegend");
+			});
 		</script>
 
 		
@@ -143,8 +186,13 @@ Current velocity is <?php echo $velocity; ?> points / day
 </center>
 <br>
 <h2>Burndown Chart</h2>
-<div id="dojochart" style="width:700px;height:500px;"></div>
+<div id="burndownchart" style="width:700px;height:500px;"></div>
+<div id="burndownchartlegend"></div>
 
+<br>
+<h2>Inflow / Outflow Chart</h2>
+<div id="inflowoutflowchart" style="width:700px;height:500px;"></div>
+<div id="inflowoutflowlegend"></div>
 <br>
 
 <h2>Task List</h2>
@@ -175,7 +223,6 @@ Current velocity is <?php echo $velocity; ?> points / day
 
 </div>
 </div>
-
 </body>
 </html>
 
