@@ -289,54 +289,8 @@ class kanban extends Controller {
 		$pagedata['velocity'] = $velocity;
 		
 		//
-		// Burndown chart
-		//		
-		$sql="SELECT sum(estimation) as total FROM `kanban_item` where sprint_id = ".$sprintid;
-		$query = $this->db->query( $sql );
-		$totalestimation=0;
-		if ($query->num_rows() > 0)	{
-			$res = $query->result_array();		
-			$totalestimation = $res[0]['total'];	
-		} 
-		$pagedata['totalestimation'] = $totalestimation;
-		$e = strtotime($enddate);
-		$s = strtotime($startdate);
-		$totaldays = round( ($e - $s) / 86400 ); 
-		$pagedata['totaldays'] = $totaldays;
-		$pointsperday = round( $totalestimation / $totaldays, 2 );
-		$diagrambaseline = array();
-		$days = array();
-		$baseline = $totalestimation;
-		for( $i = 0; $i < $totaldays; $i++ ) {
-			$diagrambaseline[ $i ] = round( $baseline, 2 );
-			$days[ $i ] = $i;
-			$baseline = $baseline - $pointsperday;
-		}
-		$pagedata['diagrambaseline'] = $diagrambaseline;
-		$pagedata['days'] = $days;
-		$sql="SELECT sum(estimation) as tot,datediff(enddate,'".$startdate."') as day FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00' group by day";
-		$diagramactual = array();
-		$query = $this->db->query( $sql );
-		$i=0;
-		$points = $totalestimation;
-		$diagramactual[$i] =  $points;
-		foreach ($query->result_array() as $row)
-		{		
-			$day = $row['day'];
-			$pointsperday = round( $row['tot'] / ($day+1-$i), 2 );
-			do {
-				$points = $points - $pointsperday;	
-				$diagramactual[$i] =  $points;
-				$i=$i+1;
-			} while( $i <= $day && $i < $totaldays );			
-		}
-		$pagedata['diagramactual'] = $diagramactual;
-
-		
+		// Inflow/Outflow for sprint *******************************************************************
 		//
-		// Inflow/Outflow for sprint
-		//
-				
 		$diagraminflow = array();
 		$sql = "SELECT datediff(added,'".$startdate."') as day,count(added) as total FROM kanban_item where  sprint_id = ".$sprintid."  and added > '.$startdate.' and not added = '0000-00-00' group by day order by day";
 		$query = $this->db->query( $sql );
@@ -350,6 +304,10 @@ class kanban extends Controller {
 			}
 			$diagraminflow[ $i ] = $row['total'];
 			$i = $i + 1;	
+		}
+		while( $i < $totaldays ) {
+			$diagraminflow[ $i ] = 0;
+			$i = $i + 1;
 		}
 		$pagedata['diagraminflow'] = $diagraminflow;
 		
@@ -367,22 +325,15 @@ class kanban extends Controller {
 			$diagramoutflow[ $i ] = $row['total'];
 			$i = $i + 1;	
 		}
+		while( $i < $totaldays ) {
+				$diagramoutflow[ $i ] = 0;
+				$i = $i + 1;
+			}
 		$pagedata['diagramoutflow'] = $diagramoutflow;
-		
-		
-		$diagramoutflowperweek = array();
-		$sql = 'SELECT concat_ws("-",year(enddate),week(enddate)) as yearweek,count(enddate) as total FROM kanban_item where project_id = '.$projectid.' and enddate > "'.$projectstartdate.'" and not enddate = "0000-00-00" group by yearweek order by yearweek';
-		$query = $this->db->query( $sql );
-		$i=0;
-		foreach ($query->result_array() as $row)
-		{			
-			$diagramoutflowperweek[ $i ] = $row;
-			$i++;			
-		}
-		$pagedata['diagramoutflowperweek'] = $diagramoutflowperweek;
+				
 		
 		#
-		# Legend / History
+		# Legend / History  *******************************************************************
 		#
 		$legend=array();
 		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as finishedweeknumber,i.startdate,week(i.startdate) as startweeknumber,estimation,priority, DATEDIFF( i.enddate, i.startdate ) as leadtime FROM kanban_item i,kanban_sprint s  where i.project_id = ".$projectid." and sprint_id = s.id order by sprintname,priority";
@@ -396,8 +347,16 @@ class kanban extends Controller {
 		$pagedata['legend'] = $legend;
 		
 		#
-		# Burndown
+		# Burndown  *******************************************************************
 		#
+		$sql="SELECT sum(estimation) as total FROM `kanban_item` where sprint_id = ".$sprintid;
+		$query = $this->db->query( $sql );
+		$totalestimation=0;
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			$totalestimation = $res[0]['total'];	
+		} 
+		$pagedata['totalestimation'] = $totalestimation;
 		$sql="SELECT sum(estimation) as tot,datediff(enddate,'".$startdate."') as day FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00' group by day";
 		$diagramactual = array();
 		$query = $this->db->query( $sql );
@@ -577,7 +536,8 @@ class kanban extends Controller {
 		}
 		kanban::sprint($projectid,$sprintid);
 	}
-
+	
+	
 	// a and b as unix time i.e. seconds since EPOC
 	function countDays( $a, $b )
 	{
@@ -596,7 +556,7 @@ class kanban extends Controller {
 	    return round( abs( $a_new - $b_new ) / 86400 );
 	}
 	
-	
+
 	function sprint($projectid,$sprintid)    {
 
 		kanban::redirectIfNoAccess( $projectid );
@@ -1089,7 +1049,6 @@ class kanban extends Controller {
 		echo $jsondata; 
 	}
 	
-
 	function importtaskstosprint() {
 		$projectid = $this->input->post('importtaskstosprint_projectid');
 		$sprintid = $this->input->post('importtaskstosprint_sprintid');
@@ -1142,6 +1101,7 @@ class kanban extends Controller {
 			$row=$row+1;
 		}
 	}
+
 	
 	function addproject() {
 		$name = $this->input->post('name');
