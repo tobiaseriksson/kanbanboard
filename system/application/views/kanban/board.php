@@ -8,6 +8,7 @@
 
 	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 	<script src="/assets/js/raphael-min.js" type="text/javascript" charset="utf-8"></script> 
 	<script src="/assets/js/g.raphael.js" type="text/javascript" charset="utf-8"></script>
 	<script src="/assets/js/g.line-min.js" type="text/javascript" charset="utf-8"></script> 
