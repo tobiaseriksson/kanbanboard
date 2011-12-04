@@ -1,7 +1,7 @@
 KANBANBOARD
 
-This is a Kanban board based on PHP, Javascript and MySQL using the framework Codeigniter
-Please do take a look at kanban.tsoft.se for an example
+This is a Kanban board based on PHP, Javascript and MySQL using the framework Codeigniter, JQuery, DOJO, Raphael's graphics lib, JQuery touch 
+Please do take a look at kanban.softhouse.se for an example, take it for a spin with user/password demo/demo.
 
 Enjoy 
  Tobias
