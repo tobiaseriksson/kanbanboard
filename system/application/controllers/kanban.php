@@ -394,7 +394,8 @@ class kanban extends Controller {
 		$nowtime = strtotime("now");
 		$t = $nowtime;
 		if( $endtime < $nowtime ) $t = $endtime;
-		$days = ceil( ($t-$starttime) / 86400 ); 	
+		$days = ceil( ($t-$starttime) / 86400 ); 
+		if( $days <= 0 ) $days = 1;	
 		// prepare the matrix, with TASK number of rows, and DAYS number of columns, where the first value is the initial estimation
 		$matrix = array();
 		foreach ($query->result_array() as $row)
@@ -473,10 +474,10 @@ class kanban extends Controller {
 		
 		// Summarize column by column
 		foreach( $matrix as $id => $arr ) {
-		echo "<br>ID = ".$id;
+			// echo "<br>ID = ".$id;
 			for( $day = 0; $day < count($arr); $day++ ) {
 				$value = intval( $arr[ $day ] );
-				echo "day = ".$day." = ".$value;
+				// echo "day = ".$day." = ".$value;
 				$diagramactual[ $day ][ 1 ] = $diagramactual[ $day ][ 1 ] + $value;
 			}
 		}
