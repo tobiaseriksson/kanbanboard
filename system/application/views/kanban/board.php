@@ -203,19 +203,6 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 		   });
 		});
 
-		$(function() {
-			$( "#dialog-diagrams" ).dialog({
-			modal: false,
-			width: 550,
-			height: 450,
-			autoOpen: false,
-			buttons: {
-				"Close": function() {
-					$( this ).dialog( "close" );
-				}
-			}
-		   });
-		});
 	</script>
 
 	<script type="text/javascript">
@@ -332,8 +319,7 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 <body bgcolor=white>
 <div id="dock">
 	<ul>
-		<li><a href="" onclick="$('#dialog-new-task').dialog('open'); return false; ">New Task</a></li>
-		<li><a href="" onclick="$('#dialog-diagrams').dialog('open'); return false; ">Charts</a></li>		
+		<li><a href="" onclick="$('#dialog-new-task').dialog('open'); return false; ">New Task</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/status/'.$projectid.'/'.$sprintid ); ?>">Status</a></li>
 		<li><a href="<?php echo site_url( '/kanban/settings/'.$projectid.'/'.$sprintid ); ?>">Settings</a></li>		
 		<li><a href="<?php echo site_url( '/kanban/selectproject'); ?>">Projects</a></li>
@@ -401,12 +387,6 @@ foreach ($groups as $group) {
 ?>
 
 </div><!-- End kanbanboard -->
-
-
-<div id="dialog-diagrams" title="Burndown">	
-	<div id="diagram">
-	</div>
-</div>
 
 
 <div id="dialog-edit-task" title="Edit Task">	

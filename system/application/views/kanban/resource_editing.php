@@ -137,7 +137,9 @@
 				
 				$firsttime = 0;
 				$id = 0;
+				$t = $starttime;
 				foreach ($plan as $planitem) {		
+				
 					if( $id != $planitem['id'] ) {
 						if( $firsttime == 0 ) {
 							$firsttime = 1;
@@ -145,9 +147,21 @@
 							echo '<th></th></tr>';
 						}
 						echo '<tr><th id="'.$planitem['id'].'">'.$planitem['name'].'</th>';
+						$t = $starttime;
 						$id = $planitem['id'];
-					}						
+					}	
+					$date = $planitem['date'];
+					$dateTime = strtotime( $date );
+					if( $t < $dateTime ) {
+						// fast forward until the date, and place ZERO's for the dates we do not have any information about
+						do {
+							echo '<td>0</td>';
+				 			$t = strtotime( "+1 day", $t );
+						} while( $t < $dateTime );
+						
+					} 
 					echo '<td>'.$planitem['effort'].'</td>';
+					$t = strtotime( "+1 day", $t );
 				}			
 				echo '<th></th></tr>';
 				
@@ -223,7 +237,7 @@
 				  		url: "/kanban/updateschedule/"+projectid,  
 				  		data: dataStr,  
 				  		success: function(data) {  
-							// $('body').append( '<br>result = '+data );
+							$('body').append( '<br>result = '+data );
 							populateUserSelection();			     
 				  		}, 
 				  		error: function(x,e) {  

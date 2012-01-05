@@ -1074,6 +1074,7 @@ class kanban extends Controller {
 		$sprintid = $this->input->post('editsprint_sprintid');
 		$startdate = $this->input->post('editsprint_startdate');
 		$enddate = $this->input->post('editsprint_enddate');
+		
 		$data = array(
 			'name' => $name,
 			'startdate' => $startdate,
@@ -1478,17 +1479,13 @@ class kanban extends Controller {
 			$t = $starttime;
 			for( $i=2; $i<count( $arr ); $i++ ) {
 				// echo $id.':'.date('Y-m-d',$t).' = '.$arr[ $i ].'<br>';
-				$data = array(
-					'effort' => $arr[ $i ]
-				);
-				$this->db->where( 'resource_id', $id);
-				$this->db->where( 'date', date('Y-m-d',$t) );
-				$this->db->update( 'kanban_resource_schedule', $data);	
-				
+				$sql="INSERT INTO kanban_resource_schedule (resource_id,date,effort) VALUES (?,?,?) ON DUPLICATE KEY UPDATE resource_id = ?,date = ?,effort = ?";
+				$query = $this->db->query($sql,array( $id, date('Y-m-d',$t), $arr[ $i ], $id, date('Y-m-d',$t), $arr[ $i ]));
+				// echo "<br>QUERY: ".$this->db->last_query();
 				$t = strtotime( "+1 day", $t );
 			}
 		}
-		echo "RESULT: OK!";
+		// echo "<br>RESULT: OK!";
 	}
 	
 	function addresource($projectid) {
