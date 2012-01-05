@@ -66,8 +66,27 @@
 				$tmpstr = trim( $tmpstr, "," );
 				$tmpstr = $tmpstr." ];\n";
 				echo $tmpstr;
+				
 				$tmpstr = "var diagramactual  = [ ";
 				foreach ($diagramactual as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+				
+				$tmpstr = "var diagramprojected  = [ ";
+				foreach ($diagramprojected as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+				
+				$tmpstr = "var diagrameffort  = [ ";
+				foreach ($diagrameffort as $row)
 				{			
 					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
 				}
@@ -88,19 +107,20 @@
 				// Add the only/default plot 
 				chart.addPlot("default", {
 					type: "Lines",
-					markers: true,
-					animate:{duration: 1000}
+					markers: false,
+					animate:{duration: 1000} 
 				});
 				
 				// Add axes
 				chart.addAxis("x",{  min: 0, fixLower: "major", fixUpper: "major"   });
-				//chart.addAxis("y", { min: 5000, max: 15000, vertical: true, fixLower: "major", fixUpper: "major" });
 				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
 
 				// Add the series of data
-				chart.addSeries("Expected",diagrambaseline);
-				chart.addSeries("Actual",diagramactual);
-
+				chart.addSeries("Start To End",diagrambaseline, {plot: "Lines", stroke: {color:"green"} });
+				chart.addSeries("Actual",diagramactual, {plot: "Lines", stroke: {color:"blue", style: "Solid"} });
+				chart.addSeries("Projected",diagramprojected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
+				chart.addSeries("Resource Effort",diagrameffort, {plot: "Lines", stroke: {color:"red"} });
+				
 				// Render the chart!
 				chart.render();
 				// Add Legend to the bottom

@@ -1,6 +1,6 @@
 .postit1 {
 	background-attachment: scroll;
-	background-image: url("/assets/images/postit1.png");
+	background-image: url("../../assets/images/postit1.png");
 	background-position: 50% 50%;
 	background-repeat: no-repeat;		
 	color: #363636;
@@ -10,7 +10,7 @@
 
 .postit2 { 
 	background-attachment: scroll;
-	background-image: url("/assets/images/postit2.png");
+	background-image: url("../../assets/images/postit2.png");
 	background-position: 50% 50%;
 	background-repeat: no-repeat;		
 	color: #363636;
@@ -20,7 +20,7 @@
 
 .postit3 { 
 	background-attachment: scroll;
-	background-image: url("/assets/images/postit3.png");
+	background-image: url("../../assets/images/postit3.png");
 	background-position: 50% 50%;
 	background-repeat: no-repeat;		
 	color: #363636;
@@ -30,7 +30,7 @@
 
 .postit4 { 
 	background-attachment: scroll;
-	background-image: url("/assets/images/postit4.png");
+	background-image: url("../../assets/images/postit4.png");
 	background-position: 50% 50%;
 	background-repeat: no-repeat;		
 	color: #363636;
@@ -39,7 +39,7 @@
 }
 .postit5 { 
 	background-attachment: scroll;
-	background-image: url("/assets/images/postit5.png");
+	background-image: url("../../assets/images/postit5.png");
 	background-position: 50% 50%;
 	background-repeat: no-repeat;		
 	color: #363636;
@@ -102,13 +102,13 @@
 
 .banner {
 	height: 140px;
-	background-image: url("/assets/images/boardmiddle.png");
+	background-image: url("../../assets/images/boardmiddle.png");
 	background-repeat: repeat-x;
 }
 
 .logo {
 	height: 140px;
-	background-image: url("/assets/images/boardstart.png");
+	background-image: url("../../assets/images/boardstart.png");
 	background-repeat:  no-repeat;
 }
 
@@ -142,7 +142,7 @@
 
 
 #dock {
-    background-image: url("/assets/images/boardmenustart.png");
+    background-image: url("../../assets/images/boardmenustart.png");
     background-repeat:  no-repeat;
     color:#000000;
     float: left;
@@ -155,14 +155,14 @@
 }
 
 #dock li { 
-     background-image: url("/assets/images/boardmenumiddle.png");
+     background-image: url("../../assets/images/boardmenumiddle.png");
      padding-bottom: 21px;
      float: left;
      list-style-type: none;
 }
         
 #dock ul { 
-    background-image: url("/assets/images/boardmenuend.png");
+    background-image: url("../../assets/images/boardmenuend.png");
     background-repeat:  no-repeat;    
         background-position: bottom right;    
     padding: 0 10px 8px 0;

@@ -37,6 +37,40 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 	
 		<script type="text/javascript">
 			$(function() {
+				jQuery.fn.ForceNumericOnly =
+					function()
+					{
+					    return this.each(function()
+					    {
+					        $(this).keydown(function(e)
+					        {
+					            var key = e.charCode || e.keyCode || 0;
+					            // allow backspace, tab, delete, arrows, numbers and keypad numbers ONLY
+					            return (
+					                key == 8 || 
+					                key == 9 ||
+					                key == 46 ||
+					                (key >= 37 && key <= 40) ||
+					                (key >= 48 && key <= 57) ||
+					                (key >= 96 && key <= 105));
+					        });
+					    });
+					};
+
+					$("#priority").ForceNumericOnly();
+					$("#estimation").ForceNumericOnly();
+					$("#todays_estimation").ForceNumericOnly();
+
+					$("#newtask_priority").ForceNumericOnly();
+					$("#newtask_estimation").ForceNumericOnly();
+					
+			});
+			
+			</script>
+	
+	
+		<script type="text/javascript">
+			$(function() {
 				$("<?php
 					$first=1; 
 					foreach ($groups as $row) {
@@ -199,14 +233,14 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 			$("#taskdescription").val( data.taskdescription);
 			$("#priority").val( data.priority);
 			$("#estimation").val( data.estimation);
+			$("#todays_estimation").val( data.todays_estimation);
 			$("#priority").val( data.priority);
 			$("#projectid").val( data.projectid);
 			$("#sprintid").val( data.colortag);
 			$("#taskid").val( data.taskid);
 			$("#colortag").val( data.colortag);			
 			$("#sprintid").val( data.sprintid);			
-			$("#newsprintid").val( data.sprintid);						
-		   $("#updatetask").fill(data);  				     
+			$("#newsprintid").val( data.sprintid);  				     
 		  }, 
 		  error: function(x,e) {  
 		    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
@@ -386,10 +420,13 @@ foreach ($groups as $group) {
 				<tr><td>Task :</td><td><input name="heading" id="heading"/></td></tr>
 				<tr><td>Text :</td><td><textarea name="taskdescription"  id="taskdescription" rows="3" cols="20"></textarea></td></tr>
 				<tr><td> Priority :</td><td>
-					<input name="priority" id="priority" value="100" />
+					<input name="priority" id="priority" value="100" size="3" />
 				</td></tr>
 				<tr><td> Estimate :</td><td>
-					<input name="estimation" id="estimation" value="0" />
+					<input name="estimation" id="estimation" value="0"  size="3" />
+				</td></tr>
+				<tr><td> Today's Estimate :</td><td>
+					<input name="todays_estimation" id="todays_estimation" value="0"  size="3" />
 				</td></tr>
 				<tr><td> Color Tag :</td><td>
 					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
@@ -423,10 +460,10 @@ foreach ($groups as $group) {
 					<tr><td>New Task :</td><td><input name="heading" ></td></tr>
 					<tr><td>Text :</td><td><textarea name="taskdescription"  rows="3" cols="25"></textarea></td></tr>
 					<tr><td> Priority :</td><td>
-						<input name="priority" />
+						<input name="priority" id="newtask_priority" value="100" size="3" />
 					</td></tr>
 					<tr><td> Estimate :</td><td>
-						<input name="estimation" />
+						<input name="estimation" id="newtask_estimation" value="0"  size="3"  />
 					</td></tr>
 				    <tr><td> Color Tag :</td><td>
 					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
