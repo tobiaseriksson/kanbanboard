@@ -9,9 +9,6 @@
 	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
-	<script src="/assets/js/raphael-min.js" type="text/javascript" charset="utf-8"></script> 
-	<script src="/assets/js/g.raphael.js" type="text/javascript" charset="utf-8"></script>
-	<script src="/assets/js/g.line-min.js" type="text/javascript" charset="utf-8"></script> 
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
 	<style type="text/css">
@@ -236,45 +233,7 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 	}
 	</script>
 
-<script type="text/javascript">
-			$(function() {
-                var r = Raphael("diagram");
-                r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
 
-		<?php
-			$str = "";
-			for( $i = 0; $i < count( $days ); $i++ ) {
-				$str = $str.$days[ $i ].",";				
-			}
-			$daysstring=substr($str,0,-1);
-		
-			$str = "";
-			for( $i = 0; $i < count( $diagrambaseline ); $i++ ) {
-				$str = $str.$diagrambaseline[ $i ].",";				
-			}
-			$expected=substr($str,0,-1);
-			
-			$str = "";
-			for( $i = 0; $i < count( $diagramactual ); $i++ ) {
-				$str = $str.$diagramactual[ $i ].",";				
-			}
-			$actual=substr($str,0,-1);
-		?>          
-				var days = [ <?php echo $daysstring ?> ];
-				var expected = [ <?php echo $expected ?> ];
-				var actual = [ <?php echo $actual ?> ];
-		      	if( actual.length <= 1 ) {
-					actual = [];
-				}
-				if( expected.length <= 1 ) {
-					expected = [];
-				}
-                r.g.text(160, 10, "Burn Down Chart ");
- 
-                r.g.linechart(30, 20, 450, 300, days, [actual,expected], { axis: "0 0 1 1"});
-			});
-
-		</script>
 		
 		<script src="/assets/ticker/DocumentationExample/includes/jquery.ticker.min.js" type="text/javascript"></script>
 		<script type="text/javascript">
@@ -292,7 +251,7 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 				var allgroups = $('#kanbanboard').children('ul');
 				var maxheight=0;
 				allgroups.each(function() {
-					var height = $(this).height();					
+					var height = $(this).height();			
 					if( height > maxheight ) {
 						maxheight = height;
 					}
