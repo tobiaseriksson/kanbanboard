@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
-	<! base href="/Users/tobias/dev/git/kanbanboard/" />
-	<base href="http://kanban.tsoft.se/" />
+	<! base href="http://kanban.tsoft.se/" />
+	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
 	<link type="text/css" href="assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />	
 	
@@ -144,6 +144,10 @@
 						if( $firsttime == 0 ) {
 							$firsttime = 1;
 						} else {
+							while( $t <= $endtime ) {
+								echo '<td>0</td>';
+				 				$t = strtotime( "+1 day", $t );
+							}
 							echo '<th></th></tr>';
 						}
 						echo '<tr><th id="'.$planitem['id'].'">'.$planitem['name'].'</th>';
@@ -162,7 +166,11 @@
 					} 
 					echo '<td>'.$planitem['effort'].'</td>';
 					$t = strtotime( "+1 day", $t );
-				}			
+				}	
+				while( $t <= $endtime ) {
+					echo '<td>0</td>';
+	 				$t = strtotime( "+1 day", $t );
+				}
 				echo '<th></th></tr>';
 				
 				echo $weeksumhtml.'<th></th></tr>';
@@ -172,7 +180,7 @@
 			
 				<tr><th nowrap><input id="newname" type="text" value="name" size="4" /><button id="addResource">Add</button></th>
 				</table>
-				<button id="submitchanges">Submit Changes</button>
+				<button id="submitchanges">Submit Changes</button><img id="progressimage" width="20" height="20" src="assets/images/ajax-loader_transp.gif"></img>
 				<button id="updatecolors">Colorize</button>
 				<button id="summarize">Summarize</button>
 				
@@ -181,6 +189,7 @@
 				
 		<script type="text/javascript"> 	
 			$(function() {
+				$('#progressimage').hide();
 				var monthStepArray = Array( <?php echo rtrim( $monthsteparraystring, ',' ); ?> );
 				var weekStepArray = Array( <?php echo rtrim( $weeklysteparraystring, ',' ); ?> );
 				var projectid = <?php echo $projectid; ?>;
@@ -214,6 +223,7 @@
 				}
 				
 				$("#submitchanges").click( function() {
+					$('#progressimage').show();
 					var data = '';		
 					$('#ttab tr:gt(2)').each(function(){
 						var found = 0;
@@ -236,6 +246,9 @@
 				 		type: "POST",  
 				  		url: "/kanban/updateschedule/"+projectid,  
 				  		data: dataStr,  
+				  		complete: function() {
+							$('#progressimage').hide();
+						},
 				  		success: function(data) {  
 							$('body').append( '<br>result = '+data );
 							populateUserSelection();			     
@@ -251,12 +264,12 @@
 					var id = -1;
 					var dataStr = 'newname='+ newname ;
 					$.ajax({  
-						dataType: "json",  
+						dataType: "json", 
 				 		type: "POST",  
 				  		url: "/kanban/addresource/"+projectid,  
 				  		data: dataStr,  
 				  		success: function(data) {  
-							// $('body').append( 'new id = '+data.id );
+							// $('body').append( 'new id = '+data);
 							var cells = '';
 							for( var i=0;i<=numberOfDays;i++) {
 								cells = cells + '<td>0</td>';
