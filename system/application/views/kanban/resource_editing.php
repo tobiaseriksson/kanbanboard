@@ -36,10 +36,27 @@
 			vertical-align: top;
 		}
 		
-		#ttab th {
-			background-color:#eeeeee;
+		
+		table.resourcetablestyle
+		{
+		    border-width: 0 0 1px 1px;
+		    border-spacing: 0;
+		    border-collapse: collapse;
+		    border-style: solid;
 		}
 		
+		.resourcetablestyle td, .resourcetablestyle th
+		{
+		    margin: 0;
+		    padding: 4px;
+		    border-width: 1px 1px 0 0;
+		    border-style: solid;
+		}
+		
+		.resourcetablestyle th 
+		{
+			background-color:#eeeeee;
+		}
 	</style>
 	
 	
@@ -81,7 +98,7 @@
 				</select>
 				<button id="updatedays">Update</button>
 				<br/>
-				<table id="ttab" border="1px" contenteditable="true">
+				<table id="ttab" class="resourcetablestyle" border="1px" contenteditable="true">
 				<?php 
 				 $endtime = strtotime($enddate);
 				 $starttime = strtotime($startdate);
