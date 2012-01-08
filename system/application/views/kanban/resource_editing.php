@@ -195,7 +195,7 @@
 				
 			?>
 			
-				<tr><th nowrap><input id="newname" type="text" value="name" size="4" /><button id="addResource">Add</button></th>
+				<tr><th nowrap><input id="newname" type="text" value="name" size="4" /><button id="addResource">Add</button></th><th colspan="<?php echo ($totaldays+2); ?>"></th></tr>
 				</table>
 				<button id="submitchanges">Submit Changes</button><img id="progressimage" width="20" height="20" src="assets/images/ajax-loader_transp.gif"></img>
 				<button id="updatecolors">Colorize</button>
