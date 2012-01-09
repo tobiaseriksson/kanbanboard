@@ -1,17 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> 
 <head>
 	<meta charset="UTF-8" />
 	<title>The '<?php echo $projectname; ?>' Kanban Board</title>	
-	<link href="/assets/ticker/1.4.2version/MinifiedVersion/css/min-style.css" rel="stylesheet" type="text/css" />
+	<link href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" type="text/css" />
 	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
 
-	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.16.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
-	<script src="/assets/js/raphael-min.js" type="text/javascript" charset="utf-8"></script> 
-	<script src="/assets/js/g.raphael.js" type="text/javascript" charset="utf-8"></script>
-	<script src="/assets/js/g.line-min.js" type="text/javascript" charset="utf-8"></script> 
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
 	<style type="text/css">
@@ -83,13 +80,21 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 				connectWith: '.connectedSortable',
 				items: 'li:not(.rubrik)',
 				receive: function(event, ui) { 
-						// $("#errordiv").append( "Event:"+ui.sender.attr("id")+", item="+ui.item.attr("id")+", placeholder="+ui.placeholder.attr("id")+", event.target = "+event.target.id+"<br>" );
+					    // $("#errordiv").append( "Event:"+ui.sender.attr("id")+", item="+ui.item.attr("id")+", placeholder="+ui.placeholder.attr("id")+", event.target = "+event.target.id+"<br>" );
 						var from = ui.sender.attr("id").replace( "sortable", "" );
-						var to = event.target.id.replace( "sortable", "" );
+						var to = this.id.replace( "sortable", "" );
 						var task = ui.item.attr("id").replace( "task", "" );
 						var last = <?php echo $lastgroupid; ?>;
 						var dataString = 'from='+ from + '&to=' + to + "&task=" + task + "&last=" + last;
-						// $("#errordiv").html("res="+dataString);
+						// $("#errordiv").append("res="+dataString);
+						if( to == "" ) {
+							$("#errordiv").append("Could not move Task, it does not have a target/destination.");
+							return;
+						}
+						if( task == "" ) {
+							$("#errordiv").append("Could not move Task, it does not have a valid Task ID.");
+							return;
+						}
 						// alert ("moved");return false;
 						$.ajax({  
 						  type: "POST",  
@@ -99,9 +104,9 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 						    	// $("#errordiv").html("This is the result"+data);
 							  	location.reload();
 						  }, 
-					  error: function(x,e) {  
-					    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
-					  }   
+					      error: function(x,e) {  
+					            $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					      }   
 						});  
 						return false;
 				}
@@ -236,47 +241,9 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 	}
 	</script>
 
-<script type="text/javascript">
-			$(function() {
-                var r = Raphael("diagram");
-                r.g.txtattr.font = "12px 'Fontin Sans', Fontin-Sans, sans-serif";
 
-		<?php
-			$str = "";
-			for( $i = 0; $i < count( $days ); $i++ ) {
-				$str = $str.$days[ $i ].",";				
-			}
-			$daysstring=substr($str,0,-1);
 		
-			$str = "";
-			for( $i = 0; $i < count( $diagrambaseline ); $i++ ) {
-				$str = $str.$diagrambaseline[ $i ].",";				
-			}
-			$expected=substr($str,0,-1);
-			
-			$str = "";
-			for( $i = 0; $i < count( $diagramactual ); $i++ ) {
-				$str = $str.$diagramactual[ $i ].",";				
-			}
-			$actual=substr($str,0,-1);
-		?>          
-				var days = [ <?php echo $daysstring ?> ];
-				var expected = [ <?php echo $expected ?> ];
-				var actual = [ <?php echo $actual ?> ];
-		      	if( actual.length <= 1 ) {
-					actual = [];
-				}
-				if( expected.length <= 1 ) {
-					expected = [];
-				}
-                r.g.text(160, 10, "Burn Down Chart ");
- 
-                r.g.linechart(30, 20, 450, 300, days, [actual,expected], { axis: "0 0 1 1"});
-			});
-
-		</script>
-		
-		<script src="/assets/ticker/DocumentationExample/includes/jquery.ticker.min.js" type="text/javascript"></script>
+		<script src="/assets/ticker/includes/jquery.ticker.js" type="text/javascript"></script>
 		<script type="text/javascript">
 			$(function () {
 				$('#js-news').ticker({
@@ -289,10 +256,11 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 
 		<script type="text/javascript">
 			$(function () {
+				// $("#errordiv").append("resizing...");
 				var allgroups = $('#kanbanboard').children('ul');
 				var maxheight=0;
 				allgroups.each(function() {
-					var height = $(this).height();					
+					var height = $(this).height();			
 					if( height > maxheight ) {
 						maxheight = height;
 					}
