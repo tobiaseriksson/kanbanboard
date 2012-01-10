@@ -4,8 +4,8 @@
 	<meta charset="UTF-8" />
 	<title>The '<?php echo $projectname; ?>' Kanban Board</title>	
 	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />	
-	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.16.custom.min.js"></script>
 	
 	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"
 				data-dojo-config="isDebug: false,parseOnLoad: true">
@@ -199,7 +199,7 @@
 
 Sprint duration is <?php echo $totaldays; ?> days<br><br>
 
-Current velocity is <?php echo $velocity; ?> points / day 
+Current velocity is <?php echo round( $velocity, 1); ?> points / day 
 </h3>
 </span> 
 <br><br>
