@@ -4,10 +4,10 @@
 	<meta charset="UTF-8" />
 	<title>The '<?php echo $projectname; ?>' Kanban Board</title>	
 	<link href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" type="text/css" />
-	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
 
 	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.16.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
