@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> 
 <head>
 	<meta charset="UTF-8" />
 	<title>The '<?php echo $projectname; ?>' Kanban Board</title>	
-	<link href="/assets/ticker/1.4.2version/MinifiedVersion/css/min-style.css" rel="stylesheet" type="text/css" />
-	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
+	<link href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" type="text/css" />
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
 
-	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
@@ -80,13 +80,22 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 				connectWith: '.connectedSortable',
 				items: 'li:not(.rubrik)',
 				receive: function(event, ui) { 
-						// $("#errordiv").append( "Event:"+ui.sender.attr("id")+", item="+ui.item.attr("id")+", placeholder="+ui.placeholder.attr("id")+", event.target = "+event.target.id+"<br>" );
+					    // $("#errordiv").append( "Event:"+ui.sender.attr("id")+", item="+ui.item.attr("id")+", placeholder="+ui.placeholder.attr("id")+", event.target = "+event.target.id+"<br>" );
 						var from = ui.sender.attr("id").replace( "sortable", "" );
-						var to = event.target.id.replace( "sortable", "" );
+						var to = this.id.replace( "sortable", "" );
+						var toObj = this;
 						var task = ui.item.attr("id").replace( "task", "" );
 						var last = <?php echo $lastgroupid; ?>;
 						var dataString = 'from='+ from + '&to=' + to + "&task=" + task + "&last=" + last;
-						// $("#errordiv").html("res="+dataString);
+						// $("#errordiv").append("res="+dataString);
+						if( to == "" ) {
+							$("#errordiv").append("Could not move Task, it does not have a target/destination.");
+							return;
+						}
+						if( task == "" ) {
+							$("#errordiv").append("Could not move Task, it does not have a valid Task ID.");
+							return;
+						}
 						// alert ("moved");return false;
 						$.ajax({  
 						  type: "POST",  
@@ -94,13 +103,13 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 						  data: dataString,  
 						  success: function(data) {  
 						    	// $("#errordiv").html("This is the result"+data);
-							  	location.reload();
+							  	// location.reload();
+							    resortGroup( toObj );
 						  }, 
-					  error: function(x,e) {  
-					    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
-					  }   
-						});  
-						return false;
+					      error: function(x,e) {  
+					            $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					      }   
+						}); 
 				}
 			}).disableSelection();
 		});
@@ -115,8 +124,43 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 			
 	</script>
 
-	
 
+	<script type="text/javascript">
+			
+		function resortGroup( group ) {
+			var arrayOfTasks = [];
+			var i = 0;
+			var html = '';
+			// find all Tasks (LI-elements)
+			$( 'li', group ).not(':first').each( function() {
+					var prio = $('div.inside-postit-footer-prio',this).text(); // .match( /\d+$/ );
+					prio = parseInt( prio.replace(/[^\d.,]/g, "") );
+					html = $(this);
+					arrayOfTasks[ i++ ] = new Array( prio, html );
+				} );
+			arrayOfTasks.sort( sortOnPrioAlgorithm );
+			arrayOfTasks.reverse(); // Highest prio first
+			html = $( 'li:first', group ); // Group-Header first
+			$(group).html( html );
+			// add the Tasks back one by one in the right order
+			$.each( arrayOfTasks, function( key, val) { 
+				$(group).append( val[1] ); 
+				} 
+			);
+			
+		}
+
+		// objX is array( prio, obj ) 
+		function sortOnPrioAlgorithm( objA, objB ) {
+			if( objA[0] < objB[0] ) return -1;
+			if( objA[0] > objB[0] ) return 1;
+			return 0;
+		} 
+			
+	</script>
+
+
+	
 	<script type="text/javascript">
 		$(function() {
 			$( "#dialog-edit-task" ).dialog({
@@ -130,14 +174,11 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 				},
 				Ok: function() {
 					var dataString = $("#updatetask").serialize();
-					//$("#errordiv").html("res="+dataString);
-					// alert (dataString);return false;  
 					$.ajax({  
 					  type: "POST",  
 					  url: "/kanban/updatetask",  
 					  data: dataString,  
-					  success: function(data) {  
-					    // $("#errordiv").html("This is the result"+data);  				     
+					  success: function(data) {  				     
 					    location.reload();
 					  },
 					  error: function(x,e) {  
@@ -145,26 +186,22 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 						  }
 					});  
 					$( this ).dialog( "close" );
-				   //location.reload();
 				},
 				Del: function() {
 					var dataString = $("#updatetask").serialize();
-					//$("#errordiv").html("res="+dataString);
-					// alert (dataString);return false;  
 					$.ajax({  
 					  type: "POST",  
 					  url: "/kanban/deletetask",  
 					  data: dataString,  
-					  success: function(data) {  
-					    // $("#errordiv").html("This is the result"+data);  				     
-					    location.reload();
+					  success: function(data) {  				     
+					    // location.reload();
+						$('#task'+$('#taskid').val()).remove();
 					  },
 					  error: function(x,e) {  
 						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
 						  }
 					});  
 					$( this ).dialog( "close" );
-				   //location.reload();
 				}
 			}
 		   });
@@ -180,14 +217,11 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 				},
 				Ok: function() {
 					var dataString = $("#newtask").serialize();
-					// $("#errordiv").html("res="+dataString);
-					// alert (dataString);return false;  
 					$.ajax({  
 					  type: "POST",  
 					  url: "/kanban/addtask",  
 					  data: dataString,  
-					  success: function(data) {  
-					    // $("#errordiv").html("This is the result"+data);  				     
+					  success: function(data) {  				     
 						location.reload();
 					  },
 					  error: function(x,e) {  
@@ -235,7 +269,7 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 
 
 		
-		<script src="/assets/ticker/DocumentationExample/includes/jquery.ticker.min.js" type="text/javascript"></script>
+		<script src="/assets/ticker/includes/jquery.ticker.js" type="text/javascript"></script>
 		<script type="text/javascript">
 			$(function () {
 				$('#js-news').ticker({
@@ -248,19 +282,28 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 
 		<script type="text/javascript">
 			$(function () {
+				// $("#errordiv").append("resizing...");
+				// The intention with this is to make all the groups equally tall, so that it should be eas to move elements/tasks between groups
 				var allgroups = $('#kanbanboard').children('ul');
 				var maxheight=0;
+				var maxwidth=0;
 				allgroups.each(function() {
-					var height = $(this).height();			
+					var height = $(this).height();
+					var width = $(this).width();			
 					if( height > maxheight ) {
 						maxheight = height;
+					}
+					if( width > maxwidth ) {
+						maxwidth = width;
 					}
 				});
 				maxheight = maxheight + 120;				
 				allgroups.each(function() {
 					$(this).css( 'height',maxheight );
 				});
-				
+				// the intention here is to make sure that the groups are not wrapped within the kanbanboard-DIV when the browser window is smaller than the kanbanboard-DIV
+				var width = allgroups.length * (maxwidth+10); 
+				$('#kanbanboard').width( width );
 			});
 		</script>	
 
@@ -295,7 +338,6 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 
 <div id="errordiv"></div>
 
-<div class="kanbanboard" id="kanbanboard">
 
 <div id="ticker-wrapper" class="no-js">
 		<ul id="js-news" class="js-hidden">
@@ -307,6 +349,8 @@ foreach ($tickers as $ticker) {
 ?>					
 		</ul>		
 </div>
+
+<div class="kanbanboard" id="kanbanboard">
 
 <?php
 $i=1;

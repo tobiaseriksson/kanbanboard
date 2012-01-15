@@ -926,18 +926,12 @@ class kanban extends Controller {
 			'sprint_id' => $newsprintid
 			);
 		$this->db->where('id', $taskid);
-		$this->db->update('kanban_item', $data);	
+		$this->db->update('kanban_item', $data);			
 		
-		$sql = "DELETE FROM kanban_progress WHERE item_id = ? AND date_of_progress = ?";
-		$this->db->query($sql, array( $taskid, $today ) );
+		$sql="INSERT INTO kanban_progress (item_id,new_estimate,date_of_progress) VALUES (?,?,?) ON DUPLICATE KEY UPDATE item_id =?, new_estimate = ?, date_of_progress = ?";
 		
-		$data = array(			
-			'item_id' => $taskid,
-			'new_estimate' => $todays_estimation,
-			'date_of_progress' => $today
-			);
-		$this->db->insert('kanban_progress', $data);	
-		
+		$query = $this->db->query($sql,array( $taskid,$todays_estimation,$today,$taskid,$todays_estimation,$today) ); 
+
 		echo "db updated!";
 	}
 
@@ -1467,6 +1461,9 @@ class kanban extends Controller {
 	}
 	
 	function updateschedule($projectid) {
+	
+		kanban::redirectIfNoAccess( $projectid );
+	
 		$startdate = $this->input->post('startdate');
 		$starttime = strtotime($startdate);
 		$data = $this->input->post('data');
@@ -1489,6 +1486,9 @@ class kanban extends Controller {
 	}
 	
 	function addresource($projectid) {
+	
+		kanban::redirectIfNoAccess( $projectid );
+	
 		$newname = $this->input->post('newname');
 		$data = array(
 			'project_id' => $projectid,
