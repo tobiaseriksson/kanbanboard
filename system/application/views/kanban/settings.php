@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
+	<! base href="http://kanban.tsoft.se/" />
+	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
 	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
+	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
 	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
-
-	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
 	<style type="text/css">
 		#wrapper {
