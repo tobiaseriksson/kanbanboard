@@ -282,7 +282,6 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 
 		<script type="text/javascript">
 			$(function () {
-				// $("#errordiv").append("resizing...");
 				// The intention with this is to make all the groups equally tall, so that it should be eas to move elements/tasks between groups
 				var allgroups = $('#kanbanboard').children('ul');
 				var maxheight=0;

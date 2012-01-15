@@ -5,15 +5,12 @@
 	<! base href="http://kanban.tsoft.se/" />
 	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
-	<link type="text/css" href="assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />	
-	
-	<script type="text/javascript" src="assets/js/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="assets/js/jquery-ui-1.8.1.custom.min.js"></script>
-	<script type="text/javascript" src="assets/js/jquery.ui.touch-punch.js"></script>
-	<script type="text/javascript" src="assets/js/raphael-min.js" charset="utf-8"></script> 
-	<script type="text/javascript" src="assets/js/g.raphael-min.js" charset="utf-8"></script> 
-	<script type="text/javascript" src="assets/js/g.line-min.js" charset="utf-8"></script> 
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
 
+	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
+	
 	<link type="text/css" href="assets/css/kanban.css" rel="stylesheet" />	
 
 	<style type="text/css">
