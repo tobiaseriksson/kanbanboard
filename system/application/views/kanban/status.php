@@ -53,7 +53,7 @@
 
 			// Require the theme of our choosing
 			//"Claro", new in Dojo 1.6, will be used
-			dojo.require("dojox.charting.themes.Claro");
+			dojo.require("dojox.charting.themes.MiamiNice");
 			
 			dojo.require("dojox.charting.widget.Legend");
 
@@ -106,7 +106,7 @@
 				var chart = new dojox.charting.Chart2D("burndownchart");
 
 				// Set the theme
-				chart.setTheme(dojox.charting.themes.Claro);
+				chart.setTheme(dojox.charting.themes.MiamiNice);
 
 				// Add the only/default plot 
 				chart.addPlot("default", {
@@ -163,7 +163,7 @@
 				chart.addSeries("Inflow",diagraminflow);
 				chart.addSeries("Outflow",diagramoutflow);
 				// Set the theme
-				chart.setTheme(dojox.charting.themes.Claro);
+				chart.setTheme(dojox.charting.themes.MiamiNice);
 				// Render the chart!
 				chart.render();
 				// Add Legend to the bottom
