@@ -171,6 +171,22 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 			modal: false,
 			autoOpen: false,
 			buttons: {
+				Del: function() {
+					var dataString = $("#updatetask").serialize();
+					$.ajax({  
+					  type: "POST",  
+					  url: "/kanban/deletetask",  
+					  data: dataString,  
+					  success: function(data) {  				     
+					    // location.reload();
+						$('#task'+$('#taskid').val()).remove();
+					  },
+					  error: function(x,e) {  
+						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+						  }
+					});  
+					$( this ).dialog( "close" );
+				},
 				Cancel: function() {
 					$( this ).dialog( "close" );
 				},
@@ -182,22 +198,6 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 					  data: dataString,  
 					  success: function(data) {  				     
 					    location.reload();
-					  },
-					  error: function(x,e) {  
-						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
-						  }
-					});  
-					$( this ).dialog( "close" );
-				},
-				Del: function() {
-					var dataString = $("#updatetask").serialize();
-					$.ajax({  
-					  type: "POST",  
-					  url: "/kanban/deletetask",  
-					  data: dataString,  
-					  success: function(data) {  				     
-					    // location.reload();
-						$('#task'+$('#taskid').val()).remove();
 					  },
 					  error: function(x,e) {  
 						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);

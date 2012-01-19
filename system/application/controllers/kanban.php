@@ -385,7 +385,7 @@ class kanban extends Controller {
 		
 		
 		$totalnumberoftasks = 0;
-		$sql="SELECT id,estimation FROM kanban_item where sprint_id = ".$sprintid." ORDER BY id";
+		$sql="SELECT id,estimation,heading FROM kanban_item where sprint_id = ".$sprintid." ORDER BY id";
 		$query = $this->db->query( $sql );
 		$totalnumberoftasks = $query->num_rows();
 		
@@ -398,27 +398,36 @@ class kanban extends Controller {
 		if( $days <= 0 ) $days = 1;	
 		// prepare the matrix, with TASK number of rows, and DAYS number of columns, where the first value is the initial estimation
 		$matrix = array();
+		$tasklookup = array();
 		foreach ($query->result_array() as $row)
 		{	
 			$id = intval( $row['id'] );
 			$estimation = intval ( $row['estimation'] );
+			$tasklookup[ $id ] = $row['heading'];
 			$matrix[ $id ] = array();
 			for( $dayIndex = 0; $dayIndex < $days; $dayIndex++ ) {
 				$matrix[ $id ][ $dayIndex ] = -1;
 			}
 			$matrix[ $id ][ 0 ] = $estimation; 
 		}
-	
+		
 		/*
+		echo "<h2>Presetup</h2>";
+		echo "<table border=1px >";
+		echo "<th>ID</th><th>Heading</th>";
+		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
 		foreach( $matrix as $id => $arr ) {
-			echo $id;
+			echo "<tr><th>".$id."</th><th>".$tasklookup[ $id ]."</th>";
 			for( $day = 0; $day < count($arr); $day++ ) {
 				$value = intval( $arr[ $day ] );
-				echo ",(".$day.")".$value;
+				// echo ",(".$day.")";
+				echo "<td>".$value."</td>";
 			}
-			echo "<br>";
+			echo "</tr>>";
 		}
+		echo "</table>";
 		*/
+		
 		
 		// fill in the 'new' daily estimations for each day we have information  
 		$sql="SELECT p.item_id as id,datediff(p.date_of_progress, '".$startdate."') days_since_sprint_start,p.new_estimate as estimation FROM `kanban_item` i, kanban_progress p WHERE p.item_id = i.id AND i.sprint_id = ".$sprintid." ORDER BY item_id,days_since_sprint_start";
@@ -440,6 +449,24 @@ class kanban extends Controller {
 			}
 		}
 		
+		
+		/*
+		echo "<h2>fill in new daily</h2>";
+		echo "<table border=1px >";
+		echo "<th>ID</th><th>Heading</th>";
+		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
+		foreach( $matrix as $id => $arr ) {
+			echo "<tr><th>".$id."</th><th>".$tasklookup[ $id ]."</th>";
+			for( $day = 0; $day < count($arr); $day++ ) {
+				$value = intval( $arr[ $day ] );
+				// echo ",(".$day.")";
+				echo "<td>".$value."</td>";
+			}
+			echo "</tr>>";
+		}
+		echo "</table>";
+		*/
+		
 		// For those Tasks that has completed, we need to fill in the value 0 for THAT day (date)
 		$sql="SELECT id, estimation,datediff(enddate, '".$startdate."') days_since_sprint_start  FROM kanban_item WHERE sprint_id = ".$sprintid." AND not enddate = '0000-00-00' ORDER BY id";
 		$query = $this->db->query( $sql );
@@ -455,6 +482,24 @@ class kanban extends Controller {
 			}
 		}
 		
+		
+		/*
+		echo "<h2>Fill in Completed</h2>";
+		echo "<table border=1px >";
+		echo "<th>ID</th><th>Heading</th>";
+		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
+		foreach( $matrix as $id => $arr ) {
+			echo "<tr><th>".$id."</th><th>".$tasklookup[ $id ]."</th>";
+			for( $day = 0; $day < count($arr); $day++ ) {
+				$value = intval( $arr[ $day ] );
+				// echo ",(".$day.")";
+				echo "<td>".$value."</td>";
+			}
+			echo "</tr>>";
+		}
+		echo "</table>";
+		*/
+		
 		// Now fill in all the blanks(-1), i.e. the values inbetween the values we know we fill in with the values of the previous value
 		foreach( $matrix as $id => $arr ) {
 			$oldValue = $arr[0];
@@ -465,6 +510,27 @@ class kanban extends Controller {
 			}
 			$matrix[$id] = $arr;
 		}
+		
+		/*
+		echo "<h2>Fill in Blanks(-1)</h2>";
+		echo "<table border=1px >";
+		echo "<th>ID</th><th>Heading</th>";
+		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
+		foreach( $matrix as $id => $arr ) {
+			echo "<tr><th>".$id."</th><th>".$tasklookup[ $id ]."</th>";
+			for( $day = 0; $day < count($arr); $day++ ) {
+				$value = intval( $arr[ $day ] );
+				// echo ",(".$day.")";
+				echo "<td>".$value."</td>";
+			}
+			echo "</tr>>";
+		}
+		echo "</table>";
+		*/
+		
+		$pagedata['days'] = $days;
+		$pagedata['progressmatrix'] = $matrix;
+		$pagedata['tasklookup'] = $tasklookup;
 		
 		// Now finally create the diagram array of (x,y)-values where x = DAY since start-date
 		$diagramactual = array();
@@ -505,6 +571,63 @@ class kanban extends Controller {
 		}
 		$pagedata['diagramprojected'] = $diagramprojected;
 		
+		// 
+		// Weekly Efficency diagram
+		//
+		$i = 0;
+		$starttime = strtotime($startdate);
+		// $totaldays = floor( ($e - $s) / 86400 );
+		$diagrameffiency = array();
+		$currentweek = 0;
+		$startvalue = 0;
+		$endvalue = 0;
+		foreach ($diagramactual as $row)
+		{		
+			$t = $starttime + ( 86400 * ($row[0] - 1) );
+			$week = date( "W", $t );
+			// echo "date; ".date("Y-M-d W",$t).", points = ".$row[1]."<br>";
+			if( $week  != $currentweek ) {
+				if( $currentweek > 0 ) $diagrameffiency[ $currentweek ] = 100 * ($startvalue - $endvalue) ;
+				// echo "w; ".$currentweek.", points = ".$diagrameffiency[ $currentweek ]."<br>";
+				$startvalue = $row[1];
+				$currentweek = $week;
+				
+			}
+			$endvalue = $row[1];
+		}
+		$currentweek = $week;
+		$diagrameffiency[ $currentweek ] = 100 * ($startvalue - $endvalue);
+		// echo "w; ".$currentweek.", points = ".$diagrameffiency[ $currentweek ]."<br>";
+		$i = 0;
+		$currentweek = 0;
+		while( $i <= $days ) {
+			$t = $starttime + ( 86400 * ($diagrameffort[$i][0] - 1) );	
+			$week = date( "W", $t );
+			if( $week  != $currentweek ) {
+				$diff = ($startvalue - $endvalue);
+				if( $currentweek > 0 ) {
+					if( $diff == 0 ) $diagrameffiency[ $currentweek ] = 0;
+					else $diagrameffiency[ $currentweek ] = $diagrameffiency[ $currentweek ] / $diff ;
+				}
+				$startvalue = $diagrameffort[$i][1];
+				$currentweek = $week;
+				
+			}
+			$endvalue = $diagrameffort[$i][1];
+			$i++;
+		}
+		$currentweek = $week;
+		$diff = ($startvalue - $endvalue);
+		if( $diff == 0 ) $diagrameffiency[ $currentweek ] = 0;
+		else $diagrameffiency[ $currentweek ] = $diagrameffiency[ $currentweek ] / $diff ;
+		
+		$efficiencydiagram = array();
+		$i=0;
+		foreach( $diagrameffiency as $week => $efficiency ) {
+			$efficiencydiagram[$i++] = array( $week, $efficiency );
+		}
+		
+		$pagedata['efficiencydiagram'] = $efficiencydiagram;
 		
 		$diagrambaseline = array();
 		$diagrambaseline[0] = array( 0, $totalestimation );
@@ -929,7 +1052,6 @@ class kanban extends Controller {
 		$this->db->update('kanban_item', $data);			
 		
 		$sql="INSERT INTO kanban_progress (item_id,new_estimate,date_of_progress) VALUES (?,?,?) ON DUPLICATE KEY UPDATE item_id =?, new_estimate = ?, date_of_progress = ?";
-		
 		$query = $this->db->query($sql,array( $taskid,$todays_estimation,$today,$taskid,$todays_estimation,$today) ); 
 
 		echo "db updated!";

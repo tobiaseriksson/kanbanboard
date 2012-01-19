@@ -62,7 +62,7 @@
 			//
 			// Define the data
 			<?php 
-				$tmpstr = "var diagrambaseline  = [ ";
+				$tmpstr = "var baseline  = [ ";
 				foreach ($diagrambaseline as $row)
 				{			
 					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
@@ -71,7 +71,7 @@
 				$tmpstr = $tmpstr." ];\n";
 				echo $tmpstr;
 				
-				$tmpstr = "var diagramactual  = [ ";
+				$tmpstr = "var progress  = [ ";
 				foreach ($diagramactual as $row)
 				{			
 					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
@@ -80,7 +80,7 @@
 				$tmpstr = $tmpstr." ];\n";
 				echo $tmpstr;
 				
-				$tmpstr = "var diagramprojected  = [ ";
+				$tmpstr = "var projected  = [ ";
 				foreach ($diagramprojected as $row)
 				{			
 					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
@@ -89,7 +89,7 @@
 				$tmpstr = $tmpstr." ];\n";
 				echo $tmpstr;
 				
-				$tmpstr = "var diagrameffort  = [ ";
+				$tmpstr = "var plan  = [ ";
 				foreach ($diagrameffort as $row)
 				{			
 					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
@@ -120,10 +120,10 @@
 				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
 
 				// Add the series of data
-				chart.addSeries("Start To End",diagrambaseline, {plot: "Lines", stroke: {color:"green"} });
-				chart.addSeries("Actual",diagramactual, {plot: "Lines", stroke: {color:"blue", style: "Solid"} });
-				chart.addSeries("Projected",diagramprojected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
-				chart.addSeries("Resource Effort",diagrameffort, {plot: "Lines", stroke: {color:"red"} });
+				chart.addSeries("Baseline",baseline, {plot: "Lines", stroke: {color:"green"} });
+				chart.addSeries("Progress",progress, {plot: "Lines", stroke: {color:"blue", style: "Solid"} });
+				chart.addSeries("Projected",projected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
+				chart.addSeries("Plan",plan, {plot: "Lines", stroke: {color:"red"} });
 				
 				// Render the chart!
 				chart.render();
@@ -132,6 +132,43 @@
 				
 			});
 
+			// 
+			// Efficiency
+			// 
+			<?php 
+				$tmpstr = "\nvar efficiencydiagram  = [ ";
+				$weeknumbers = ", labels: [ ";
+				$i = 1;
+				foreach ($efficiencydiagram as $row)
+				{			
+					$tmpstr = $tmpstr." ".$row[1].",";
+					$weeknumbers = $weeknumbers.'{ value: '.$i.', text: "w'.$row[0].'"},';
+					$i++;
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				$weeknumbers = rtrim( $weeknumbers, "," );
+				$weeknumbers = $weeknumbers." ] ";
+				echo $tmpstr;
+				
+			?>
+			
+			// When the DOM is ready and resources are loaded...
+			dojo.ready(function() {
+				var chart = new dojox.charting.Chart2D("efficiencydiagram");
+				chart.addPlot("default", {type:"ClusteredColumns",gap:2,animate:{duration: 1000} });
+				chart.addAxis("x",{  min: 0 <?php echo $weeknumbers; ?>  });
+				chart.addAxis("y",{ vertical : true, min: 0, fixLower: "major", fixUpper: "major" });
+				chart.addSeries("Efficiency",efficiencydiagram);
+				// Set the theme
+				chart.setTheme(dojox.charting.themes.MiamiNice);
+				// Render the chart!
+				chart.render();
+				var efficiencydiagramlegend = new dojox.charting.widget.Legend({chart: chart}, "efficiencydiagramlegend");
+				
+			});
+
+			
 			// 
 			// Inflow / Outflow chart
 			// 
@@ -212,7 +249,27 @@ Current velocity is <?php echo round( $velocity, 1); ?> points / day
 <h2>Burndown Chart</h2>
 <div id="burndownchart" style="width:700px;height:500px;"></div>
 <div id="burndownchartlegend"></div>
-
+<br>
+<h2>Progress History Matrix</h2>
+<?php 
+		echo "<table border=1px >";
+		echo "<th>ID</th><th>Heading</th>";
+		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
+		foreach( $progressmatrix as $id => $arr ) {
+			echo "<tr><th>".$id."</th><th>".$tasklookup[ $id ]."</th>";
+			for( $day = 0; $day < count($arr); $day++ ) {
+				$value = intval( $arr[ $day ] );
+				// echo ",(".$day.")";
+				echo "<td>".$value."</td>";
+			}
+			echo "</tr>";
+		}
+		echo "</table>";
+?>
+<br>
+<h2>Weekly Efficiency</h2>
+<div id="efficiencydiagram" style="width:700px;height:500px;"></div>
+<div id="efficiencydiagramlegend"></div>
 <br>
 <h2>Inflow / Outflow Chart</h2>
 <div id="inflowoutflowchart" style="width:700px;height:500px;"></div>
