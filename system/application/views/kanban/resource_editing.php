@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
 	<meta charset="UTF-8" />
 	<! base href="http://kanban.tsoft.se/" />
 	<base href="<?php echo site_url( '/' ); ?>" />
@@ -59,9 +63,9 @@
 	</style>
 	
 	<script type="text/javascript"> 	
-			$(function() {
-				document.execCommand("enableObjectResizing", false, false);
-			});
+			// $(function() {
+			//	document.execCommand("enableObjectResizing", false, false);
+			// });
 	</script>
 	
 </head>
