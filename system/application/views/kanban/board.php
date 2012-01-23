@@ -15,8 +15,22 @@
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 
 	<style type="text/css">
-<?php
+<?php 
 
+$first=1;
+foreach ($groups as $row) {	
+	if( $first < 1 ) echo ",";
+	$first=0;		
+	echo "#grouptitle".$row['id']." ";
+}
+echo " {  height: 15; }\n";
+$first=1;
+foreach ($groups as $row) {	
+	if( $first < 1 ) echo ",";
+	$first=0;		
+	echo "#grouptitle".$row['id']." li ";
+}
+echo " { height: 12px; }\n";
 $first=1;
 foreach ($groups as $row) {	
 	if( $first < 1 ) echo ",";
@@ -30,7 +44,14 @@ foreach ($groups as $row) {
 	$first=0;		
 	echo "#sortable".$row['id']." li ";
 }
-echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
+echo " { margin: 10px 10px 0px 0px; padding: 0px 0px 0px 0px; font-size: 1.1em; width: 120px; height: 120px; }\n";
+$first=1;
+foreach ($groups as $row) {			
+	if( $first < 1 ) echo ",";
+	$first=0;		
+	echo "#sortable".$row['id']." li:first-child";
+}
+echo " { height: 20px; }\n";
 
 ?>
 	</style>
@@ -360,7 +381,7 @@ $i=1;
 $groupid=-1;
 foreach ($groups as $group) {		
 	echo '<ul id="sortable'.$group['id'].'" class="connectedSortable">';
-	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik">'.$group['name'].'</li>';
+	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default grouptitle">'.$group['name'].'</li>';
 	$groupid = $group['id'];
 	foreach ($tasks as $row)
 	{					 
