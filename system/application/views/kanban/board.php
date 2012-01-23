@@ -381,7 +381,7 @@ $i=1;
 $groupid=-1;
 foreach ($groups as $group) {		
 	echo '<ul id="sortable'.$group['id'].'" class="connectedSortable">';
-	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default grouptitle">'.$group['name'].'</li>';
+	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik">'.$group['name'].'</li>';
 	$groupid = $group['id'];
 	foreach ($tasks as $row)
 	{					 
