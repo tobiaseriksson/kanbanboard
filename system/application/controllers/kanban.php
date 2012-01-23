@@ -963,7 +963,7 @@ class kanban extends Controller {
 		$today = date( "Y-m-d" );
 		$sql = 'SELECT new_estimate FROM kanban_progress WHERE item_id = ? AND date_of_progress <= ? ORDER BY date_of_progress DESC LIMIT 1';
 		$query = $this->db->query( $sql, array( $taskid, $today ) );
-		$jsonarray[ 'todays_estimation' ] = 0;
+		$jsonarray[ 'todays_estimation' ] = $jsonarray[ 'estimation' ];
 		if ($query->num_rows() > 0)	{
 			$row = $query->row();	
 			$jsonarray[ 'todays_estimation' ] = $row->new_estimate;
