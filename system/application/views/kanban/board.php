@@ -188,7 +188,7 @@ echo " { height: 20px; }\n";
 	<script type="text/javascript">
 		$(function() {
 			$( "#dialog-edit-task" ).dialog({
-			width: 250,
+			width: 300,
 			resizable: false,
 			modal: false,
 			autoOpen: false,
