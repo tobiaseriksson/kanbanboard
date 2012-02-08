@@ -600,7 +600,8 @@ class kanban extends Controller {
 		// echo "w; ".$currentweek.", points = ".$diagrameffiency[ $currentweek ]."<br>";
 		$i = 0;
 		$currentweek = 0;
-		while( $i <= $days ) {
+		
+		while( $i <= $days && $i < count( $diagrameffort ) ) {
 			$t = $starttime + ( 86400 * ($diagrameffort[$i][0] - 1) );	
 			$week = date( "W", $t );
 			if( $week  != $currentweek ) {
@@ -1190,7 +1191,7 @@ class kanban extends Controller {
 		$projectid = $this->input->post('newgworkpackage_projectid');
 		echo "projectid=".$projectid."<br>";
 		
-		kanban::addworkpackage_helper( $name, $project_id );
+		kanban::addworkpackage_helper( $name, $projectid );
 		
 		echo "inserted into db!";
 	}

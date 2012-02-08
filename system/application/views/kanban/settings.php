@@ -483,7 +483,7 @@ jQuery(function($){
                 <input type="hidden" name="newgroup_projectid" id="newgroup_projectid" value="<?php echo $projectid; ?>" />
                 <table >
                   <tr>
-                    <td class="settingsrightside"><h4>Add New Group :</h4></td>
+                    <td colspan="2"  class="settingsrightside"><h4>Add New Group :</h4></td>
                   </tr>
                   <tr>
                     <td class="settingsleftside">Name:</td>
@@ -501,7 +501,7 @@ jQuery(function($){
                   <input type="hidden" id="editgroup_projectid" name="editgroup_projectid" value="<?php echo $projectid; ?>" />
                   <table >
                     <tr>
-                      <td class="settingsrightside"><h4>Edit Group Name :</h4></td>
+                      <td colspan="2"  class="settingsrightside"><h4>Edit Group Name :</h4></td>
                     </tr>
                     <tr>
                       <td class="settingsleftside">Select:</td>
@@ -533,7 +533,7 @@ jQuery(function($){
                   <input type="hidden" id="deletegroup_firstgroupid" name="deletegroup_firstgroupid" value="<?php echo $groups[0]['id']; ?>" />
                   <table >
                     <tr>
-                      <td class="settingsrightside"><h4>Delete Group :</h4></td>
+                      <td colspan="2"  class="settingsrightside"><h4>Delete Group :</h4></td>
                     </tr>
                     <tr>
                       <td class="settingsleftside">Select:</td>
@@ -600,7 +600,7 @@ jQuery(function($){
                 <input type="hidden" name="newgworkpackage_projectid" id="newgworkpackage_projectid" value="<?php echo $projectid; ?>" />
                 <table >
                   <tr>
-                    <td class="settingsrightside"><h4>Add New WorkPackage :</h4></td>
+                    <td colspan="2" class="settingsrightside"><h4>Add New WorkPackage :</h4></td>
                   </tr>
                   <tr>
                     <td class="settingsleftside">Name:</td>
@@ -618,7 +618,7 @@ jQuery(function($){
                   <input type="hidden" id="editworkpackage_projectid" name="editworkpackage_projectid" value="<?php echo $projectid; ?>" />
                   <table >
                     <tr>
-                      <td class="settingsrightside"><h4>Edit Group Name :</h4></td>
+                      <td colspan="2"  class="settingsrightside"><h4>Edit Group Name :</h4></td>
                     </tr>
                     <tr>
                       <td class="settingsleftside">Select:</td>
@@ -649,7 +649,7 @@ jQuery(function($){
                   <input type="hidden" id="deleteworkpackage_projectid" name="deleteworkpackage_projectid" value="<?php echo $projectid; ?>" />
                  <table >
                     <tr>
-                      <td class="settingsrightside"><h4>Delete WorkPackage :</h4></td>
+                      <td colspan="2" class="settingsrightside"><h4>Delete WorkPackage :</h4></td>
                     </tr>
                     <tr>
                       <td class="settingsleftside">Select:</td>
