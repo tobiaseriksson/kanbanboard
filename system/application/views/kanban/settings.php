@@ -150,6 +150,73 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 			
 	</script>
 	
+	<script type="text/javascript">
+		$(function() {
+			$('#newgworkpackage').submit(function() {
+				// alert("form="+$(this).attr('id')+"res="+$(this).serialize());				
+				var dataString = $("#newgworkpackage").serialize();
+				$("#sprintresult").html("res="+dataString);
+				//alert (dataString);return false;  
+				$.ajax({  
+				  type: "POST",  
+				  url: "/kanban/addworkpackage",  
+				  data: dataString,  
+				  success: function(data) {  
+				    $("#groupresult").html("This is the result"+data);  				     
+				  }, 
+				  error: function(x,e) {  
+				    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				  }  
+				});  
+			  	return false;
+			});	
+		});
+		
+		$(function() {
+			$('#editworkpackage').submit(function() {
+				// alert("form="+$(this).attr('id')+"res="+$(this).serialize());				
+				var dataString = $("#editworkpackage").serialize();
+				$("#sprintresult").html("res="+dataString);
+				//alert (dataString);return false;  
+				$.ajax({  
+				  type: "POST",  
+				  url: "/kanban/editworkpackage",  
+				  data: dataString,  
+				  success: function(data) {  
+				    $("#groupresult").html("This is the result"+data);  				     
+				  }, 
+				  error: function(x,e) {  
+				    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				  }  
+				});  
+			  	return false;
+			});	
+		});
+
+		$(function() {
+			$('#deleteworkpackage').submit(function() {
+				// alert("form="+$(this).attr('id')+"res="+$(this).serialize());				
+				var dataString = $("#deleteworkpackage").serialize();
+				$("#sprintresult").html("res="+dataString);
+				//alert (dataString);return false;  
+				$.ajax({  
+				  type: "POST",  
+				  url: "/kanban/deleteworkpackage",  
+				  data: dataString,  
+				  success: function(data) {  
+				    $("#groupresult").html("This is the result"+data);  				     
+				  }, 
+				  error: function(x,e) {  
+				    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				  }  
+				});  
+			  	return false;
+			});	
+		});
+			
+	</script>
+	
+	
 		<script type="text/javascript">
 		$(function() {
 			$('#newsprint').submit(function() {
@@ -526,6 +593,91 @@ jQuery(function($){
 		  
 		  
       </table>
+      <h3>WorkPackages</h3>
+      <table class="settingstable" >
+          <tr>
+            <td ><form id="newgworkpackage" name="newgworkpackage" action="">
+                <input type="hidden" name="newgworkpackage_projectid" id="newgworkpackage_projectid" value="<?php echo $projectid; ?>" />
+                <table >
+                  <tr>
+                    <td class="settingsrightside"><h4>Add New WorkPackage :</h4></td>
+                  </tr>
+                  <tr>
+                    <td class="settingsleftside">Name:</td>
+                    <td><input name="newgworkpackage_name" id="newgworkpackage_name" value="any name" /></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td class="settingsleftside"><input type="submit"  value="Add"  /></td>
+                  </tr>
+                </table>
+              </form>
+                <br>
+                <hr>
+                <form id="editworkpackage" name="editworkpackage" action="">
+                  <input type="hidden" id="editworkpackage_projectid" name="editworkpackage_projectid" value="<?php echo $projectid; ?>" />
+                  <table >
+                    <tr>
+                      <td class="settingsrightside"><h4>Edit Group Name :</h4></td>
+                    </tr>
+                    <tr>
+                      <td class="settingsleftside">Select:</td>
+                      <td class="settingsrightside"><select name="editworkpackage_id" id="editworkpackage_id">
+                          <?php						
+							foreach ($workpackages as $wp) {		
+							
+								echo ' <option value="'.$wp['id'].'">'.$wp['name'].'</option>';
+														
+							}						
+							?>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="settingsleftside">New name:</td>
+                      <td class="settingsrightside"><input name="editworkpackage_name" id="editworkpackage_name" value="any name" /></td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td class="settingsleftside"><input type="submit"  value="Update"  /></td>
+                    </tr>
+                  </table>
+                </form>
+                <br>
+                <hr>
+                <form id="deleteworkpackage" name="deleteworkpackage" action="">
+                  <input type="hidden" id="deleteworkpackage_projectid" name="deleteworkpackage_projectid" value="<?php echo $projectid; ?>" />
+                 <table >
+                    <tr>
+                      <td class="settingsrightside"><h4>Delete WorkPackage :</h4></td>
+                    </tr>
+                    <tr>
+                      <td class="settingsleftside">Select:</td>
+                      <td class="settingsrightside"><select name="deleteworkpackage_id" id="deleteworkpackage_id">
+                           <?php						
+							foreach ($workpackages as $wp) {		
+							
+								echo ' <option value="'.$wp['id'].'">'.$wp['name'].'</option>';
+														
+							}						
+							?>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan=2> Note! All Tasks will be deleted !. </td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td class="settingsleftside"><input type="submit"  value="Delete"  /></td>
+                    </tr>
+                  </table>
+                </form>
+                <br>
+                <hr>
+			  </td>
+          </tr>
+      </table>
   </td>
 <td class="settingsmiddleseparator"></td>
 <td>x</td>
@@ -678,7 +830,7 @@ jQuery(function($){
 						 <tr>
 							<td class="settingsleftside">Text :</td>
 						<td class="settingsrightside"><textarea name="importtaskstosprint_text" id="importtaskstosprint_text" cols="40" rows="20">
-heading;description;priority;estimate;color;added
+heading;description;priority;estimate;color;added;workpackage
 where
 heading is text 
 description is text
@@ -686,6 +838,7 @@ priority an integer 0=low 100=high
 estimate an integer 
 color an integer, 1=yellow,2=green,3=red
 added is a date(YYYY-MM-DD)
+workpackage is the name of the workpackage
 						</textarea>
 							</td></tr>
 						<tr><td colspan=2></td></tr>

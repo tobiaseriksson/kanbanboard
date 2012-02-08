@@ -764,6 +764,17 @@ class kanban extends Controller {
 		}
 		$pagedata['groups'] = $groups;
 
+		$workpackages = array();
+		$sql='SELECT id,name FROM kanban_workpackage WHERE project_id = '.$projectid.' ORDER BY name';
+		$query = $this->db->query($sql);
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$workpackages[$i]=$row;			
+			$i++;
+		}
+		$pagedata['workpackages'] = $workpackages;
+
 		$this->load->view('kanban/settings', $pagedata);
 	}
 
@@ -857,7 +868,17 @@ class kanban extends Controller {
 		}
 		$pagedata['sprints'] = $sprints;
 
-	
+		
+		$workpackages = array();
+		$sql='SELECT id,name FROM kanban_workpackage WHERE project_id = '.$projectid.' ORDER BY name';
+		$query = $this->db->query($sql);
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$workpackages[$i]=$row;			
+			$i++;
+		}
+		$pagedata['workpackages'] = $workpackages;
 	
 		$groups = array();
 
@@ -946,7 +967,7 @@ class kanban extends Controller {
 	function taskdetails($projectid,$taskid) {
 //		$projectid = $this->input->post('projectid');
 //		$taskid = $this->input->post('taskid');
-		$sql = 'SELECT heading,priority,description,estimation,colortag,sprint_id FROM kanban_item WHERE project_id = '.$projectid.' AND id = '.$taskid;
+		$sql = 'SELECT heading,priority,description,estimation,colortag,sprint_id,workpackage_id FROM kanban_item WHERE project_id = '.$projectid.' AND id = '.$taskid;
 		$query = $this->db->query( $sql );
 		$jsonarray = array();
 		if ($query->num_rows() > 0)	{
@@ -958,7 +979,8 @@ class kanban extends Controller {
 			$jsonarray[ 'projectid' ] = $projectid;		
 			$jsonarray[ 'sprintid' ] = $row->sprint_id;	
 			$jsonarray[ 'taskid' ] = $taskid;		
-			$jsonarray[ 'colortag' ] = $row->colortag;			
+			$jsonarray[ 'colortag' ] = $row->colortag;
+			$jsonarray[ 'workpackage_id' ] = $row->workpackage_id;			
 		} 
 		$today = date( "Y-m-d" );
 		$sql = 'SELECT new_estimate FROM kanban_progress WHERE item_id = ? AND date_of_progress <= ? ORDER BY date_of_progress DESC LIMIT 1';
@@ -983,6 +1005,7 @@ class kanban extends Controller {
 		$estimation = $this->input->post('estimation');
 		if( is_numeric( $estimation ) != TRUE )  $estimation = 0;
 		$colortag = $this->input->post('colortag');
+		$workpackage_id = $this->input->post('workpackage_id');
 		$today = date( "Y-m-d" );
 		echo "proj id=".$projectid."<br>";
 		echo "group=".$group."<br>";
@@ -1002,7 +1025,8 @@ class kanban extends Controller {
 			'added' => $today,
 			'startdate' => '0000-00-00',
 			'enddate' => '0000-00-00',
-			'sprint_id' => $sprintid
+			'sprint_id' => $sprintid,
+		    'workpackage_id' => $workpackage_id
 			);
 		$this->db->insert('kanban_item', $data);	
 		$query = $this->db->query('SELECT max(id) as lastid FROM kanban_item');
@@ -1033,6 +1057,7 @@ class kanban extends Controller {
 		$todays_estimation = $this->input->post('todays_estimation');
 		if( is_numeric( $todays_estimation ) != TRUE )  $todays_estimation = 0;
 		$colortag = $this->input->post('colortag');
+		$workpackage_id = $this->input->post('workpackage_id');
 		$newsprintid = $this->input->post('newsprintid');
 		$today = date( "Y-m-d" );
 		echo "head=".$heading."<br>";
@@ -1046,7 +1071,8 @@ class kanban extends Controller {
 			'description' => $taskdescription,
 			'estimation' => $estimation,
 			'colortag' => $colortag,
-			'sprint_id' => $newsprintid
+			'sprint_id' => $newsprintid,
+			'workpackage_id' => $workpackage_id
 			);
 		$this->db->where('id', $taskid);
 		$this->db->update('kanban_item', $data);			
@@ -1084,6 +1110,17 @@ class kanban extends Controller {
 		echo "moved in db!";
 	}
 
+	function editworkpackage() {
+		$name = $this->input->post('editworkpackage_name');
+		$wpid = $this->input->post('editworkpackage_id');
+		$projectid = $this->input->post('editworkpackage_projectid');
+		$data = array(
+			'name' => $name
+		);
+		$this->db->where('id', $wpid);
+		$this->db->update('kanban_workpackage', $data);		
+	}
+	
 	function editgroup() {
 		$name = $this->input->post('editgroup_name');
 		$groupid = $this->input->post('editgroup_groupid');
@@ -1093,6 +1130,22 @@ class kanban extends Controller {
 		);
 		$this->db->where('id', $groupid);
 		$this->db->update('kanban_group', $data);		
+	}
+	
+	function deleteworkpackage() {
+		$wpid = $this->input->post('deleteworkpackage_id');
+		$projectid = $this->input->post('deletegroup_projectid');
+		//
+		// First lets delete all the tasks in this workpackage
+		// 
+		$this->db->where('workpackage_id', $wpid);
+		$this->db->delete('kanban_item'); 	
+		
+		//
+		// Delete the workpackage
+		// 
+		$this->db->where('id', $wpid);
+		$this->db->delete('kanban_workpackage'); 
 	}
 	
 	function deletegroup() {
@@ -1115,7 +1168,34 @@ class kanban extends Controller {
 		$this->db->delete('kanban_group'); 
 	}
 	
+	function addworkpackage_helper($name,$projectid) {
+		$data = array(
+			'name' => $name,
+			'project_id' => $projectid
+			);
+		$this->db->insert('kanban_workpackage', $data);	
+		$id = 0;
+		$sql="SELECT id FROM kanban_workpackage WHERE name = ? AND project_id = ?";
+		$query = $this->db->query( $sql, array($name,$projectid) );
+		if ($query->num_rows() > 0)	{
+			$row = $query->row();	
+			$id = $row->id;
+		}
+		return $id;
+	}
 	
+	function addworkpackage() {
+		$name = $this->input->post('newgworkpackage_name');
+		echo "name=".$name."<br>";
+		$projectid = $this->input->post('newgworkpackage_projectid');
+		echo "projectid=".$projectid."<br>";
+		
+		kanban::addworkpackage_helper( $name, $project_id );
+		
+		echo "inserted into db!";
+	}
+
+
 	function addgroup() {
 		$name = $this->input->post('newgroup_name');
 		echo "name=".$name."<br>";
@@ -1335,6 +1415,16 @@ class kanban extends Controller {
 			$groupid = $res[0]['id'];	
 		} 
 		
+		$workpackages = array();
+		$sql='SELECT id,name FROM kanban_workpackage WHERE project_id = '.$projectid.' ORDER BY name';
+		$query = $this->db->query($sql);
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$workpackages[$row['name']]=$row['id'];			
+			$i++;
+		}
+		
 		$textlines = explode("\n",$text);
 		$row=0;
 		foreach($textlines as $line){
@@ -1344,15 +1434,23 @@ class kanban extends Controller {
 			$estimation=0;
 			$colortag=0; // 1=Yellow,2=Green,3=Red
 			$added='0000-00-00';
+			$workpackagename='';
 			$line=trim($line);
 			if(strlen($line)<=0) continue;
-			list($heading,$description,$priority,$estimation,$colortag,$added) = explode( ";", $line ) + Array( "heading","",0,0,0,"0000-00-00");
+			list($heading,$description,$priority,$estimation,$colortag,$added,$workpackagename) = explode( ";", $line ) + Array( "heading","",0,0,0,"0000-00-00");
 			if( $colortag < 1 || $colortag > 5 ) {
 				echo "WARNING! colortag not supported ($colortag) will default to 1(Yellow)<br>\n";
 				$colortag = 1;
 			}
 			if( $added == '0000-00-00' || $added == '' ) {
 				$added = $today;
+			}
+			$workpackage_id = 0;
+			if( array_key_exists( $workpackagename, $workpackages ) ) {
+				$workpackage_id = $workpackages[ $workpackagename ];
+			} else {
+				$workpackage_id = kanban::addworkpackage_helper( $workpackagename, $projectid );
+				$workpackages[ $workpackagename ] = $workpackage_id;
 			}
 			echo $row." line ".$line."\n";
 			echo $row.":".$heading."|".$description."|".$priority."|".$estimation."|".$colortag."<br>\n";
@@ -1367,7 +1465,8 @@ class kanban extends Controller {
 			'added' => $added,
 			'startdate' => '0000-00-00',
 			'enddate' => '0000-00-00',
-			'sprint_id' => $sprintid
+			'sprint_id' => $sprintid,
+			'workpackage_id' => $workpackage_id,
 			);
 			$this->db->insert('kanban_item', $data);
 			echo "added to db!\n<br>";	

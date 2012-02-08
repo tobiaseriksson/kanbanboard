@@ -282,7 +282,8 @@ echo " { height: 20px; }\n";
 			$("#taskid").val( data.taskid);
 			$("#colortag").val( data.colortag);			
 			$("#sprintid").val( data.sprintid);			
-			$("#newsprintid").val( data.sprintid);  				     
+			$("#newsprintid").val( data.sprintid);  	
+			$("#workpackage_id").val( data.workpackage_id);  				     
 		  }, 
 		  error: function(x,e) {  
 		    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
@@ -438,6 +439,17 @@ foreach ($groups as $group) {
 				<tr><td> Color Tag :</td><td>
 					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
 					</td></tr>
+				<tr><td nowrap> Workpackage :</td><td>
+					<select name="workpackage_id" id="workpackage_id">
+                           <?php						
+							foreach ($workpackages as $wp) {		
+							
+								echo ' <option value="'.$wp['id'].'">'.$wp['name'].'</option>';
+														
+							}						
+							?>
+                        </select>
+				</td></tr>
 				<tr><td> Move To Sprint :</td><td>
 					<select name="newsprintid" id="newsprintid">
 					<?php						
@@ -474,7 +486,19 @@ foreach ($groups as $group) {
 					</td></tr>
 				    <tr><td> Color Tag :</td><td>
 					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
-					</td></tr>										
+					</td></tr>			
+					<tr><td nowrap> Workpackage :</td><td>
+					<select name="workpackage_id" id="workpackage_id">
+                           <?php						
+							foreach ($workpackages as $wp) {		
+							
+								echo ' <option value="'.$wp['id'].'">'.$wp['name'].'</option>';
+														
+							}						
+							?>
+                        </select>
+					</td></tr>
+												
 				</table>
 			</div>
 		</form>
