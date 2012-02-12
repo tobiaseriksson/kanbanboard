@@ -18,7 +18,7 @@ class kanban extends Controller {
 
 		$projects = array();
 
-		$query = $this->db->query('SELECT id,name FROM kanban_project');
+		$query = $this->db->query('SELECT id,name FROM kanban_project WHERE deleted = 0');
 		$i=0;
 		foreach ($query->result_array() as $row)
 		{
@@ -181,7 +181,7 @@ class kanban extends Controller {
 
 		$projects = array();
 
-		$query = $this->db->query('SELECT id,name FROM kanban_project WHERE user_id = "'.$id.'"');
+		$query = $this->db->query('SELECT id,name FROM kanban_project WHERE deleted = 0 AND user_id = "'.$id.'"');
 		$i=0;
 		foreach ($query->result_array() as $row)
 		{
@@ -706,6 +706,103 @@ class kanban extends Controller {
 
 		kanban::redirectIfNoAccess( $projectid );
 	
+		$user_id = $this->session->userdata('id');
+		
+		$pagedata = array();
+		
+		$query = $this->db->query('SELECT id,name FROM kanban_project WHERE deleted = 0 AND user_id = "'.$user_id.'"');
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$projects[$i]=$row;
+			$i++;
+		}
+		$pagedata['projects'] = $projects;	
+		
+		
+		if( $sprintid <=0 ) {
+			$query = $this->db->query('SELECT max(id) as id FROM `kanban_sprint` where project_id = '.$projectid);
+			$sprintid=0;
+			if ($query->num_rows() > 0)	{
+				$res = $query->result_array();		
+				$sprintid = $res[0]['id'];
+			} 
+		}
+		
+		$pagedata['projectid'] = $projectid;
+		$projectname = "no-name";
+		$query = $this->db->query('SELECT id,name FROM kanban_project WHERE id = '.$projectid);
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			// print_r( $release );		
+			$projectname = $res[0]['name'];	
+		} 
+		$pagedata['projectname'] = $projectname;	
+		
+		$query = $this->db->query('SELECT id, name, startdate, enddate FROM `kanban_sprint` where id = '.$sprintid);
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			// print_r( $release );		
+			$sprintid = $res[0]['id'];
+			$sprintname = $res[0]['name'];
+			$startdate = $res[0]['startdate'];
+			$enddate = $res[0]['enddate'];	
+		} 
+		$pagedata['sprintid'] = $sprintid;	
+		$pagedata['sprintname'] = $sprintname;	
+		$pagedata['startdate'] = $startdate;	
+		$pagedata['enddate'] = $enddate;	
+
+		$sprints = array();
+
+		$sql='SELECT id, name, startdate, enddate FROM `kanban_sprint` where project_id = '.$projectid.' ORDER BY startdate';
+		$query = $this->db->query($sql);
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$sprints[$i]=$row;			
+			$i++;
+		}
+		$pagedata['sprints'] = $sprints;
+
+		$groups = array();
+		$sql='SELECT id,name FROM kanban_group WHERE project_id = '.$projectid.' ORDER BY displayorder';
+		$query = $this->db->query($sql);
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$groups[$i]=$row;			
+			$i++;
+		}
+		$pagedata['groups'] = $groups;
+
+		$workpackages = array();
+		$sql='SELECT id,name FROM kanban_workpackage WHERE project_id = '.$projectid.' ORDER BY name';
+		$query = $this->db->query($sql);
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$workpackages[$i]=$row;			
+			$i++;
+		}
+		$pagedata['workpackages'] = $workpackages;
+		
+		$pagedata['generaltab'] = $this->load->view('kanban/settings_general', $pagedata, true);
+		$pagedata['sprinttab'] = $this->load->view('kanban/settings_sprints', $pagedata, true);
+		$pagedata['workpackagetab'] = $this->load->view('kanban/settings_workpackages', $pagedata, true);
+		$pagedata['grouptab'] = $this->load->view('kanban/settings_groups', $pagedata, true);
+		$pagedata['importtab'] = $this->load->view('kanban/settings_import', $pagedata, true);
+		$pagedata['projecttab'] = $this->load->view('kanban/settings_project', $pagedata, true);
+
+		$this->load->view('kanban/settings', $pagedata);
+	}
+
+
+	function settings_old($projectid,$sprintid=0) {
+	
+
+		kanban::redirectIfNoAccess( $projectid );
+	
 		    
 		$pagedata = array();
 		
@@ -776,7 +873,7 @@ class kanban extends Controller {
 		}
 		$pagedata['workpackages'] = $workpackages;
 
-		$this->load->view('kanban/settings', $pagedata);
+		$this->load->view('kanban/settings_new', $pagedata);
 	}
 
 	function project($projectid,$sprintid=0)    {
@@ -1120,6 +1217,27 @@ class kanban extends Controller {
 		);
 		$this->db->where('id', $wpid);
 		$this->db->update('kanban_workpackage', $data);		
+	}
+	
+	function editprojectname() {
+		$name = $this->input->post('editproject_name');
+		$id = $this->input->post('editproject_id');
+		$data = array(
+			'name' => $name
+		);
+		$this->db->where('id', $id);
+		$this->db->update('kanban_project', $data);		
+		echo 'updated '+$id;	
+	}
+	
+	function deleteproject() {
+		$id = $this->input->post('deleteproject_id');
+		$data = array(
+			'deleted' => 1
+		);
+		$this->db->where('id', $id);
+		$this->db->update('kanban_project', $data);	
+		echo 'deleted '+$id;	
 	}
 	
 	function editgroup() {
@@ -1644,7 +1762,7 @@ class kanban extends Controller {
 		$pagedata['projectid'] = $projectid;
 		$projectname = "no-name";
 		$projectstartdate = '2010-01-01';
-		$query = $this->db->query('SELECT id,name,startdate FROM kanban_project WHERE id = '.$projectid);
+		$query = $this->db->query('SELECT id,name,startdate FROM kanban_project id = '.$projectid);
 		if ($query->num_rows() > 0)	{
 			$res = $query->result_array();		
 			// print_r( $release );		
