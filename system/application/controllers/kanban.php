@@ -1751,7 +1751,7 @@ class kanban extends Controller {
 		$pagedata = array();
 		
 		if( $sprintid <=0 ) {
-			$query = $this->db->query('SELECT max(id) as id FROM `kanban_sprint` where project_id = '.$projectid);
+			$query = $this->db->query('SELECT max(id) as id FROM `kanban_sprint` WHERE project_id = '.$projectid);
 			$sprintid=0;
 			if ($query->num_rows() > 0)	{
 				$res = $query->result_array();		
@@ -1762,7 +1762,7 @@ class kanban extends Controller {
 		$pagedata['projectid'] = $projectid;
 		$projectname = "no-name";
 		$projectstartdate = '2010-01-01';
-		$query = $this->db->query('SELECT id,name,startdate FROM kanban_project id = '.$projectid);
+		$query = $this->db->query('SELECT id,name,startdate FROM kanban_project WHERE id = '.$projectid);
 		if ($query->num_rows() > 0)	{
 			$res = $query->result_array();		
 			// print_r( $release );		
