@@ -44,6 +44,12 @@
 			border-right: 1px dashed #999999;
 		}
 			
+		.diagram {
+			width: 700px;
+			height:500px;
+			overflow: hidden;
+		}
+		
     </style>
     
 <script>
@@ -247,7 +253,7 @@ Current velocity is <?php echo round( $velocity, 1); ?> points / day
 </center>
 <br>
 <h2>Burndown Chart</h2>
-<div id="burndownchart" style="width:700px;height:500px;"></div>
+<div id="burndownchart" class="diagram"></div>
 <div id="burndownchartlegend"></div>
 <br>
 <h2>Progress History Matrix</h2>
@@ -268,11 +274,11 @@ Current velocity is <?php echo round( $velocity, 1); ?> points / day
 ?>
 <br>
 <h2>Weekly Efficiency</h2>
-<div id="efficiencydiagram" style="width:700px;height:500px;"></div>
+<div id="efficiencydiagram" class="diagram"></div>
 <div id="efficiencydiagramlegend"></div>
 <br>
 <h2>Inflow / Outflow Chart</h2>
-<div id="inflowoutflowchart" style="width:700px;height:500px;"></div>
+<div id="inflowoutflowchart" class="diagram"></div>
 <div id="inflowoutflowlegend"></div>
 <br>
 
