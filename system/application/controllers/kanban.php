@@ -797,8 +797,18 @@ class kanban extends Controller {
 			$projects[$i]=$row;
 			$i++;
 		}
-		$pagedata['projects'] = $projects;	
+		$pagedata['projects'] = $projects;
 		
+		// **************************************
+		// Project Properties
+		$pagedata['initialteamefficiency'] = 80;	
+		
+		$sql="SELECT `key`,`value` FROM `kanban_project_properties` WHERE project_id = ? ";
+		$query = $this->db->query($sql,array( $projectid ) );
+		foreach ($query->result_array() as $row)
+		{
+			$pagedata[ $row['key'] ]=$row['value'];
+		}
 		
 		if( $sprintid <=0 ) {
 			$query = $this->db->query('SELECT max(id) as id FROM `kanban_sprint` where project_id = '.$projectid);
@@ -1448,6 +1458,20 @@ class kanban extends Controller {
 		}
  
 	}
+
+
+	function editgeneralsettings() {
+		$projectid = $this->input->post('generalsettingsform_projectid');
+		
+		
+		$initialteamefficiency = $this->input->post('generalsettingsform_initialteamefficiency');				
+		$sql="INSERT INTO `kanban_project_properties`(`project_id`, `key`, `value`) VALUES (?,?,?)  ON DUPLICATE KEY UPDATE  value = ?";
+		$query = $this->db->query($sql,array( $projectid, 'initialteamefficiency', $initialteamefficiency, $initialteamefficiency ) );
+		
+		echo "General Settings updated!";
+	}
+	
+	
 
 	function addsprint() {
 		$name = $this->input->post('newsprint_name');

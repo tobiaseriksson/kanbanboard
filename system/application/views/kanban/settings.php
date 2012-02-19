@@ -85,6 +85,32 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 	</style>
 
 
+
+	<script type="text/javascript">
+
+		$(function() {
+			$('#generalsettingsform').submit(function() {
+				// alert("form="+$(this).attr('id')+"res="+$(this).serialize());				
+				var dataString = $("#generalsettingsform").serialize();
+				$("#debugresult").html("res="+dataString);
+				//alert (dataString);return false;  
+				$.ajax({  
+				  type: "POST",  
+				  url: "/kanban/editgeneralsettings",  
+				  data: dataString,  
+				  success: function(data) {  
+				    $("#debugresult").html("This is the result"+data);  				     
+				  }, 
+				  error: function(x,e) {  
+				    $("#debugresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				  }  
+				});  
+			  	return false;
+			});	
+		});
+
+	</script>
+
 	<script type="text/javascript">
 		
 		$(function() {
