@@ -15,6 +15,8 @@
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 
 	<style type="text/css">
+	
+	
 <?php 
 
 $first=1;
@@ -390,8 +392,10 @@ foreach ($groups as $group) {
 			echo '
 <li id="task'.$row['taskid'].'" class="postit'.$row['colortag'].'">
 <div class="inside-postit">
+<div class="inside-postit-header-and-text">
 <div class="inside-postit-header">'.$row['heading'].'</div>
 <div class="inside-postit-text">'.$row['description'].'</div>
+</div>
 <div class="inside-postit-footer">
 <div class="inside-postit-footer-prio" title="Prio">
 <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'.$row['priority'].'

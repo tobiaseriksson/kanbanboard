@@ -296,7 +296,7 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 				//alert (dataString);return false;  
 				$.ajax({  
 				  type: "POST",  
-				  url: "/kanban/editsprint",  
+				  url: "/kanban/editsprint/<?php echo $projectid; ?>",  
 				  data: dataString,  
 				  success: function(data) {  
 				    $("#debugresult").html("This is the result"+data);  				     

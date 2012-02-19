@@ -220,6 +220,7 @@
 <div id="dock">
 	<ul>
 		<li><a href="<?php echo site_url( '/kanban/project/'.$projectid.'/'.$sprintid ); ?>">Board</a></li>	
+		<li><a href="<?php echo site_url( '/kanban/wpstatus/'.$projectid.'/'.$sprintid ); ?>">Project-Status</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/settings/'.$projectid.'/'.$sprintid ); ?>">Settings</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/selectproject'); ?>">Projects</a></li>
 		<li><a href="<?php echo site_url( '/kanban/about/'.$projectid.'/'.$sprintid ); ?>">About</a></li>
@@ -239,7 +240,7 @@
 
 <div id="settingsdiv">
 
-<h2>Status</h2>
+<h2>Sprint Status</h2>
 <center>
 <span>
 <h3>Currently <?php echo $daysleft; ?> days left<br><br>
@@ -262,7 +263,7 @@ Current velocity is <?php echo round( $velocity, 1); ?> points / day
 		echo "<th>ID</th><th>Heading</th>";
 		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
 		foreach( $progressmatrix as $id => $arr ) {
-			echo "<tr><th>".$id."</th><th>".$tasklookup[ $id ]."</th>";
+			echo "<tr><td>".$id."</td><td>".$tasklookup[ $id ]."</td>";
 			for( $day = 0; $day < count($arr); $day++ ) {
 				$value = intval( $arr[ $day ] );
 				// echo ",(".$day.")";

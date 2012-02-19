@@ -162,41 +162,42 @@
 				$firsttime = 0;
 				$id = 0;
 				$t = $starttime;
-				foreach ($plan as $planitem) {		
-				
-					if( $id != $planitem['id'] ) {
-						if( $firsttime == 0 ) {
-							$firsttime = 1;
-						} else {
-							while( $t <= $endtime ) {
-								echo '<td>0</td>';
-				 				$t = strtotime( "+1 day", $t );
+				if( count( $plan ) > 0 ) {
+					foreach ($plan as $planitem) {		
+					
+						if( $id != $planitem['id'] ) {
+							if( $firsttime == 0 ) {
+								$firsttime = 1;
+							} else {
+								while( $t <= $endtime ) {
+									echo '<td>0</td>';
+					 				$t = strtotime( "+1 day", $t );
+								}
+								echo '<th></th></tr>';
 							}
-							echo '<th></th></tr>';
-						}
-						echo '<tr><th id="'.$planitem['id'].'">'.$planitem['name'].'</th>';
-						$t = $starttime;
-						$id = $planitem['id'];
+							echo '<tr><th id="'.$planitem['id'].'">'.$planitem['name'].'</th>';
+							$t = $starttime;
+							$id = $planitem['id'];
+						}	
+						$date = $planitem['date'];
+						$dateTime = strtotime( $date );
+						if( $t < $dateTime ) {
+							// fast forward until the date, and place ZERO's for the dates we do not have any information about
+							do {
+								echo '<td>0</td>';
+					 			$t = strtotime( "+1 day", $t );
+							} while( $t < $dateTime );
+							
+						} 
+						echo '<td>'.$planitem['effort'].'</td>';
+						$t = strtotime( "+1 day", $t );
 					}	
-					$date = $planitem['date'];
-					$dateTime = strtotime( $date );
-					if( $t < $dateTime ) {
-						// fast forward until the date, and place ZERO's for the dates we do not have any information about
-						do {
-							echo '<td>0</td>';
-				 			$t = strtotime( "+1 day", $t );
-						} while( $t < $dateTime );
-						
-					} 
-					echo '<td>'.$planitem['effort'].'</td>';
-					$t = strtotime( "+1 day", $t );
-				}	
-				while( $t <= $endtime ) {
-					echo '<td>0</td>';
-	 				$t = strtotime( "+1 day", $t );
-				}
-				echo '<th></th></tr>';
-				
+					while( $t <= $endtime ) {
+						echo '<td>0</td>';
+		 				$t = strtotime( "+1 day", $t );
+					}
+					echo '<th></th></tr>';
+				} 
 				echo $weeksumhtml.'<th></th></tr>';
 				echo $monthsumhtml.'<th></th></tr>';
 				

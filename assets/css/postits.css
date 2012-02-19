@@ -91,6 +91,11 @@
 	position : relative;
 }
 
+.inside-postit-header-and-text {
+	max-height: 90px;
+	overflow: hidden;	
+}
+	
 .inside-postit-header {
 	font-weight : bold;
 	margin-top: 5px;
