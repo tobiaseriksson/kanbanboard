@@ -49,8 +49,8 @@
 		<input type="hidden" name="id" value="0" />
 		<input type="hidden" name="redirect_to_url" value="<?php echo $redirect_to_url; ?>" />
 		<table>
-			<tr><td>login</td><td><input type="text" name="login" size="15"></td></tr>
-			<tr><td>password</td><td><input type="password" name="password" size="15"></td></tr>
+			<tr><td>Team Login</td><td><input type="text" name="login" size="15"></td></tr>
+			<tr><td>Password</td><td><input type="password" name="password" size="15"></td></tr>
 			<tr><td></td><td align="right"><input type="submit" name="loginbutton" value="login"></td><td></td></tr>
 		</table>
 	</form>
