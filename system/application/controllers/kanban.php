@@ -223,6 +223,18 @@ class kanban extends Controller {
 	
 		$pagedata = array();
 		
+		// **************************************
+		// Project Properties
+		$pagedata['initialteamefficiency'] = 80;	// Defaul value
+		
+		$sql="SELECT `key`,`value` FROM `kanban_project_properties` WHERE project_id = ? ";
+		$query = $this->db->query($sql,array( $projectid ) );
+		foreach ($query->result_array() as $row)
+		{
+			$pagedata[ $row['key'] ]=$row['value'];
+		}
+		
+		
 		if( $sprintid <=0 ) {
 			$query = $this->db->query('SELECT max(id) as id FROM `kanban_sprint` where project_id = '.$projectid);
 			$sprintid=0;
@@ -258,19 +270,21 @@ class kanban extends Controller {
 		$pagedata['startdate'] = $startdate;	
 		$pagedata['enddate'] = $enddate;	
 		
+		//
+		// Workpackage Summary
 		$wpmatrix = array();
 		$wporder = array();
-		$sql="SELECT w.name AS wp, i.id AS item_id, i.heading AS heading, priority AS prio, estimation, s.name AS sprint_name FROM  kanban_item i, kanban_workpackage w, kanban_sprint s WHERE i.sprint_id = s.id AND i.workpackage_id = w.id AND i.project_id = ".$projectid." ORDER BY w.name, priority, i.heading";
-		$query = $this->db->query( $sql );
+		$sql="SELECT w.name AS wp, i.id AS item_id, i.heading AS heading, priority AS prio, estimation, s.name AS sprint_name FROM  kanban_item i, kanban_workpackage w, kanban_sprint s WHERE i.sprint_id = s.id AND i.workpackage_id = w.id AND i.project_id = ? ORDER BY w.name, priority, i.heading";
+		$query = $this->db->query( $sql, array($projectid) );
 		$i=0;
 		foreach ($query->result_array() as $row)
 		{
 			$wpmatrix[ $row['item_id'] ] = array( $row['wp'], $row['item_id'], $row['heading'], $row['prio'], $row['estimation'], $row['estimation'], $row['sprint_name']  );
 			$wporder[ $i ] = $row['item_id'];
+			// echo "task = ".$row['heading']."<br>";
 			$i++;
 		}
-		//$sql="SELECT p.item_id AS item_id, max(p.date_of_progress) AS latest, p.new_estimate AS estimate FROM kanban_progress p, kanban_item i WHERE  p.item_id = i.id AND i.project_id = ".$projectid." group by p.item_id";
-		
+	
 		$sql="SELECT p.item_id AS item_id, p.date_of_progress AS latest, p.new_estimate AS estimate FROM (SELECT item_id AS item_id, max(date_of_progress) AS latest FROM kanban_progress GROUP BY item_id )  as x inner join kanban_progress p, kanban_item i WHERE  p.item_id = x.item_id AND p.item_id = i.id AND p.date_of_progress = x.latest AND i.project_id = ?";
 		$query = $this->db->query( $sql, array($projectid) );
 		$i=0;
@@ -293,6 +307,211 @@ class kanban extends Controller {
 		
 		$pagedata['wporder'] = $wporder;	
 		
+		//
+		// Project start and end
+		//
+		
+		$projectstartdate = '2012-01-01';	
+		$projectenddate = '2012-01-02';	
+		$sql='SELECT min( startdate ) as start, max( enddate ) as end FROM kanban_sprint WHERE project_id = ?';
+		$query = $this->db->query($sql,array($projectid));
+		$i=0;
+		$plan = array();
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();	
+			$projectstartdate = $res[0]['start'];	
+			$projectenddate = $res[0]['end'];				
+		}
+		$end = strtotime($projectenddate);
+		$start = strtotime($projectstartdate);
+		$totaldays = floor( ($end - $start) / 86400 ); // strtotime($enddate) ÌÄå± strtotime($startdate);
+		$pagedata['totaldays'] = $totaldays;
+		
+		$now = date( "Y-m-d" );
+		$noworend = strtotime($now);
+		if( $noworend > $end ) $noworend = $end;
+		$days = floor( ($noworend - $start) / 86400 ); // strtotime($enddate) ÌÄå± strtotime($startdate);
+		if( $days < 0 ) {
+			$days = 0;
+		}
+		// Build up a Earned Value Matrix that has the following shape
+		// maxtrix[ item-id ] = array( day1, day2, day3, day4, .... , day n )
+		// where day = earned value for that item that day
+		$projectmatrix = array();
+		$itemlist = array();
+		$totalestimation = 0;
+		$sql="SELECT  id,  workpackage_id,  estimation FROM  kanban_item WHERE project_id = ?";
+		$query = $this->db->query( $sql, array($projectid) );
+		if ($query->num_rows() > 0)	{
+			foreach ($query->result_array() as $row)
+			{
+				$id = intval( $row['id'] );	 
+				$estimation = intval ( $row['estimation'] );
+				$itemlist[ $id ] = array($id,$row['workpackage_id'],$estimation);
+				$projectmatrix[ $id ] = array();
+				// Fill in -1 for all days
+				for( $dayIndex = 0; $dayIndex < $days; $dayIndex++ ) {
+					$projectmatrix[ $id ][ $dayIndex ] = -1;
+				}
+				$projectmatrix[ $id ][ 0 ] = 0;
+				$totalestimation = $totalestimation + $estimation; 
+			}
+		}
+	
+		// Fill in daily updates
+		$sql="SELECT p.item_id as id,datediff(p.date_of_progress, ?) days_since_start,p.new_estimate as estimation FROM `kanban_item` i, kanban_progress p WHERE p.item_id = i.id AND i.project_id = ? ORDER BY item_id,days_since_start";
+		$query = $this->db->query( $sql,array($projectstartdate,$projectid) );
+		if ($query->num_rows() > 0)	{
+			foreach ($query->result_array() as $row)
+			{	
+				$id = intval( $row['id'] );
+				$dailyestimation = intval ( $row['estimation'] );
+				$earned = $itemlist[ $id ][2] - $dailyestimation;
+				$dayIndex = intval( $row['days_since_start'] );
+				$arraySize = count( $projectmatrix[ $id ] );
+				if( $dayIndex <= 0 ) {
+					$dayIndex = 0;
+				}
+				if( $dayIndex >= $arraySize ) {
+					$dayIndex = $arraySize-1; 	
+				} 				
+				if( $projectmatrix[ $id ][ $dayIndex ] < 0 || $dailyestimation < $projectmatrix[ $id ][ $dayIndex ] ) $projectmatrix[ $id ][ $dayIndex ] = $earned; 
+			}
+		}
+		
+		
+		/*
+		echo "<h2>fill in new daily</h2>";
+		echo "<table border=1px >";
+		echo "<th>ID</th><th>Heading</th>";
+		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
+		foreach( $matrix as $id => $arr ) {
+			echo "<tr><th>".$id."</th><th>".$tasklookup[ $id ]."</th>";
+			for( $day = 0; $day < count($arr); $day++ ) {
+				$value = intval( $arr[ $day ] );
+				// echo ",(".$day.")";
+				echo "<td>".$value."</td>";
+			}
+			echo "</tr>>";
+		}
+		echo "</table>";
+		*/
+		
+		// For those Tasks that has completed, we need to fill in the value FULL-original-estimate for THAT day (date)
+		$sql="SELECT id, estimation,datediff(enddate, ?) days_since_start  FROM kanban_item WHERE project_id = ? AND not enddate = '0000-00-00' ORDER BY id";
+		$query = $this->db->query( $sql,array($projectstartdate,$projectid) );
+		if ($query->num_rows() > 0)	{
+			foreach ($query->result_array() as $row)
+			{	
+				$id = intval( $row['id'] );
+				$dayIndex = intval( $row['days_since_start'] );
+				$arraySize = count( $projectmatrix[ $id ] );
+				if( $dayIndex >= $arraySize ) $dayIndex = $arraySize-1; 	
+				if( $dayIndex <= 0 ) $dayIndex = 0;
+				$projectmatrix[ $id ][ $dayIndex ] = $itemlist[ $id ][2]; 
+			}
+		}
+		
+		
+		/*
+		echo "<h2>Fill in Completed</h2>";
+		echo "<table border=1px >";
+		echo "<th>ID</th><th>Heading</th>";
+		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
+		foreach( $matrix as $id => $arr ) {
+			echo "<tr><th>".$id."</th><th>".$tasklookup[ $id ]."</th>";
+			for( $day = 0; $day < count($arr); $day++ ) {
+				$value = intval( $arr[ $day ] );
+				// echo ",(".$day.")";
+				echo "<td>".$value."</td>";
+			}
+			echo "</tr>>";
+		}
+		echo "</table>";
+		*/
+		
+		// Now fill in all the blanks(-1), i.e. the values inbetween the values we know we fill in with the values of the previous value
+		foreach( $projectmatrix as $id => $arr ) {
+			$oldValue = $arr[0];
+			for( $i = 0; $i < count( $arr ); $i++ ) {
+				$value = intval( $arr[ $i ] );			
+				if( $value < 0 ) $arr[ $i ] = $oldValue; 	
+				$oldValue = $arr[ $i ];
+			}
+			$projectmatrix[$id] = $arr;
+		}
+		
+		
+		$pagedata['totaldays'] = $totaldays;
+		$pagedata['progressmatrix'] = $projectmatrix;
+		$pagedata['itemlist'] = $itemlist;
+		
+		// Now finally create the diagram array of (x,y)-values where x = DAY since start-date
+		$diagramactual = array();
+		for( $i = 0; $i < $days; $i++ ) {
+				$diagramactual[ $i ] = array(  $i,  0 );
+		}
+		
+		// Summarize column by column
+		foreach( $projectmatrix as $id => $arr ) {
+			// echo "<br>ID = ".$id;
+			for( $day = 0; $day < count($arr); $day++ ) {
+				$value = intval( $arr[ $day ] );
+				// echo "day = ".$day." = ".$value;
+				$diagramactual[ $day ][ 1 ] = $diagramactual[ $day ][ 1 ] + $value;
+			}
+		}
+		
+		$pagedata['diagramactual'] = $diagramactual;
+		
+		// Projected path, i.e what will the future look like...
+		// and
+		// Original plan accoriding to the resource schedule
+		$sql="SELECT datediff( s.date, ?) as day, sum( s.effort ) as tot FROM kanban_resource r , kanban_resource_schedule s WHERE r.id = s.resource_id AND r.project_id = ? AND s.date >= ? AND s.date <= ? group by s.date order by s.date";
+		$diagramprojected = array();
+		$query = $this->db->query( $sql, array($projectstartdate,$projectid,$projectstartdate,$projectenddate) );
+		$i=0;
+		$x=0;
+		$points = 0;
+		$effortpoints = 0;
+		if( $days > 0 ) $points = $diagramactual[ $days-1 ][1];
+		$diagramprojected[$i] =  array( $days-1, $points );
+		$i = $i + 1;
+		foreach ($query->result_array() as $row)
+		{	
+			$value = $row['tot'];
+			$day = $row['day'];
+			if( $day > ($days-1) ) {
+				$points = $points + ( $value * ($pagedata['initialteamefficiency'] / 100) );
+				$diagramprojected[$i] =  array(  $day,  $points );
+				$i = $i + 1;
+			}
+			$x = $x + 1;
+			$effortpoints = $effortpoints + ( $value * ($pagedata['initialteamefficiency'] / 100) );
+			$diagrameffort[ $x ] =  array(  $day,  $effortpoints );
+		}
+		$pagedata['diagramprojected'] = $diagramprojected;
+		$pagedata['diagrameffort'] = $diagrameffort;
+		
+		$diagramgoal = array();
+		$diagramgoal[ 0 ] = array(  0,  $totalestimation );
+		$diagramgoal[ 1 ] = array(  $totaldays,  $totalestimation );
+		$pagedata['diagramgoal'] = $diagramgoal;
+		
+		#
+		# Legend / History  *******************************************************************
+		#
+		$legend=array();
+		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as finishedweeknumber,i.startdate,week(i.startdate) as startweeknumber,estimation,priority, DATEDIFF( i.enddate, i.startdate ) as leadtime FROM kanban_item i,kanban_sprint s  where i.project_id = ".$projectid." and sprint_id = s.id order by sprintname,priority";
+		$query = $this->db->query( $sql );
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{			
+			$legend[$i] = $row;
+			$i++;			
+		}		
+		$pagedata['legend'] = $legend;
+		
 		$this->load->view('kanban/status_workpackage', $pagedata);
 	}
 	
@@ -310,6 +529,17 @@ class kanban extends Controller {
 				$res = $query->result_array();		
 				$sprintid = $res[0]['id'];
 			} 
+		}
+		
+		// **************************************
+		// Project Properties
+		$pagedata['initialteamefficiency'] = 80;	// Defaul value
+		
+		$sql="SELECT `key`,`value` FROM `kanban_project_properties` WHERE project_id = ? ";
+		$query = $this->db->query($sql,array( $projectid ) );
+		foreach ($query->result_array() as $row)
+		{
+			$pagedata[ $row['key'] ]=$row['value'];
 		}
 		
 		$pagedata['projectid'] = $projectid;
@@ -416,8 +646,8 @@ class kanban extends Controller {
 		# Legend / History  *******************************************************************
 		#
 		$legend=array();
-		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as finishedweeknumber,i.startdate,week(i.startdate) as startweeknumber,estimation,priority, DATEDIFF( i.enddate, i.startdate ) as leadtime FROM kanban_item i,kanban_sprint s  where i.project_id = ".$projectid." and sprint_id = s.id order by sprintname,priority";
-		$query = $this->db->query( $sql );
+		$sql="SELECT i.id,i.heading,s.name as sprintname,i.enddate,week(i.enddate) as finishedweeknumber,i.startdate,week(i.startdate) as startweeknumber,estimation,priority, DATEDIFF( i.enddate, i.startdate ) as leadtime FROM kanban_item i,kanban_sprint s  where i.sprint_id = ? and sprint_id = s.id order by sprintname,priority";
+		$query = $this->db->query( $sql, array( $sprintid ) );
 		$i=0;
 		foreach ($query->result_array() as $row)
 		{			
@@ -457,7 +687,7 @@ class kanban extends Controller {
 		$i = $i + 1;
 		foreach ($query->result_array() as $row)
 		{		
-			$points = $points - $row['tot'];
+			$points = $points - ($row['tot'] * ($pagedata['initialteamefficiency'] / 100) );
 			$diagrameffort[$i] =  array(  $row['day'],  $points );
 			$i = $i + 1;
 		}
@@ -520,7 +750,7 @@ class kanban extends Controller {
 				$dayIndex = intval( $row['days_since_sprint_start'] );
 				$arraySize = count( $matrix[ $id ] );
 				if( $dayIndex <= 0 ) {
-					$dayIndex = 1;
+					$dayIndex = 0;
 				}
 				if( $dayIndex >= $arraySize ) {
 					$dayIndex = $arraySize-1; 	
@@ -557,7 +787,7 @@ class kanban extends Controller {
 				$dayIndex = intval( $row['days_since_sprint_start'] );
 				$arraySize = count( $matrix[ $id ] );
 				if( $dayIndex >= $arraySize ) $dayIndex = $arraySize-1; 	
-				if( $dayIndex <= 0 ) $dayIndex = 1;
+				if( $dayIndex <= 0 ) $dayIndex = 0;
 				$matrix[ $id ][ $dayIndex ] = 0; 
 			}
 		}
@@ -644,7 +874,7 @@ class kanban extends Controller {
 			$value = $row['tot'];
 			$day = $row['day'];
 			if( $day > ($days-1) ) {
-				$points = $points - $value;
+				$points = $points - ( $value * ($pagedata['initialteamefficiency'] / 100) );
 				$diagramprojected[$i] =  array(  $day,  $points );
 				$i = $i + 1;
 			}
@@ -654,53 +884,50 @@ class kanban extends Controller {
 		// 
 		// Weekly Efficency diagram
 		//
+		// the value of the last day of the week is the startvalue of the current week,
+		// and thus the average effeciency is the diff between the "start" and end of the week / the available resoures for that week
 		$i = 0;
 		$starttime = strtotime($startdate);
 		// $totaldays = floor( ($e - $s) / 86400 );
 		$diagrameffiency = array();
 		$currentweek = 0;
-		$startvalue = 0;
-		$endvalue = 0;
+		$startvalue = $totalestimation;
+		$endvalue = $totalestimation;
 		foreach ($diagramactual as $row)
 		{		
 			$t = $starttime + ( 86400 * ($row[0] - 1) );
 			$week = date( "W", $t );
 			// echo "date; ".date("Y-M-d W",$t).", points = ".$row[1]."<br>";
 			if( $week  != $currentweek ) {
-				if( $currentweek > 0 ) $diagrameffiency[ $currentweek ] = 100 * ($startvalue - $endvalue) ;
-				// echo "w; ".$currentweek.", points = ".$diagrameffiency[ $currentweek ]."<br>";
-				$startvalue = $row[1];
+				if( $currentweek > 0 ) $diagrameffiency[ intval($currentweek) ] = 100 * ($startvalue - $endvalue) ;
+				// if( $currentweek > 0 )  echo "w; ".$currentweek.", points = ".$diagrameffiency[ intval($currentweek) ]."<br>";
+				$startvalue = $endvalue;
 				$currentweek = $week;
 				
 			}
 			$endvalue = $row[1];
 		}
 		$currentweek = $week;
-		$diagrameffiency[ $currentweek ] = 100 * ($startvalue - $endvalue);
-		// echo "w; ".$currentweek.", points = ".$diagrameffiency[ $currentweek ]."<br>";
-		$i = 0;
-		$currentweek = 0;
+		$diagrameffiency[ intval($currentweek) ] = 100 * ($startvalue - $endvalue);
+		//echo "w; ".$currentweek.", points = ".$diagrameffiency[ intval($currentweek) ]."<br>";
 		
-		while( $i <= $days && $i < count( $diagrameffort ) ) {
-			$t = $starttime + ( 86400 * ($diagrameffort[$i][0] - 1) );	
-			$week = date( "W", $t );
-			if( $week  != $currentweek ) {
-				$diff = ($startvalue - $endvalue);
-				if( $currentweek > 0 ) {
-					if( $diff == 0 ) $diagrameffiency[ $currentweek ] = 0;
-					else $diagrameffiency[ $currentweek ] = $diagrameffiency[ $currentweek ] / $diff ;
-				}
-				$startvalue = $diagrameffort[$i][1];
-				$currentweek = $week;
-				
-			}
-			$endvalue = $diagrameffort[$i][1];
-			$i++;
+		$endtime = strtotime($enddate);
+		$nowtime = strtotime("now");
+		$t = $nowtime;
+		if( $nowtime > $endtime ) $t = $endtime; 
+		$sql="SELECT week( s.date, 3 ) as weeknum, sum( s.effort ) as tot FROM kanban_resource r , kanban_resource_schedule s WHERE r.id = s.resource_id AND r.project_id = ? AND s.date >= ? AND s.date <= ? group by weeknum order by s.date";
+		$diagrameffort = array();
+		$query = $this->db->query( $sql, array( $projectid, $startdate, date("Y-m-d",$t) ) );
+		$i=0;
+		$points = $totalestimation;
+		$diagrameffort[$i] =  array( 0, $totalestimation );
+		$i = $i + 1;
+		foreach ($query->result_array() as $row)
+		{
+			$currentweek = $row['weeknum'];
+			$diagrameffiency[ $currentweek ] = $diagrameffiency[ $currentweek ] / $row['tot'] ;	
+			//echo "w".$currentweek.",".$diagrameffiency[ $currentweek ];
 		}
-		$currentweek = $week;
-		$diff = ($startvalue - $endvalue);
-		if( $diff == 0 ) $diagrameffiency[ $currentweek ] = 0;
-		else $diagrameffiency[ $currentweek ] = $diagrameffiency[ $currentweek ] / $diff ;
 		
 		$efficiencydiagram = array();
 		$i=0;
@@ -1486,6 +1713,12 @@ class kanban extends Controller {
 			'enddate' => $enddate
 			);
 		$this->db->insert('kanban_sprint', $data);	
+		$sql='SELECT id FROM `kanban_resource` where project_id = '.$projectid;
+		$query = $this->db->query($sql);
+		foreach ($query->result_array() as $row)
+		{
+			kanban::populateResourceSchedule( $projectid, $row['id'] );			
+		}
 	}
 	
 	function editsprint($projectid) {
@@ -1567,7 +1800,7 @@ class kanban extends Controller {
 		} 
 		
 		// SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,k.startdate,k.enddate,k.added FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.project_id = 3 AND k.sprint_id = 1 AND not k.group_id = 5 ORDER BY displayorder,priority
-		$sql = 'SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,k.startdate,k.enddate,k.added FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.project_id = '.$projectid.' AND k.sprint_id = '.$from.' AND not k.group_id = '.$lastgroupid.' ORDER BY displayorder,priority';
+		$sql = 'SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,k.startdate,k.enddate,k.added,workpackage_id FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.project_id = '.$projectid.' AND k.sprint_id = '.$from.' AND not k.group_id = '.$lastgroupid.' ORDER BY displayorder,priority';
 		$query = $this->db->query($sql);
 		$i=0;
 		foreach ($query->result_array() as $row)
@@ -1585,13 +1818,14 @@ class kanban extends Controller {
 			$startdate = $row['startdate'];
 			$enddate= $row['enddate'];
 			$added = $row['added'];
-			kanban::addtaskwithdetails( $projectid,$sprintid,$group,$heading,$priority,$taskdescription,$estimation,$colortag,$startdate,$enddate,$added );
+			$workpackage_id = $row['workpackage_id'];
+			kanban::addtaskwithdetails( $projectid,$sprintid,$group,$heading,$priority,$taskdescription,$estimation,$colortag,$startdate,$enddate,$added,$workpackage_id );
 			$i++;
 		}
 		echo "Moved ".$i." tasks";
 	}
 	
-	function addtaskwithdetails( $projectid,$sprintid,$group,$heading,$priority,$taskdescription,$estimation,$colortag,$startdate,$enddate,$added  ) 
+	function addtaskwithdetails( $projectid,$sprintid,$group,$heading,$priority,$taskdescription,$estimation,$colortag,$startdate,$enddate,$added,$workpackage_id  ) 
 	{
 		$today = date( "Y-m-d" );
 		echo "proj id=".$projectid."<br>";
@@ -1615,7 +1849,7 @@ class kanban extends Controller {
 			'startdate' => $startdate,
 			'enddate' => '0000-00-00',
 			'sprint_id' => $sprintid,
-			
+			'workpackage_id' => $workpackage_id
 			);
 		$this->db->insert('kanban_item', $data);	
 		$query = $this->db->query('SELECT max(id) as lastid FROM kanban_item');
@@ -1679,7 +1913,7 @@ class kanban extends Controller {
 			$workpackagename='';
 			$line=trim($line);
 			if(strlen($line)<=0) continue;
-			list($heading,$description,$priority,$estimation,$colortag,$added,$workpackagename) = explode( ";", $line ) + Array( "heading","",0,0,0,"0000-00-00");
+			list($heading,$description,$priority,$estimation,$colortag,$added,$workpackagename) = explode( ";", $line ) + Array( "heading","",0,0,0,"0000-00-00","Default WP");
 			if( $colortag < 1 || $colortag > 5 ) {
 				echo "WARNING! colortag not supported ($colortag) will default to 1(Yellow)<br>\n";
 				$colortag = 1;
@@ -1695,7 +1929,7 @@ class kanban extends Controller {
 				$workpackages[ $workpackagename ] = $workpackage_id;
 			}
 			echo $row." line ".$line."\n";
-			echo $row.":".$heading."|".$description."|".$priority."|".$estimation."|".$colortag."<br>\n";
+			echo $row.":".$heading."|".$description."|".$priority."|".$estimation."|".$colortag."|".$added."|".$workpackagename."<br>\n";
 			$data = array(
 			'project_id' => $projectid,
 			'group_id' => $groupid,
@@ -1951,7 +2185,7 @@ class kanban extends Controller {
 	
 	function populateResourceSchedule( $projectid, $resourceid ) {
 		
-		$sql='SELECT min( startdate ) as start, max( enddate ) as end FROM kanban_sprint WHERE project_id = ? ORDER BY startdate';
+		$sql='SELECT min( startdate ) as start, max( enddate ) as end FROM kanban_sprint WHERE project_id = ?';
 		$query = $this->db->query($sql,array($projectid));
 		$i=0;
 		$plan = array();

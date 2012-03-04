@@ -163,7 +163,7 @@
 			dojo.ready(function() {
 				var chart = new dojox.charting.Chart2D("efficiencydiagram");
 				chart.addPlot("default", {type:"ClusteredColumns",gap:2,animate:{duration: 1000} });
-				chart.addAxis("x",{  min: 0 <?php echo $weeknumbers; ?>  });
+				chart.addAxis("x",{  minorTicks: false, min: 0 <?php echo $weeknumbers; ?>  });
 				chart.addAxis("y",{ vertical : true, min: 0, fixLower: "major", fixUpper: "major" });
 				chart.addSeries("Efficiency",efficiencydiagram);
 				// Set the theme

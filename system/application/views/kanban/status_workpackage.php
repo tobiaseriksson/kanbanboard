@@ -52,6 +52,7 @@
 		
     </style>
     
+    
 <script>
 			// http://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js
 			// Require the basic 2d chart resource: Chart2D
@@ -62,6 +63,83 @@
 			dojo.require("dojox.charting.themes.MiamiNice");
 			
 			dojo.require("dojox.charting.widget.Legend");
+
+			//
+			// Burndown chart
+			//
+			// Define the data
+			<?php 
+				
+				
+				$tmpstr = "var progress  = [ ";
+				foreach ($diagramactual as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+				
+				$tmpstr = "var projected  = [ ";
+				foreach ($diagramprojected as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+				
+				$tmpstr = "var plan  = [ ";
+				foreach ($diagrameffort as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+				
+				$tmpstr = "var goal  = [ ";
+				foreach ($diagramgoal as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+			?>
+			
+			// When the DOM is ready and resources are loaded...
+			dojo.ready(function() {
+				
+				// Create the chart within it's "holding" node
+				var chart = new dojox.charting.Chart2D("earnedvaluechart");
+
+				// Set the theme
+				chart.setTheme(dojox.charting.themes.MiamiNice);
+
+				// Add the only/default plot 
+				chart.addPlot("default", {
+					type: "Lines",
+					markers: false,
+					animate:{duration: 1000} 
+				});
+				
+				// Add axes
+				chart.addAxis("x",{  min: 0, fixLower: "major", fixUpper: "major"   });
+				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
+
+				// Add the series of data
+				chart.addSeries("Goal",goal, {plot: "Lines", stroke: {color:"green"} });
+				chart.addSeries("Progress",progress, {plot: "Lines", stroke: {color:"blue", style: "Solid"} });
+				chart.addSeries("Projected",projected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
+				chart.addSeries("Plan",plan, {plot: "Lines", stroke: {color:"red"} });
+				
+				// Render the chart!
+				chart.render();
+				// Add Legend to the bottom
+				var outflowinflowlegend = new dojox.charting.widget.Legend({chart: chart}, "earnedvaluechartlegend");
+				
+			});
 
 		</script>
 
@@ -92,6 +170,13 @@
 		<div id="settingsdiv">
 
 			<h2>Project Status</h2>
+			
+			<h2>Earned Value Chart</h2>
+				<div id="earnedvaluechart" class="diagram"></div>
+				<div id="earnedvaluechartlegend"></div>
+			<br>
+
+			
 			<h3>Workpackages</h3>
 			<br>
 
@@ -144,6 +229,31 @@
 </table>
 
 
+<h2>Task List</h2>
+<table>
+<tr><td>Sprint</td><td>Started</td><td>Finished</td><td>Leadtime</td><td>Priority</td><td>Estimation</td><td>Task</td></tr>
+<?php
+	$name="";
+	foreach ($legend as $row)
+	{							
+		if( $name != $row['sprintname'] ) {
+			echo "<tr><td><b>".$row['sprintname']."</b></td>";
+			$name = $row['sprintname'];
+		} else {
+			echo "<tr><td></td>";
+		}
+		if( $row['startdate'] == '0000-00-00' ) echo "<td></td>";
+		else echo "<td>".$row['startdate']." (".$row['startweeknumber'].")</td>";
+		if( $row['enddate'] == '0000-00-00' ) echo "<td></td>";
+		else echo "<td>".$row['enddate']." (".$row['finishedweeknumber'].")</td>";
+		echo "<td>".$row['leadtime']."</td>";
+		echo "<td>".$row['priority']."</td>";
+		echo "<td>".$row['estimation']."</td>";
+		echo "<td>".$row['heading']."</td>";
+		echo "</tr>";
+	}
+?>
+</table>
 		</div>
 	</div>
 	
