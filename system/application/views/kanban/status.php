@@ -247,7 +247,9 @@
 
 Sprint duration is <?php echo $totaldays; ?> days<br><br>
 
-Current velocity is <?php echo round( $velocity, 1); ?> points / day 
+Current velocity is <?php echo round( $velocity, 1); ?> points / day<br><br> 
+
+Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based on progress / available resources)<br> 
 </h3>
 </span> 
 <br><br>
