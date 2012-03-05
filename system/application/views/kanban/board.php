@@ -437,7 +437,7 @@ foreach ($groups as $group) {
 				<tr><td> Estimate :</td><td>
 					<input name="estimation" id="estimation" value="0"  size="3" />
 				</td></tr>
-				<tr><td> Today's Estimate :</td><td>
+				<tr><td> Remaining Today :</td><td>
 					<input name="todays_estimation" id="todays_estimation" value="0"  size="3" />
 				</td></tr>
 				<tr><td> Color Tag :</td><td>
