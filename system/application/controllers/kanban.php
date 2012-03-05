@@ -582,22 +582,6 @@ class kanban extends Controller {
 		}
 		$pagedata['daysleft'] = $daysleft;
 		
-		$sql="SELECT sum(estimation) as total FROM `kanban_item` where sprint_id = ".$sprintid." and not enddate = '0000-00-00'";
-		$query = $this->db->query( $sql );
-		$subtotal=0;
-		if ($query->num_rows() > 0)	{
-			$res = $query->result_array();		
-			$subtotal = $res[0]['total'];	
-		} 
-		if( $daysleft <= 0 ) {
-			$velocity = $subtotal / $totaldays;
-		} else {
-			if( ($totaldays-$daysleft) == 0 ) $velocity = 0;
-			else $velocity = $subtotal / ($totaldays-$daysleft);
-		} 
-		
-		$pagedata['velocity'] = $velocity;
-		
 		//
 		// Inflow/Outflow for sprint *******************************************************************
 		//
@@ -713,7 +697,8 @@ class kanban extends Controller {
 		{	
 			$id = intval( $row['id'] );
 			$estimation = intval ( $row['estimation'] );
-			$tasklookup[ $id ] = $row['heading'];
+			$heading = $row['heading'];
+			$tasklookup[ $id ] = array( $heading, $estimation );
 			$matrix[ $id ] = array();
 			for( $dayIndex = 0; $dayIndex < $days; $dayIndex++ ) {
 				$matrix[ $id ][ $dayIndex ] = -1;
@@ -910,6 +895,8 @@ class kanban extends Controller {
 		$currentweek = $week;
 		$diagrameffiency[ intval($currentweek) ] = 100 * ($startvalue - $endvalue);
 		//echo "w; ".$currentweek.", points = ".$diagrameffiency[ intval($currentweek) ]."<br>";
+		if( $days <= 0 ) $pagedata['velocity'] = 0;
+		else $pagedata['velocity'] = ($totalestimation-$endvalue) / $days;
 		
 		$endtime = strtotime($enddate);
 		$nowtime = strtotime("now");
@@ -924,9 +911,14 @@ class kanban extends Controller {
 		$i = $i + 1;
 		foreach ($query->result_array() as $row)
 		{
-			$currentweek = $row['weeknum'];
-			$diagrameffiency[ $currentweek ] = $diagrameffiency[ $currentweek ] / $row['tot'] ;	
-			//echo "w".$currentweek.",".$diagrameffiency[ $currentweek ];
+			$currentweek = intval( $row['weeknum'] );
+			$tot = intval( $row['tot'] );
+			//echo "w=".$currentweek.",t=".$tot."<br>";
+			if( key_exists( $currentweek, $diagrameffiency) ) {
+				if( $tot > 0 ) $diagrameffiency[ $currentweek ] = $diagrameffiency[ $currentweek ] / $tot;	
+				else $diagrameffiency[ $currentweek ] = 0;	
+				//echo "w".$currentweek.",".$diagrameffiency[ $currentweek ];
+			}
 		}
 		
 		$efficiencydiagram = array();

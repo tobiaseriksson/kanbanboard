@@ -260,14 +260,19 @@ Current velocity is <?php echo round( $velocity, 1); ?> points / day
 <h2>Progress History Matrix</h2>
 <?php 
 		echo "<table border=1px >";
-		echo "<th>ID</th><th>Heading</th>";
+		echo "<th>Heading</th><th>Orig Est.</th>";
 		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
 		foreach( $progressmatrix as $id => $arr ) {
-			echo "<tr><td>".$id."</td><td>".$tasklookup[ $id ]."</td>";
+			echo "<tr><td>".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
+			$previousvalue=$tasklookup[ $id ][1];
 			for( $day = 0; $day < count($arr); $day++ ) {
 				$value = intval( $arr[ $day ] );
 				// echo ",(".$day.")";
-				echo "<td>".$value."</td>";
+				$style = '';
+				if( $value > $previousvalue ) $style = 'style="background-color:red; color:white;"';
+				if( $value < $previousvalue ) $style = 'style="background-color:green; color:white;"';
+				echo "<td ".$style.">".$value."</td>";
+				$previousvalue=$value;
 			}
 			echo "</tr>";
 		}

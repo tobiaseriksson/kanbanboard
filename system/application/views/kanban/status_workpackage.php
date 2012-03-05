@@ -177,7 +177,7 @@
 			<br>
 
 			
-			<h3>Workpackages</h3>
+			<h2>Workpackages</h2>
 			<br>
 
 <table>
