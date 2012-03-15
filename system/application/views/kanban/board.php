@@ -14,9 +14,193 @@
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 
-	<style type="text/css">
-	
-	
+    <script type="text/javascript" src="/assets/js/raphael-min.js"></script>  
+    <script type="text/javascript">
+        window.onload = function() { 
+        	var width = 1000;
+        	var height = 100;
+        	var pixelsPerDay = 15;
+        	var pixelsHeightDay = 3;
+        	var pixelsHeightWeek = 6;
+        	var pixelsHeightMonth = 9;
+        	var yAxesPosition = height / 2;
+        	var xStep = width / 2; // pixels left/right when clicking 
+        	
+		    var paper = new Raphael(document.getElementById('timelinecanvas'), width, height);  
+			
+			var notes = [];
+			// notes[0] = '2011-10-01:Fika paus!';
+<?php
+			$i=0;
+			foreach ($timelineitems as $item) {	
+				echo "notes[".$i++."] = '".$item['date'].":".$item['headline']."';\n";
+			}
+?>
+
+			var sortedNotes = [];
+			for( var i = 0; i < notes.length; i++ ) {
+				// $('body').append('<br>n['+i+'] = '+notes[i] );
+				sortedNotes[i] = notes[i].split( ':' );
+			}
+			// add TODAY
+			var today = new Date();
+			sortedNotes[ sortedNotes.length ] = new Array( today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate(), 'Today' );
+
+			sortedNotes.sort( function(a,b) { 
+   				if( a[0] == b[0] ) return 0; 
+   				if( a[0] < b[0] ) return 1; 
+   				return -1; 
+   			}	
+   			);
+
+			//for( var i = 0; i < sortedNotes.length; i++ ) {
+			//	$('body').append('<br>sortedNotes['+i+'] = '+sortedNotes[i] );
+			//}
+			
+			var currentXPosition = 0;
+			var monthNames = [ 'Jan', 'Feb', 'Mar' ,'Apr', 'May' , 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+						
+			// find limits start and end
+			var startDate = Number.MAX_VALUE;
+			var endDate = Number.MIN_VALUE;
+			
+			for( var i = 0; i < sortedNotes.length; i++ ) {
+				var d = sortedNotes[i][0].split('-');
+				var tmpDate = new Date(0);
+				tmpDate.setFullYear( d[0] );
+				tmpDate.setMonth( d[1]-1 );
+				tmpDate.setDate( d[2] );
+				var t  = tmpDate.getTime();
+				if( t > endDate ) endDate = t;
+				if( t < startDate ) startDate = t;
+			}
+			
+			// allways start on a Monday
+			var tmpDate = new Date( startDate );
+			if( tmpDate.getDay() == 0 ) {
+				startDate = startDate - (1000*3600*24*6); // minus 6 days
+			} else {
+				startDate = startDate - (1000*3600*24*(tmpDate.getDay()-1)); // minus n days
+			}
+			endDate = endDate + (1000*3600*24*7); // plus 7 days
+				
+			var totalDays = (endDate - startDate) / (1000*3600*24);
+			
+			// Draw timeline
+			var timeline = paper.set();
+			var x1 = 0;
+			var xMax = totalDays * pixelsPerDay;
+			var x = x1;
+			var currentDay = startDate;
+			var path = "M"+x1+" "+yAxesPosition+"L"+xMax+" "+yAxesPosition;
+			while( x <= xMax ) {    
+		    	// always set a marker per day
+		    	path = path.concat( "M", x, " ", yAxesPosition-pixelsHeightDay, "L", x, " ", yAxesPosition+pixelsHeightDay );
+		    	var tmpDate = new Date( currentDay );
+		    	// set a DATE number every Monday
+		    	if( tmpDate.getDay() == 1 ) {
+		    		path = path.concat( "M", x, " ", yAxesPosition-pixelsHeightWeek, "L", x, " ", yAxesPosition+pixelsHeightWeek );
+		    		var dayString = ''+tmpDate.getDate();
+		    		timeline.push( paper.text( x, yAxesPosition+pixelsHeightWeek*2, dayString ) );
+		    	}
+		    	// set a MONTH name every 1;st in the month
+		    	if( tmpDate.getDate() == 1 ) {
+		    		path = path.concat( "M", x, " ", yAxesPosition-pixelsHeightMonth, "L", x, " ", yAxesPosition+pixelsHeightMonth );
+		    		var monthString = ''+monthNames[ tmpDate.getMonth() ];
+		    		timeline.push( paper.text( x, yAxesPosition-pixelsHeightMonth*2, monthString ) );
+		    		if( tmpDate.getMonth() == 0 ) {
+		    			var yearString = ''+tmpDate.getFullYear();
+			    		timeline.push( paper.text( x, yAxesPosition-pixelsHeightMonth*3, yearString ) );
+			    	}
+		    	}
+		    	x = x + pixelsPerDay;
+		    	currentDay = currentDay + (1000*3600*24);
+		    }
+		    var timelineLine = paper.path( path );
+			timelineLine.attr({stroke: '#f00', 'stroke-width': 1});  
+			timeline.push( timelineLine );
+			
+			// Position the notes at the dates
+			var textPositionOffsets = [ 0.5 * height / 2 , -0.5 * height / 2, 0.75 * height / 2, -0.75 * height / 2 ];
+			var textOffsetIndex = 0;
+			path="";
+			var over = true;
+			for( var i = 0; i < sortedNotes.length; i++ ) {
+				var d = sortedNotes[i][0].split('-');
+				var tmpDate = new Date(0);
+				tmpDate.setFullYear( d[0] );
+				tmpDate.setMonth( d[1]-1 );
+				tmpDate.setDate( d[2] );
+				var t  = tmpDate.getTime();
+				var days = (t - startDate) / (1000*3600*24);
+				x = days * pixelsPerDay;
+				var noteString = sortedNotes[i][1];
+				if( textOffsetIndex >= textPositionOffsets.length ) textOffsetIndex = 0;
+				var textOffset = textPositionOffsets[ textOffsetIndex ];
+				var yTextPosition = yAxesPosition + textOffset;
+				var xTextPosition = x+((textOffset>0)?-textOffset:textOffset);
+				textOffsetIndex++;
+			    timeline.push( paper.text( xTextPosition, yTextPosition, noteString ) );
+			    path = path.concat( "M", x, " ", yAxesPosition, "L", xTextPosition, " ", yTextPosition );
+			}
+			var notePaths = paper.path( path );
+			notePaths.attr({stroke: '#f00', 'stroke-width': 1});  
+			timeline.push( notePaths );	
+			
+			// Left and Right arrows
+			var leftArrowPath = "M16,30.534c8.027,0,14.534-6.507,14.534-14.534c0-8.027-6.507-14.534-14.534-14.534C7.973,1.466,1.466,7.973,1.466,16C1.466,24.027,7.973,30.534,16,30.534zM18.335,6.276l3.536,3.538l-6.187,6.187l6.187,6.187l-3.536,3.537l-9.723-9.724L18.335,6.276z";
+			var leftArrow = paper.path( leftArrowPath );
+		    leftArrow.attr({ fill: "#ccc", stroke: "none" } );
+		    var rightArrowPath = "M16,1.466C7.973,1.466,1.466,7.973,1.466,16c0,8.027,6.507,14.534,14.534,14.534c8.027,0,14.534-6.507,14.534-14.534C30.534,7.973,24.027,1.466,16,1.466zM13.665,25.725l-3.536-3.539l6.187-6.187l-6.187-6.187l3.536-3.536l9.724,9.723L13.665,25.725z";
+			var rightArrow = paper.path( rightArrowPath );
+		    rightArrow.attr({ fill: "#ccc", stroke: "none" } );
+		    rightArrow.transform( "t"+(width-32)+",0" );
+			
+			var editIconPath = "M16,1.466C7.973,1.466,1.466,7.973,1.466,16c0,8.027,6.507,14.534,14.534,14.534c8.027,0,14.534-6.507,14.534-14.534C30.534,7.973,24.027,1.466,16,1.466zM24.386,14.968c-1.451,1.669-3.706,2.221-5.685,1.586l-7.188,8.266c-0.766,0.88-2.099,0.97-2.979,0.205s-0.973-2.099-0.208-2.979l7.198-8.275c-0.893-1.865-0.657-4.164,0.787-5.824c1.367-1.575,3.453-2.151,5.348-1.674l-2.754,3.212l0.901,2.621l2.722,0.529l2.761-3.22C26.037,11.229,25.762,13.387,24.386,14.968z";
+			var editIcon = paper.path( editIconPath );
+		    editIcon.attr({ fill: "#ccc", stroke: "none" } );
+		    editIcon.transform( "t"+(width-32)+","+(height-32) );
+			
+			// Animate to TODAY
+			var initialXMove = pixelsPerDay * ( (today.getTime()-startDate) / (1000*3600*24) );
+			currentXPosition = currentXPosition - (initialXMove - width/2);
+			if( currentXPosition >=  xStep ) currentXPosition = xStep;
+			if( currentXPosition <= (2*xStep)-xMax ) currentXPosition = (2*xStep)-xMax;
+			var t = "t"+currentXPosition+",0";
+            timeline.animate( { transform: t}, xStep, ">" );
+			
+			// Left and Right buttons
+		    leftArrow.click(function () {
+		    	if( currentXPosition >=  xStep ) return;
+		    	currentXPosition = currentXPosition + xStep;
+		    	var t = "t"+currentXPosition+",0";
+            	timeline.animate( { transform: t}, xStep, ">" );
+            });
+            rightArrow.click(function () {
+            	if( currentXPosition <= (2*xStep)-xMax ) return; 
+		    	currentXPosition = currentXPosition - xStep;
+		    	var t = "t"+currentXPosition+",0";
+            	timeline.animate( { transform: t}, xStep, ">" );
+            });        
+			
+            editIcon.click(function () {
+            	// http://kanban.softhouse.se/kanban/timeline/28/60
+            	window.location = '<?php echo site_url( '/kanban/timeline/'.$projectid.'/'.$sprintid ); ?>';
+            	//window.location = 'http://www.yourdomain.com'
+            }); 
+		}  
+        
+        </script>  
+
+	<style type="text/css">  
+            #timelinecanvas {  
+                width: 1000px;  
+                height: 100px;
+                border: 0px solid #aaa;  
+            }  
+    </style> 
+
+	<style type="text/css">	
 <?php 
 
 $first=1;
@@ -25,7 +209,7 @@ foreach ($groups as $row) {
 	$first=0;		
 	echo "#grouptitle".$row['id']." ";
 }
-echo " {  height: 15; }\n";
+echo " {  height: 15px; }\n";
 $first=1;
 foreach ($groups as $row) {	
 	if( $first < 1 ) echo ",";
@@ -343,7 +527,6 @@ echo " { height: 20px; }\n";
 				?>
 			});
 		</script>	
-
 </head>
 <body bgcolor=white>
 <div id="dock">
@@ -365,17 +548,7 @@ echo " { height: 20px; }\n";
 
 <div id="errordiv"></div>
 
-
-<div id="ticker-wrapper" class="no-js">
-		<ul id="js-news" class="js-hidden">
-			<li class="news-item">The '<?php echo $projectname; ?>' Board. Sprint: <?php echo $sprintname; ?> <?php echo $startdate; ?> through <?php echo $enddate; ?> </li>
-<?php
-foreach ($tickers as $ticker) {	
-	echo '<li class="news-item">'.$ticker['message'].'</li>';
-}
-?>					
-		</ul>		
-</div>
+<div id="timelinecanvas"></div>  
 
 <div class="kanbanboard" id="kanbanboard">
 

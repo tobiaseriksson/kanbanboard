@@ -1335,6 +1335,31 @@ class kanban extends Controller {
 		}
 		$pagedata['tickers'] = $tickers;	
 		
+		$projectstartdate = '2012-01-01';	
+		$projectenddate = '2012-01-02';	
+		$sql='SELECT min( startdate ) as start, max( enddate ) as end FROM kanban_sprint WHERE project_id = ?';
+		$query = $this->db->query($sql,array($projectid));
+		$i=0;
+		$plan = array();
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();	
+			$projectstartdate = $res[0]['start'];	
+			$projectenddate = $res[0]['end'];				
+		}
+		
+		$sql='SELECT date, headline FROM `kanban_timeline` where project_id = '.$projectid.' ORDER BY date';
+		$query = $this->db->query($sql);
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$timelineitems[$i]=$row;			
+			$i++;
+		}
+		$timelineitems[$i++] = array( 'date' => $projectstartdate, 'headline' => 'Project Start' );			
+		$timelineitems[$i++] = array( 'date' => $projectenddate, 'headline' => 'Project End' );			
+		
+		$pagedata['timelineitems'] = $timelineitems;	
+		
 		$sql="SELECT sum(estimation) as total FROM `kanban_item` where sprint_id = ".$sprintid;
 		$query = $this->db->query( $sql );
 		$totalestimation=0;
@@ -2074,6 +2099,47 @@ class kanban extends Controller {
 	}
 
 	
+	function timeline($projectid,$sprintid)    {
+		$pagedata = array();
+		$pagedata['projectid'] = $projectid;
+		$projectname = "no-name";
+		$query = $this->db->query('SELECT id,name FROM kanban_project WHERE id = '.$projectid);
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			// print_r( $release );		
+			$projectname = $res[0]['name'];	
+		} 
+		$pagedata['projectname'] = $projectname;	
+		
+		$query = $this->db->query('SELECT id, name, startdate, enddate FROM `kanban_sprint` where id = '.$sprintid);
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			// print_r( $release );		
+			$sprintid = $res[0]['id'];
+			$sprintname = $res[0]['name'];
+			$startdate = $res[0]['startdate'];
+			$enddate = $res[0]['enddate'];	
+		} 
+		$pagedata['sprintid'] = $sprintid;	
+		$pagedata['sprintname'] = $sprintname;	
+		$pagedata['startdate'] = $startdate;	
+		$pagedata['enddate'] = $enddate;	
+
+		$timelineitems = array();
+
+		$sql='SELECT id, date, headline FROM `kanban_timeline` where project_id = '.$projectid.' ORDER BY date';
+		$query = $this->db->query($sql);
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$timelineitems[$i]=$row;			
+			$i++;
+		}
+		$pagedata['timelineitems'] = $timelineitems;		
+		
+		$this->load->view('kanban/timeline_admin', $pagedata);
+	}
+	
 	
 
 	function deleteticker($tickerid) {		
@@ -2096,6 +2162,29 @@ class kanban extends Controller {
 		$this->db->insert('kanban_ticker', $data);	
 		
 		$redirect_to_url="/kanban/tickers/".$projectid."/".$sprintid;
+		header("Location: ".$redirect_to_url );
+	}
+	
+	function deletetimeline($projectid,$timelineid) {		
+		$this->db->where('id', $timelineid);	
+		$this->db->where('project_id', $projectid);
+		$this->db->delete('kanban_timeline');						
+	}
+	
+	function addtimelinemessage() {
+		$msg = $this->input->post('msg');
+		$date = $this->input->post('date');
+		$projectid = $this->input->post('projectid');
+		$sprintid = $this->input->post('sprintid');
+		
+		$data = array(
+			'headline' => $msg,
+			'project_id' => $projectid,
+			'date' => $date
+			);
+		$this->db->insert('kanban_timeline', $data);	
+		
+		$redirect_to_url="/kanban/timeline/".$projectid."/".$sprintid;
 		header("Location: ".$redirect_to_url );
 	}
 	
