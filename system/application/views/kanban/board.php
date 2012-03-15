@@ -83,7 +83,12 @@
 				startDate = startDate - (1000*3600*24*(tmpDate.getDay()-1)); // minus n days
 			}
 			endDate = endDate + (1000*3600*24*7); // plus 7 days
-				
+			
+			var visibleDays = width / pixelsPerDay;
+			
+			if( startDate > (today.getTime() - (visibleDays*1000*3600*24) ) ) startDate = (today.getTime() - (visibleDays*1000*3600*24) );
+			if( endDate < (today.getTime() + (visibleDays*1000*3600*24) ) ) endDate = (today.getTime() + (visibleDays*1000*3600*24) );
+			
 			var totalDays = (endDate - startDate) / (1000*3600*24);
 			
 			// Draw timeline
