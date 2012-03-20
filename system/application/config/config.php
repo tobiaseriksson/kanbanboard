@@ -11,7 +11,7 @@
 |	http://example.com/
 |
 */
-$config['base_url']	= "http://kanban.tsoft.se/";
+$config['base_url']	= "https://kanban.softhouse.se/";
 
 /*
 |--------------------------------------------------------------------------

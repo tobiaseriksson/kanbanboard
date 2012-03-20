@@ -476,6 +476,7 @@ class kanban extends Controller {
 		$effortpoints = 0;
 		if( $days > 0 ) $points = $diagramactual[ $days-1 ][1];
 		$diagramprojected[$i] =  array( $days-1, $points );
+		$diagrameffort = array();
 		$i = $i + 1;
 		foreach ($query->result_array() as $row)
 		{	

@@ -1,0 +1,21 @@
+<IfModule rewrite_module>
+	RewriteEngine on
+	
+	
+	
+	RewriteBase /
+	RewriteCond %{REQUEST_URI} ^system.*
+	RewriteRule ^(.*)$ /index.php?/$1 [L]
+
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond $1 !^(index\.php|images|robots\.txt)
+	RewriteRule ^(.*)$ /index.php/$1 [L]
+	
+</IfModule>
+
+<IfModule !rewrite_module>
+	ErrorDocument 404 /original/index.php
+</IfModule>
+
+
