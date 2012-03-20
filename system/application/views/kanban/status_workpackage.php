@@ -13,7 +13,7 @@
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 
-	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"
+	<script src="https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"
 				data-dojo-config="isDebug: false,parseOnLoad: true">
 	</script>
 	
