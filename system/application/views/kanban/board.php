@@ -295,6 +295,37 @@ echo " { height: 20px; }\n";
 
 	<script type="text/javascript">
 	
+	function populateItemCommentForm( taskid ) {
+		var projectid = <?php echo $projectid; ?>;
+		var dataString = "";
+		$.ajax({  
+		  dataType: "json",  
+		  url: "/kanban/itemcomments/"
+		  +projectid+"/"+taskid,  
+		  data: dataString,  
+		  success: function(data) {  
+			$("#groupresult").html("success="+data.heading);
+			$("#heading").val( data.heading);
+			$("#taskdescription").val( data.taskdescription);
+			$("#priority").val( data.priority);
+			$("#estimation").val( data.estimation);
+			$("#todays_estimation").val( data.todays_estimation);
+			$("#priority").val( data.priority);
+			$("#projectid").val( data.projectid);
+			$("#sprintid").val( data.colortag);
+			$("#taskid").val( data.taskid);
+			$("#colortag").val( data.colortag);			
+			$("#sprintid").val( data.sprintid);			
+			$("#newsprintid").val( data.sprintid);  	
+			$("#workpackage_id").val( data.workpackage_id);  				     
+		  }, 
+		  error: function(x,e) {  
+		    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+		  }  
+		});  
+	}
+	
+	
 	function fillInFormTaskDetails( taskid ) {
 		var projectid = <?php echo $projectid; ?>;
 		var dataString = "";
