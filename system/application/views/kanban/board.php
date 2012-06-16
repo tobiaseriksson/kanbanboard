@@ -220,6 +220,37 @@ echo " { height: 20px; }\n";
 	
 	<script type="text/javascript">
 		$(function() {
+			$( "#dialog-task-comments" ).dialog({
+			width: 600,
+			resizable: true,
+			modal: true,
+			autoOpen: false,
+			buttons: {
+				Ok: function() {
+					$( this ).dialog( "close" );
+				}
+			}
+		   });
+		});
+
+		$('#taskcommentform').submit(function() {
+			var dataString = $("#taskcommentform").serialize();
+				$.ajax({  
+				  type: "POST",  
+				  url: "/kanban/taskcommentsformandlegend",  
+				  data: dataString,  
+				  success: function(data) {  				     
+						loadTaskComments( $("#taskcommentform input[name=taskid]").val() );
+						$("#taskcommentform").reset();
+				  },
+				  error: function(x,e) {  
+					    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					  }
+				});
+			  return false;
+			});		
+	
+		$(function() {
 			$( "#dialog-edit-task" ).dialog({
 			width: 300,
 			resizable: false,
@@ -295,34 +326,14 @@ echo " { height: 20px; }\n";
 
 	<script type="text/javascript">
 	
-	function populateItemCommentForm( taskid ) {
+	function loadTaskComments( taskid ) {
 		var projectid = <?php echo $projectid; ?>;
-		var dataString = "";
-		$.ajax({  
-		  dataType: "json",  
-		  url: "/kanban/itemcomments/"
-		  +projectid+"/"+taskid,  
-		  data: dataString,  
-		  success: function(data) {  
-			$("#groupresult").html("success="+data.heading);
-			$("#heading").val( data.heading);
-			$("#taskdescription").val( data.taskdescription);
-			$("#priority").val( data.priority);
-			$("#estimation").val( data.estimation);
-			$("#todays_estimation").val( data.todays_estimation);
-			$("#priority").val( data.priority);
-			$("#projectid").val( data.projectid);
-			$("#sprintid").val( data.colortag);
-			$("#taskid").val( data.taskid);
-			$("#colortag").val( data.colortag);			
-			$("#sprintid").val( data.sprintid);			
-			$("#newsprintid").val( data.sprintid);  	
-			$("#workpackage_id").val( data.workpackage_id);  				     
-		  }, 
-		  error: function(x,e) {  
-		    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
-		  }  
-		});  
+		$("#dialog-task-comments").load("/kanban/taskcommentsformandlegend/"+projectid+"/"+taskid, function(response, status, xhr) {
+			  if (status == "error") {
+			    var msg = "Sorry but there was an error: ";
+			    $("#errordiv").html(msg + xhr.status + " " + xhr.statusText);
+			  }
+		});
 	}
 	
 	
@@ -471,7 +482,7 @@ foreach ($groups as $group) {
 <span class="ui-icon ui-icon-calendar"></span>'.$row['age'].'
 </div>
 <div class="inside-postit-footer-commenticon" title="Comments">
-<span class="ui-icon ui-icon-comment" onclick="fillInFormTaskDetails('.$row['taskid'].'); $(\'#dialog-edit-task\').dialog(\'open\'); return false; "></span>
+<span class="ui-icon ui-icon-comment" onclick="loadTaskComments('.$row['taskid'].'); $(\'#dialog-task-comments\').dialog(\'open\'); return false; "></span>'.$row['comments'].'
 </div>
 <div class="inside-postit-footer-editicon" title="Click to edit">
 <span class="ui-icon ui-icon-wrench" onclick="fillInFormTaskDetails('.$row['taskid'].'); $(\'#dialog-edit-task\').dialog(\'open\'); return false; "></span>
@@ -579,26 +590,7 @@ foreach ($groups as $group) {
 
 
 
-<div id="dialog-item-comment" title="Comments">	
-	<p>
-	<div class="kanbanactions">
-		<h2>Add a comment</h2>
-		<form id="newtask" name="newcomment" action="">
-		<input type="hidden" name="projectid" value="<?php echo $projectid; ?>" />
-		<input type="hidden" name="sprintid" value="<?php echo $sprintid; ?>" />	
-		<input type="hidden" name="taskid" id="taskid" value="0" />
-
-			<div>
-				<table>					
-					<tr><td>User :</td><td><input name="user" ></td></tr>
-					<tr><td>Text :</td><td><textarea name="comment"  rows="3" cols="25"></textarea></td></tr>
-					<tr><td><h3>Legend / History</h3></td></tr>
-												
-				</table>
-			</div>
-		</form>
-
-	</div>
+<div id="dialog-task-comments" title="Comments">	
 </div>
 
 </body>
