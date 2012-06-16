@@ -121,35 +121,32 @@
 
 
 .inside-postit-footer-prio {
-	width : 30%;
+	width : 25%;
 	float : left;
 	text-align : left;
 }
 
 .inside-postit-footer-estimation {
-	width : 30%;
+	width : 25%;
 	float : left;
 	text-align : left;
 }
 
 .inside-postit-footer-age {
-	width : 30%;
+	width : 25%;
+	float : left;
+	text-align : left;
+}
+
+.inside-postit-footer-commenticon {
+	width : 12%;
 	float : left;
 	text-align : left;
 }
 
 .inside-postit-footer-editicon {
-	width : 10%;
+	width : 12%;
 	position : absolute;
 	bottom : 0;
 	right : 0;
 }
-
-.inside-postit-footer-commenticon {
-	width : 10%;
-	position : absolute;
-	bottom : 0;
-	right : 0;
-}
-
-

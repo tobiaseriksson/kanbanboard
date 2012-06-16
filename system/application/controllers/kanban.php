@@ -1316,6 +1316,14 @@ class kanban extends Controller {
 		}
 		$pagedata['groups'] = $groups;
 
+		$commentcount = array();
+		$sql = 'SELECT c.item_id as taskid, COUNT( c.id ) as count FROM kanban_item_comment c, kanban_item i WHERE c.item_id = i.id AND i.sprint_id = ? GROUP BY c.item_id';
+		$query = $this->db->query( $sql, array($sprintid) );
+		foreach ($query->result_array() as $row)
+		{
+			$commentcount[ $row['taskid'] ] =  $row['count'];
+		}
+		
 		$now = strtotime("now");
 		$tasks = array();
 		$query = $this->db->query('SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,added,enddate FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.project_id = '.$projectid.' AND k.sprint_id = '.$sprintid.' ORDER BY displayorder,priority DESC');
@@ -1327,6 +1335,12 @@ class kanban extends Controller {
 			} else {
 				$row['age'] = kanban::countDays( strtotime($row['added']), strtotime($row['enddate']) );
 			}
+			if( array_key_exists($row['taskid'], $commentcount ) ) {
+				$row['comments'] = $commentcount[ $row['taskid'] ];
+			} else {
+				$row['comments'] = 0;
+			}
+			
 			$tasks[$i]=$row;
 			$i++;
 		}
@@ -2335,7 +2349,46 @@ class kanban extends Controller {
 		echo $jsondata; 
 	}
 	
+	function taskcommentsformandlegend($projectid,$taskid) {
+		$pagedata=array();
+		$pagedata['projectid'] = $projectid;
+		$pagedata['taskid'] = $taskid;
+		$sql = 'SELECT id,item_id,timestamp,who,comment FROM kanban_item_comment WHERE item_id = ? ORDER BY timestamp DESC';
+		$query = $this->db->query( $sql, array($taskid) );
+		$comments = array();
+		$i=0;
+		foreach ($query->result_array() as $row)
+		{
+			$comments[$i]=$row;
+			$i++;
+		}
+		$pagedata['taskcomments'] = $comments;
+		$this->load->view('kanban/taskcomments', $pagedata);
+	}
 	
+	function addtaskcomment() {
+	 	$projectid = $this->input->post('projectid');
+		if( kanban::hasAccess(  $projectid ) != TRUE ) {
+			return;
+		}
+	 	$taskid = $this->input->post('taskid'); 
+		$who = $this->input->post('who');
+		$comment = $this->input->post('comment');
+		$data = array(
+			'item_id' => $taskid,
+			'who' => $who,
+			'comment' => $comment
+			);
+		$this->db->insert('kanban_item_comment', $data);	
+	}
+	
+	function deletetaskcomment($projectid, $commentid ) {
+		if( kanban::hasAccess(  $projectid ) != TRUE ) {
+			return;
+		}
+		$this->db->where('id', $commentid);
+		$this->db->delete('kanban_item_comment');		
+	}
 }
 
 ?>

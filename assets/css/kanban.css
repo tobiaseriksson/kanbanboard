@@ -123,4 +123,24 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 div.kanbanactions { background-color: white; color: black; border-style: none; }
 div.kanbanboard { display: block; color: black; border-style: none; margin: 50px; overflow: hidden;}
 
+.taskcomment {
+	text-align: left;
+	background-color: #EEEEEE;
+    border: 1px solid #AAAAAA;
+    border-radius: 5px 5px 5px 5px;
+    margin: 15px;
+    min-width: 300px;
+    padding: 5px;
+}
+
+.taskcommentform {
+	text-align: left;
+	background-color: #EEEEEE;
+    border: 1px solid #AAAAAA;
+    border-radius: 5px 5px 5px 5px;
+    margin: 15px;
+    min-width: 300px;
+    padding: 5px;
+}
+
 
