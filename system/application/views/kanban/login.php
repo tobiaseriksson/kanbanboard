@@ -64,6 +64,12 @@
 			<tr><td>Team Login</td><td><input type="text" name="login" size="15"></td></tr>
 			<tr><td>Password</td><td><input type="password" name="password" size="15"></td></tr>
 			<tr><td></td><td align="right"><input type="submit" name="loginbutton" value="login"></td><td></td></tr>
+			<tr><td colspan=2><small><i>If you would like to try it, use<br>username; <b>demo</b> password; <b>demo</b>.</i>
+				<br><br>
+				For more information read the blog <a href="https://kanban.softhouse.se/kanbanblog">here.!</a><br>
+				Enjoy<br>
+				- The Kanban Team!<br>
+			</small></td></tr>
 		</table>
 	</form>
 
