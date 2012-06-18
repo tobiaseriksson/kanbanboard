@@ -12,6 +12,10 @@
                     <td><input name="newgroup_name" id="newgroup_name" value="any name" /></td>
                   </tr>
                   <tr>
+                    <td class="settingsleftside">WIP:</td>
+                    <td><input name="newgroup_wip" id="newgroup_wip" value="0" /></td>
+                  </tr>
+                  <tr>
                     <td></td>
                     <td class="settingsleftside"><input type="submit"  value="Add"  /></td>
                   </tr>
@@ -27,7 +31,7 @@
                     </tr>
                     <tr>
                       <td class="settingsleftside">Select:</td>
-                      <td class="settingsrightside"><select name="editgroup_groupid" id="editgroup_groupid">
+                      <td class="settingsrightside"><select name="editgroup_groupid" id="editgroup_groupid" onChange="fillInGroupDetails(this.selectedIndex)">
                           <?php						
 							foreach ($groups as $group) {		
 							
@@ -41,6 +45,10 @@
                     <tr>
                       <td class="settingsleftside">New name:</td>
                       <td class="settingsrightside"><input name="editgroup_name" id="editgroup_name" value="any name" /></td>
+                    </tr>
+                    <tr>
+                      <td class="settingsleftside">WIP:</td>
+                      <td><input name="editgroup_wip" id="editgroup_wip" value="0" /></td>
                     </tr>
                     <tr>
                       <td></td>

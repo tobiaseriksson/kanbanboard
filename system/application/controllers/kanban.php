@@ -1306,7 +1306,7 @@ class kanban extends Controller {
 	
 		$groups = array();
 
-		$sql='SELECT id,name FROM kanban_group WHERE project_id = '.$projectid.' ORDER BY displayorder';
+		$sql='SELECT id,name,wip FROM kanban_group WHERE project_id = '.$projectid.' ORDER BY displayorder';
 		$query = $this->db->query($sql);
 		$i=0;
 		foreach ($query->result_array() as $row)
@@ -1607,10 +1607,12 @@ class kanban extends Controller {
 	
 	function editgroup() {
 		$name = $this->input->post('editgroup_name');
+		$wip = $this->input->post('editgroup_wip');
 		$groupid = $this->input->post('editgroup_groupid');
 		$projectid = $this->input->post('editgroup_projectid');
 		$data = array(
-			'name' => $name
+			'name' => $name,
+			'wip' => $wip
 		);
 		$this->db->where('id', $groupid);
 		$this->db->update('kanban_group', $data);		
@@ -1681,6 +1683,7 @@ class kanban extends Controller {
 
 
 	function addgroup() {
+		$wip = $this->input->post('newgroup_wip');
 		$name = $this->input->post('newgroup_name');
 		echo "name=".$name."<br>";
 		$projectid = $this->input->post('newgroup_projectid');
@@ -1708,6 +1711,7 @@ class kanban extends Controller {
 		//
 		$data = array(
 			'name' => $name,
+			'wip' => $wip,
 			'project_id' => $projectid,
 			'displayorder' => 2
 			);
@@ -1734,7 +1738,20 @@ class kanban extends Controller {
  
 	}
 
+	function groupdetails($projectid,$groupid) {
 
+		$sql = 'SELECT name, wip FROM kanban_group WHERE id = '.$groupid;
+		$query = $this->db->query( $sql );
+		$jsonarray = array();
+		if ($query->num_rows() > 0)	{
+			$row = $query->row();	
+			$jsonarray[ 'name' ] = $row->name;
+			$jsonarray[ 'wip' ] = $row->wip;
+		} 
+		$jsondata = json_encode($jsonarray);
+		echo $jsondata; 
+	}
+	
 	function editgeneralsettings() {
 		$projectid = $this->input->post('generalsettingsform_projectid');
 		

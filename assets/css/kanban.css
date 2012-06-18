@@ -143,4 +143,11 @@ div.kanbanboard { display: block; color: black; border-style: none; margin: 50px
     padding: 5px;
 }
 
+.wip-warning-icon {
+	bottom: 0px;
+    position: relative;
+    right: 0px;
+	display: inline-block;
+}
+
 

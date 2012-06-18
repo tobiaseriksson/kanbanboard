@@ -90,6 +90,53 @@ echo " { height: 20px; }\n";
 	</style>
 	
 		<script type="text/javascript">
+
+			function updateWIPWarningForGroup( groupID, showAlert ) {
+				if( showAlert === undefined ) showAler = true;
+				var wipLimits = [];
+				<?php foreach ($groups as $group) {		
+				echo "wipLimits['".$group['id']."'] = ".$group['wip'].";\n";
+				}
+				?>
+				if( wipLimits[''+groupID] <= 0 ) return;
+				if( $('#sortable'+groupID).children().size()-1 > wipLimits[''+groupID] ) {
+					$('#grouptitle'+groupID+' span:first').show();
+					if( showAlert == true ) alert("WIP Limit reached!");
+				} else {
+					$('#grouptitle'+groupID+' span:first').hide();
+				}
+				
+			}
+
+			function updateTaskCountForGroup( groupID ) {
+				var obj = $('#sortable'+groupID);
+				var count = $(obj).children().size()-1;
+				$('li:first span:last',obj).text("("+count+")");
+			}
+
+			function updateTaskCountForGroups() {
+				// var groups = $('#kanbanboard ul');
+				// $('li:first div:last',groups).text("oops");
+				var wipLimits = [];
+				<?php foreach ($groups as $group) {		
+				echo "wipLimits['".$group['id']."'] = ".$group['wip'].";\n";
+				}
+				?>
+				$('#kanbanboard ul').each( function(index) {
+					var count = $(this).children().size()-1;
+					$('li:first span:last',this).text("("+count+")");
+					groupID = $(this).attr("id").replace( "sortable", "" );
+					if( wipLimits[''+groupID] > 0 && count > wipLimits[''+groupID] ) {
+						$('li:first span:first',this).show();
+					} else {
+						$('li:first span:first',this).hide();
+					}
+				});
+			}
+			
+		</script>
+	
+		<script type="text/javascript">
 			$(function() {
 				jQuery.fn.ForceNumericOnly =
 					function()
@@ -167,6 +214,10 @@ echo " { height: 20px; }\n";
 					            $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
 					      }   
 						}); 
+						updateWIPWarningForGroup( from, false );
+						updateWIPWarningForGroup( to, true );
+						updateTaskCountForGroup( from );
+						updateTaskCountForGroup( to );
 				}
 			}).disableSelection();
 		});
@@ -383,7 +434,7 @@ echo " { height: 20px; }\n";
 		<script type="text/javascript">
 			$(function () {
 				// $("#errordiv").append("resizing...");
-				// The intention with this is to make all the groups equally tall, so that it should be eas to move elements/tasks between groups
+				// The intention with this is to make all the groups equally tall, so that it should be easy to move elements/tasks between groups
 				var allgroups = $('#kanbanboard').children('ul');
 				var maxheight=0;
 				var maxwidth=0;
@@ -409,11 +460,7 @@ echo " { height: 20px; }\n";
 
 		<script type="text/javascript">
 			$(function () {
-				<?php 
-				foreach ($groups as $group) {		
-					echo "$('#grouptitle".$group['id']."').append(' ('+ ($('#sortable".$group['id']."').children().size()-1)  +')');";
-				}
-				?>
+				updateTaskCountForGroups();
 			});
 		</script>	
 		<script type="text/javascript">
@@ -459,7 +506,7 @@ $i=1;
 $groupid=-1;
 foreach ($groups as $group) {		
 	echo '<ul id="sortable'.$group['id'].'" class="connectedSortable">';
-	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik">'.$group['name'].'</li>';
+	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik"><span title="WIP Limit Reached" class="ui-icon ui-icon-alert wip-warning-icon"></span>'.$group['name'].'<span>()</span></li>';
 	$groupid = $group['id'];
 	foreach ($tasks as $row)
 	{					 

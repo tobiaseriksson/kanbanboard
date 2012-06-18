@@ -443,33 +443,54 @@ echo " { margin: 0 0 0 0; padding: 5px; font-size: 1.1em; width: 120px; }\n";
 	</script>
 
 	<script type="text/javascript">
-		
-
-		function fillInSprintDetails(sprintid) {
-		var projectid = <?php echo $projectid; ?>;
-		var sprintid = $("#editsprint_sprintid").val();
-		if( sprintid <= 0 ) {
-			$("#editsprint_name").val( "N/A" );
-			$("#editsprint_startdate").val( "" );
-			$("#editsprint_enddate").val( "" );
-			return;
+		function fillInGroupDetails(selectedIndex) {
+			var projectid = <?php echo $projectid; ?>;
+			var groupID = $("#editgroup_groupid").val();
+			if( groupID <= 0 ) {		
+				$("#editgroup_name").val( 'not a valid selection' );
+				$("#editgroup_wip").val( '0' );
+				return;
+			}
+			var dataString = "";
+			$.ajax({  
+			  dataType: "json",  
+			  url: "/kanban/groupdetails/"+projectid+"/"+groupID,  
+			  data: dataString,  
+			  success: function(data) {  			
+				$("#editgroup_name").val( data.name );
+				$("#editgroup_wip").val( data.wip );
+			  }, 
+			  error: function(x,e) {  
+			    $("#debugresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+			  }  
+			});  
 		}
-		var dataString = "";
-		$("#debugresult").html("req: /kanban/sprintdetails/"+projectid+"/"+sprintid );
-		$.ajax({  
-		  dataType: "json",  
-		  url: "/kanban/sprintdetails/"+projectid+"/"+sprintid,  
-		  data: dataString,  
-		  success: function(data) {  			
-			$("#editsprint_name").val( data.name );
-			$("#editsprint_startdate").val( data.startdate );
-			$("#editsprint_enddate").val( data.enddate );
-		  }, 
-		  error: function(x,e) {  
-		    $("#debugresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
-		  }  
-		});  
-	}
+
+		function fillInSprintDetails(selectedIndex) {
+			var projectid = <?php echo $projectid; ?>;
+			var sprintid = $("#editsprint_sprintid").val();
+			if( sprintid <= 0 ) {
+				$("#editsprint_name").val( "N/A" );
+				$("#editsprint_startdate").val( "" );
+				$("#editsprint_enddate").val( "" );
+				return;
+			}
+			var dataString = "";
+			$("#debugresult").html("req: /kanban/sprintdetails/"+projectid+"/"+sprintid );
+			$.ajax({  
+			  dataType: "json",  
+			  url: "/kanban/sprintdetails/"+projectid+"/"+sprintid,  
+			  data: dataString,  
+			  success: function(data) {  			
+				$("#editsprint_name").val( data.name );
+				$("#editsprint_startdate").val( data.startdate );
+				$("#editsprint_enddate").val( data.enddate );
+			  }, 
+			  error: function(x,e) {  
+			    $("#debugresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+			  }  
+			});  
+		}
 	</script>
 
 
