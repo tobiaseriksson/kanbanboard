@@ -22,7 +22,14 @@ class Kanbanblog extends Controller {
 	{
 		$pagedata = array();
 		$pagedata['errormessage'] = '';
-		$this->load->view('kanban/bloghome',$pagedata);
+		$this->load->view('kanban/blogtutorial',$pagedata);
+	}
+	
+	function about()
+	{
+		$pagedata = array();
+		$pagedata['errormessage'] = '';
+		$this->load->view('kanban/blogabout',$pagedata);
 	}
 }
 

@@ -62,6 +62,7 @@
 	<ul>
 		<li><a href="<?php echo site_url( '/kanbanblog'); ?>">Home</a></li>
 		<li><a href="<?php echo site_url( '/kanbanblog/tutorials'); ?>">Tutorials</a></li>
+		<li><a href="<?php echo site_url( '/kanbanblog/about'); ?>">About</a></li>
 		<li class="last"><a href="<?php echo site_url( '/kanban/login'); ?>">Login / Register</a></li>
 	</ul>
 </div>
@@ -115,6 +116,8 @@
 	<li>Ability to give daily Task progress, gives better granularity in the Burndown chart</li>
 	<li>Each Tasks is presented with an Age, to easily spot old and new Tasks on thr board</li>
 	<li>A TimeLine to display/share important dates</li>
+	<li>WIP (Work In Progress) limit support (each group can be assigned a limit)</li>
+	<li>Multiple comments can be added to each Task</li>
 </ul>
 </span> 
 <br><br>
