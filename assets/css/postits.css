@@ -138,15 +138,18 @@
 	text-align : left;
 }
 
-.inside-postit-footer-commenticon {
-	width : 12%;
-	float : left;
-	text-align : left;
-}
-
 .inside-postit-footer-editicon {
-	width : 12%;
+	width : 10%;
 	position : absolute;
 	bottom : 0;
 	right : 0;
 }
+
+.inside-postit-footer-commenticon {
+	width : 10%;
+	position : absolute;
+	bottom : 0;
+	right : 0;
+}
+
+

@@ -506,7 +506,7 @@ $i=1;
 $groupid=-1;
 foreach ($groups as $group) {		
 	echo '<ul id="sortable'.$group['id'].'" class="connectedSortable">';
-	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik"><span title="WIP Limit Reached" class="ui-icon ui-icon-alert wip-warning-icon"></span>'.$group['name'].'<span>()</span></li>';
+	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik"><span title="WIP Limit Reached" class="ui-icon ui-icon-alert wip-warning-icon"></span><span class="grouptitle">'.$group['name'].'</span><span>()</span></li>';
 	$groupid = $group['id'];
 	foreach ($tasks as $row)
 	{					 
