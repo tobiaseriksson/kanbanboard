@@ -566,7 +566,7 @@ foreach ($groups as $group) {
 					<input name="todays_estimation" id="todays_estimation" value="0"  size="3" />
 				</td></tr>
 				<tr><td> Color Tag :</td><td>
-					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
+					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option><option value="6">Purple</option><option value="7">Orange</option><option value="8">Grey</option></select>
 					</td></tr>
 				<tr><td nowrap> Workpackage :</td><td>
 					<select name="workpackage_id" id="workpackage_id">
@@ -614,7 +614,7 @@ foreach ($groups as $group) {
 						<input name="estimation" id="newtask_estimation" value="0"  size="3"  />
 					</td></tr>
 				    <tr><td> Color Tag :</td><td>
-					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
+					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option><option value="6">Purple</option><option value="7">Orange</option><option value="8">Grey</option></select>
 					</td></tr>			
 					<tr><td nowrap> Workpackage :</td><td>
 					<select name="workpackage_id" id="workpackage_id">
