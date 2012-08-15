@@ -52,7 +52,7 @@ class kanban extends Controller {
 		} 
 		$pagedata['projectname'] = $projectname;	
 		
-		$query = $this->db->query('SELECT id, name, startdate, enddate FROM `kanban_sprint` where id = ? '.array($sprintid));
+		$query = $this->db->query('SELECT id, name, startdate, enddate FROM `kanban_sprint` where id = ? ',array($sprintid));
 		if ($query->num_rows() > 0)	{
 			$res = $query->result_array();		
 			// print_r( $release );		
@@ -1247,7 +1247,7 @@ class kanban extends Controller {
 		
 		$now = strtotime("now");
 		$tasks = array();
-		$sql='SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,added,enddate FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.project_id = ? AND k.sprint_id = ? ORDER BY displayorder,priority DESC';
+		$sql='SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,added,enddate FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.project_id = ? AND k.sprint_id = ? ORDER BY displayorder,priority DESC,added ASC,heading DESC';
 		$query = $this->db->query($sql,array($projectid,$sprintid));
 		$i=0;
 		foreach ($query->result_array() as $row)
