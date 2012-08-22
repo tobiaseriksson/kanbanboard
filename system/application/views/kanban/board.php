@@ -2,16 +2,17 @@
 <html lang="en"> 
 <head>
 	<meta charset="UTF-8" />
+	<meta http-equiv="refresh" content="600">
 	<! base href="http://kanban.tsoft.se/" />
 	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
-	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.23.custom.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 	<link type="text/css" href="/assets/css/postits.css" rel="stylesheet" />	
 
-	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 	<script type="text/javascript" src="/assets/js/raphael-min.js"></script>  
     <script type="text/javascript" src="/assets/js/timeline.js"></script> 
@@ -92,7 +93,7 @@ echo " { height: 20px; }\n";
 		<script type="text/javascript">
 
 			function updateWIPWarningForGroup( groupID, showAlert ) {
-				if( showAlert === undefined ) showAler = true;
+				if( showAlert === undefined ) showAlert = true;
 				var wipLimits = [];
 				<?php foreach ($groups as $group) {		
 				echo "wipLimits['".$group['id']."'] = ".$group['wip'].";\n";
@@ -193,11 +194,13 @@ echo " { height: 20px; }\n";
 						var dataString = 'from='+ from + '&to=' + to + "&task=" + task + "&last=" + last;
 						// $("#errordiv").append("res="+dataString);
 						if( to == "" ) {
-							$("#errordiv").append("Could not move Task, it does not have a target/destination.");
-							return;
+							$("#error-message").html("Could not move Task, it does not have a target/destination.");
+					    	$('#dialog-error-message').dialog('open');
+					    	return;
 						}
 						if( task == "" ) {
-							$("#errordiv").append("Could not move Task, it does not have a valid Task ID.");
+							$("#error-message").html("Could not move Task, it does not have a valid Task ID.");
+					    	$('#dialog-error-message').dialog('open');
 							return;
 						}
 						// alert ("moved");return false;
@@ -206,12 +209,14 @@ echo " { height: 20px; }\n";
 						  url: "/kanban/move",  
 						  data: dataString,  
 						  success: function(data) {  
-						    	// $("#errordiv").html("This is the result"+data);
+						    	// $("#error-message").html("This is the result"+data);
+						    	// $('#dialog-error-message').dialog('open');
 							  	// location.reload();
 							    resortGroup( toObj );
 						  }, 
 					      error: function(x,e) {  
-					            $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					            $("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+						    	$('#dialog-error-message').dialog('open');
 					      }   
 						}); 
 						updateWIPWarningForGroup( from, false );
@@ -282,6 +287,18 @@ echo " { height: 20px; }\n";
 				}
 			}
 		   });
+
+		   $( "#dialog-error-message" ).dialog({
+			   	width: 400,
+				resizable: true,
+				modal: true,
+				autoOpen: false,
+				buttons: {
+					Ok: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			});
 		});
 
 		$('#taskcommentform').submit(function() {
@@ -295,7 +312,8 @@ echo " { height: 20px; }\n";
 						$("#taskcommentform").reset();
 				  },
 				  error: function(x,e) {  
-					    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+						$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				    	$('#dialog-error-message').dialog('open');
 					  }
 				});
 			  return false;
@@ -319,7 +337,8 @@ echo " { height: 20px; }\n";
 						$('#task'+$('#taskid').val()).remove();
 					  },
 					  error: function(x,e) {  
-						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+							$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					    	$('#dialog-error-message').dialog('open');
 						  }
 					});  
 					$( this ).dialog( "close" );
@@ -337,7 +356,8 @@ echo " { height: 20px; }\n";
 					    location.reload();
 					  },
 					  error: function(x,e) {  
-						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+							$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					    	$('#dialog-error-message').dialog('open');
 						  }
 					});  
 					$( this ).dialog( "close" );
@@ -364,7 +384,8 @@ echo " { height: 20px; }\n";
 						location.reload();
 					  },
 					  error: function(x,e) {  
-					    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+							$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					    	$('#dialog-error-message').dialog('open');
 					  }  
 					});  
 					$( this ).dialog( "close" );
@@ -382,7 +403,8 @@ echo " { height: 20px; }\n";
 		$("#dialog-task-comments").load("/kanban/taskcommentsformandlegend/"+projectid+"/"+taskid, function(response, status, xhr) {
 			  if (status == "error") {
 			    var msg = "Sorry but there was an error: ";
-			    $("#errordiv").html(msg + xhr.status + " " + xhr.statusText);
+				$("#error-message").html(msg + xhr.status + " " + xhr.statusText);
+		    	$('#dialog-error-message').dialog('open');
 			  }
 		});
 	}
@@ -412,7 +434,8 @@ echo " { height: 20px; }\n";
 			$("#workpackage_id").val( data.workpackage_id);  				     
 		  }, 
 		  error: function(x,e) {  
-		    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+		    	$('#dialog-error-message').dialog('open');
 		  }  
 		});  
 	}
@@ -635,7 +658,16 @@ foreach ($groups as $group) {
 	</div>
 </div>
 
-
+<div id="dialog-error-message" title="Error!">
+	<p>
+			<div class="ui-widget">
+				<div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
+					<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
+					<strong>Alert:</strong> <div id="error-message">bla bla bla!</div> </p>
+				</div>
+			</div>
+	</p>
+</div>
 
 <div id="dialog-task-comments" title="Comments">	
 </div>
