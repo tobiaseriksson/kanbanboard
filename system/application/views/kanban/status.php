@@ -9,6 +9,18 @@
 	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
+	<script type="text/javascript">
+    var djConfig = {
+        parseOnLoad: false,
+        isDebug: false,
+        modulePaths: {
+            "dojo": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo",
+            "dijit": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dijit",
+            "dojox": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojox" 
+        }
+    };
+	</script>
+
 	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
