@@ -125,7 +125,7 @@ echo " { height: 20px; }\n";
 				$('#kanbanboard ul').each( function(index) {
 					var count = $(this).children().size()-1;
 					$('li:first span:last',this).text("("+count+")");
-					groupID = $(this).attr("id").replace( "sortable", "" );
+					var groupID = $(this).attr("id").replace( "sortable", "" );
 					if( wipLimits[''+groupID] > 0 && count > wipLimits[''+groupID] ) {
 						$('li:first span:first',this).show();
 					} else {
