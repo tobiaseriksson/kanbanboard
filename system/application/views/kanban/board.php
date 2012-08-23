@@ -213,16 +213,19 @@ echo " { height: 20px; }\n";
 						    	// $('#dialog-error-message').dialog('open');
 							  	// location.reload();
 							    resortGroup( toObj );
+							    return;
 						  }, 
 					      error: function(x,e) {  
 					            $("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
 						    	$('#dialog-error-message').dialog('open');
+						    	return;
 					      }   
 						}); 
 						updateWIPWarningForGroup( from, false );
 						updateWIPWarningForGroup( to, true );
 						updateTaskCountForGroup( from );
 						updateTaskCountForGroup( to );
+						return;
 				}
 			}).disableSelection();
 		});
@@ -342,9 +345,11 @@ echo " { height: 20px; }\n";
 						  }
 					});  
 					$( this ).dialog( "close" );
+					return;
 				},
 				Cancel: function() {
 					$( this ).dialog( "close" );
+					return;
 				},
 				Ok: function() {
 					var dataString = $("#updatetask").serialize();
@@ -361,6 +366,7 @@ echo " { height: 20px; }\n";
 						  }
 					});  
 					$( this ).dialog( "close" );
+					return;
 				}
 			}
 		   });
@@ -373,6 +379,7 @@ echo " { height: 20px; }\n";
 			buttons: {
 				Cancel: function() {
 					$( this ).dialog( "close" );
+					return;
 				},
 				Ok: function() {
 					var dataString = $("#newtask").serialize();
@@ -389,6 +396,7 @@ echo " { height: 20px; }\n";
 					  }  
 					});  
 					$( this ).dialog( "close" );
+					return;
 				}
 			}
 		   });
