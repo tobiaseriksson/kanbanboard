@@ -910,8 +910,8 @@ class kanban extends Controller {
 				//echo "w".$currentweek.",".$diagrameffiency[ $currentweek ];
 			}
 		}
-		if( $totalresourcediff > 0 ) $teamefficiency = 100 * $totaldiff / $totalresourcediff;
-		else $teamefficiency = $pagedata['initialteamefficiency'];
+		//if( $totalresourcediff > 0 ) $teamefficiency = 100 * $totaldiff / $totalresourcediff;
+		$teamefficiency = $pagedata['initialteamefficiency'];
 		// echo "teamefficiency=".$teamefficiency;
 		
 		$efficiencydiagram = array();
@@ -921,25 +921,28 @@ class kanban extends Controller {
 		}
 		
 		$pagedata['efficiencydiagram'] = $efficiencydiagram;
-		$pagedata['teamefficiency'] = $teamefficiency;
+		if( $totalresourcediff > 0 ) $pagedata['teamefficiency'] = 100 * $totaldiff / $totalresourcediff;
+		else $pagedata['teamefficiency'] = $teamefficiency;
 		
 		// Projected path
 		$sql="SELECT datediff( s.date, ? ) as day, sum( s.effort ) as tot FROM kanban_resource r , kanban_resource_schedule s WHERE r.id = s.resource_id AND r.project_id = ? AND s.date >= ? AND s.date <= ? group by s.date order by s.date";
 		$diagramprojected = array();
-		$query = $this->db->query( $sql, array($startdate,$projectid,$startdate,$enddate) );
+		$query = $this->db->query( $sql, array($startdate,$projectid,date("Y-m-d",$nowtime),$enddate) );
 		$i=0;
 		$points = 0;
 		if( $days > 0 ) $points = $diagramactual[ $days-1 ][1];
 		$diagramprojected[$i] =  array( $days-1, $points );
 		$i = $i + 1;
+		//echo "days=".$days."<br>";
 		foreach ($query->result_array() as $row)
 		{	
 			$value = $row['tot'];
 			$day = $row['day'];
 			if( $day > ($days-1) ) {
-				$points = $points - ( $value * ($teamefficiency / 100) );
+				$points = $points - ( $value * $teamefficiency / 100 );
 				$diagramprojected[$i] =  array(  $day,  $points );
 				$i = $i + 1;
+				// echo "d=".$day.",v=".$value.",calc=".$value.",".$teamefficiency.",p=".$points."<br>";
 			}
 		}
 		$pagedata['diagramprojected'] = $diagramprojected;
