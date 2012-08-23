@@ -352,6 +352,10 @@ echo " { height: 20px; }\n";
 					return;
 				},
 				Ok: function() {
+					if( $("#taskid").val() <= 0 ) {
+						$("#error-message").html("Failed to update, the task information was corrupted!");
+				    	$('#dialog-error-message').dialog('open');
+					}
 					var dataString = $("#updatetask").serialize();
 					$.ajax({  
 					  type: "POST",  
@@ -416,9 +420,22 @@ echo " { height: 20px; }\n";
 			  }
 		});
 	}
-	
+
+	function resetTaskDetailsInEditForm() {
+		$("#groupresult").html("reset");
+		$("#heading").val( "" );
+		$("#taskdescription").val( "" );
+		$("#priority").val( 100 );
+		$("#estimation").val( 0 );
+		$("#todays_estimation").val( 0 );
+		$("#taskid").val( 0 );
+		$("#colortag").val( 0 );			
+		$("#newsprintid").val( 0 );  	
+		$("#workpackage_id").val( 0 );  	
+	}
 	
 	function fillInFormTaskDetails( taskid ) {
+		resetTaskDetailsInEditForm();
 		var projectid = <?php echo $projectid; ?>;
 		var dataString = "";
 		$.ajax({  
@@ -429,15 +446,11 @@ echo " { height: 20px; }\n";
 			$("#groupresult").html("success="+data.heading);
 			$("#heading").val( data.heading);
 			$("#taskdescription").val( data.taskdescription);
-			$("#priority").val( data.priority);
 			$("#estimation").val( data.estimation);
 			$("#todays_estimation").val( data.todays_estimation);
 			$("#priority").val( data.priority);
-			$("#projectid").val( data.projectid);
-			$("#sprintid").val( data.colortag);
 			$("#taskid").val( data.taskid);
 			$("#colortag").val( data.colortag);			
-			$("#sprintid").val( data.sprintid);			
 			$("#newsprintid").val( data.sprintid);  	
 			$("#workpackage_id").val( data.workpackage_id);  				     
 		  }, 
