@@ -7,7 +7,6 @@
 	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
 	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.23.custom.css" rel="stylesheet" />
-	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 	<link type="text/css" href="/assets/css/postits.css" rel="stylesheet" />	
 
@@ -461,19 +460,6 @@ echo " { height: 20px; }\n";
 		});  
 	}
 	</script>
-
-
-		
-		<script src="/assets/ticker/includes/jquery.ticker.js" type="text/javascript"></script>
-		<script type="text/javascript">
-			$(function () {
-				$('#js-news').ticker({
-					controls: false,
-					fadeInSpeed: 600,
-					titleText: 'Latest !'
-				});
-			});
-		</script>	
 
 		<script type="text/javascript">
 			$(function () {
