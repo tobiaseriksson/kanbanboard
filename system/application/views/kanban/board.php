@@ -14,7 +14,7 @@
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 	<script type="text/javascript" src="/assets/js/raphael-min.js"></script>  
-	<script type="text/javascript" src="/assets/js/bind.js"></script>  // this is included to overcome a limitation in Safaris mobile javascript engine that does not have the bind-funtion implemented
+	<script type="text/javascript" src="/assets/js/bind.js"></script>  <!--  this is included to overcome a limitation in Safaris mobile javascript engine that does not have the bind-funtion implemented  -->
     <script type="text/javascript" src="/assets/js/timeline.js"></script> 
     <script type="text/javascript">
         
@@ -251,28 +251,32 @@ echo " { height: 20px; }\n";
 			$( 'li', group ).not(':first').each( function() {
 					var prio = $('div.inside-postit-footer-prio',this).text(); // .match( /\d+$/ );
 					prio = parseInt( prio.replace(/[^\d.,]/g, "") );
+					var age = $('div.inside-postit-footer-age',this).text(); // .match( /\d+$/ );
+					age = parseInt( age.replace(/[^\d.,]/g, "") );
 					html = $(this);
-					arrayOfTasks[ i++ ] = new Array( prio, html );
+					arrayOfTasks[ i++ ] = new Array( prio, age, html );
 				} );
-			arrayOfTasks.sort( sortOnPrioAlgorithm );
+			arrayOfTasks.sort( sortOnPrioAndAgeAlgorithm );
 			arrayOfTasks.reverse(); // Highest prio first
 			html = $( 'li:first', group ); // Group-Header first
 			$(group).html( html );
 			// add the Tasks back one by one in the right order
 			$.each( arrayOfTasks, function( key, val) { 
-				$(group).append( val[1] ); 
+				$(group).append( val[2] ); 
 				} 
 			);
 			
 		}
 
-		// objX is array( prio, obj ) 
-		function sortOnPrioAlgorithm( objA, objB ) {
+		// objX is array( prio, age, obj ) 
+		function sortOnPrioAndAgeAlgorithm( objA, objB ) {
 			if( objA[0] < objB[0] ) return -1;
 			if( objA[0] > objB[0] ) return 1;
+			if( objA[1] < objB[1] ) return -1;
+			if( objA[1] > objB[1] ) return 1;
 			return 0;
 		} 
-			
+		
 	</script>
 
 
