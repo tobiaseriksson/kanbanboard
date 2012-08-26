@@ -14,6 +14,7 @@
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 	<script type="text/javascript" src="/assets/js/raphael-min.js"></script>  
+	<script type="text/javascript" src="/assets/js/bind.js"></script>  // this is included to overcome a limitation in Safaris mobile javascript engine that does not have the bind-funtion implemented
     <script type="text/javascript" src="/assets/js/timeline.js"></script> 
     <script type="text/javascript">
         

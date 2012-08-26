@@ -1,4 +1,3 @@
-
          function TimeLine( _canvasId, _width, _height ) {
         	this.paper = null;
         	this.arrayOfHeadlinesAndDates = [];
@@ -75,7 +74,7 @@
 	       		// Position the notes at the dates
 				var textPositionOffsets = [ 0.5 * this.height / 2 , -0.5 * this.height / 2, 0.75 * this.height / 2, -0.75 * this.height / 2 ];
 				var textOffsetIndex = 0;
-				path="";
+				var path="";
 				var over = true;
 				for( var i = 0; i < this.sortedHeadlines.length; i++ ) {
 					var d = this.sortedHeadlines[i][0].split('-');
@@ -85,7 +84,7 @@
 					tmpDate.setDate( d[2] );
 					var t  = tmpDate.getTime();
 					var days = (t - this.startDate) / (1000*3600*24);
-					x = days * this.pixelsPerDay;
+					var x = days * this.pixelsPerDay;
 					var noteString = this.sortedHeadlines[i][1];
 					if( textOffsetIndex >= textPositionOffsets.length ) textOffsetIndex = 0;
 					var textOffset = textPositionOffsets[ textOffsetIndex ];
@@ -161,7 +160,7 @@
 			    	this.currentXPosition = this.currentXPosition - this.xStep;
 			    	var t = "t"+this.currentXPosition+",0";
 	            	this.timeline.animate( { transform: t}, this.xStep, ">" );
-	            }.bind(this));     
+	            }.bind(this));
 	        }
 	        
 	        TimeLine.prototype.animateToToday = function() {
@@ -194,9 +193,11 @@
 				var editIcon = this.paper.path( editIconPath );
 		    	editIcon.attr({ fill: "#ccc", stroke: "none" } );
 		    	editIcon.transform( "t"+(this.width-32)+","+(this.height-32) );
+				
 				editIcon.click(function () {
             		window.location = this.editHeadlinesUrl;
-            	}.bind(this)); 
+            	}.bind(this));
+            	
 			}
 			
 			TimeLine.prototype.setEditIconURL = function( _editHeadlinesUrl ) {
