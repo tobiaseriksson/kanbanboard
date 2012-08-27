@@ -837,8 +837,10 @@ class kanban extends Controller {
 		
 		// Now finally create the diagram array of (x,y)-values where x = DAY since start-date
 		$diagramactual = array();
+		$progressmatrixtotal = array();
 		for( $i = 0; $i < $days; $i++ ) {
 				$diagramactual[ $i ] = array(  $i,  0 );
+				$progressmatrixtotal[ $i ] = 0;
 		}
 		
 		// Summarize column by column
@@ -848,10 +850,13 @@ class kanban extends Controller {
 				$value = intval( $arr[ $day ] );
 				// echo "day = ".$day." = ".$value;
 				$diagramactual[ $day ][ 1 ] = $diagramactual[ $day ][ 1 ] + $value;
+				$progressmatrixtotal[ $day ] = $progressmatrixtotal[ $day ] + $value;
 			}
 		}
 		
 		$pagedata['diagramactual'] = $diagramactual;
+		
+		$pagedata['progressmatrixtotal'] = $progressmatrixtotal;
 		
 		// 
 		// Weekly Efficency diagram

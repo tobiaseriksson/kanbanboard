@@ -271,6 +271,8 @@
 
 Sprint duration is <?php echo $totaldays; ?> days<br><br>
 
+Sprint Estimation is <?php echo $totalestimation; ?> points<br><br>
+
 Current velocity is <?php echo round( $velocity, 1); ?> points / day<br><br> 
 
 Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based on progress / available resources)<br> 
@@ -302,6 +304,18 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 			}
 			echo "</tr>";
 		}
+		echo "<tr><td>Total : </td><td>".$totalestimation."</td>";
+		$previousvalue=$totalestimation;
+		for( $day = 0; $day < count($progressmatrixtotal); $day++ ) {
+			$value = intval( $progressmatrixtotal[ $day ] );
+			// echo ",(".$day.")";
+			$style = '';
+			if( $value > $previousvalue ) $style = 'style="background-color:red; color:white;"';
+			if( $value < $previousvalue ) $style = 'style="background-color:green; color:white;"';
+			echo "<td ".$style.">".$value."</td>";
+			$previousvalue=$value;
+		}
+		echo "</tr>";
 		echo "</table>";
 ?>
 <br>
