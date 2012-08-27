@@ -41,7 +41,7 @@ foreach ($taskcomments as $comment) {
 	<div class="taskcomment" id="c1">
 		<p class="info">Comment by <?php echo htmlentities($comment['who']); ?> | <time datetime="<?php echo $comment['timestamp']; ?>" class="date"><?php echo $comment['timestamp']; ?></time></p>
 		<div class="comment">
-			<?php echo htmlentities($comment['comment']); ?>
+			<?php echo nl2br( htmlentities($comment['comment']) ); ?>
 		</div>
 	</div>
 

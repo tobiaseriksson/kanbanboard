@@ -551,7 +551,7 @@ foreach ($groups as $group) {
 <div class="inside-postit">
 <div class="inside-postit-header-and-text">
 <div class="inside-postit-header">'.$row['heading'].'</div>
-<div class="inside-postit-text">'.$row['description'].'</div>
+<div class="inside-postit-text">'.nl2br($row['description']).'</div>
 </div>
 <div class="inside-postit-footer">
 <div class="inside-postit-footer-prio" title="Prio">
