@@ -227,10 +227,12 @@
 		$tmp2 = intval( $wpmatrix[ $itemid ][ 5 ] );
 		
 		$wpnewestimate = $wpnewestimate + $tmp2;
-		
-		$tmp3 = 100-(round((100*$tmp2/$tmp1),2));
-		echo "<td>".($tmp3)."%</td>"; // Progress
-		
+		if( $tmp1 > 0 ) {
+			$tmp3 = 100-(round((100*$tmp2/$tmp1),2));
+			echo "<td>".($tmp3)."%</td>"; // Progress
+		} else {
+			echo "<td>N/A</td>"; // Progress
+		}
 		echo "</tr>";
 	}
 	if( $wpname != "" ) {
