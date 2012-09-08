@@ -191,7 +191,7 @@ echo " { height: 20px; }\n";
 						var toObj = this;
 						var task = ui.item.attr("id").replace( "task", "" );
 						var last = <?php echo $lastgroupid; ?>;
-						var dataString = 'from='+ from + '&to=' + to + "&task=" + task + "&last=" + last;
+						var dataString = 'projectid='+ <?php echo $projectid; ?> +'&from='+ from + '&to=' + to + "&task=" + task + "&last=" + last;
 						// $("#errordiv").append("res="+dataString);
 						if( to == "" ) {
 							$("#error-message").html("Could not move Task, it does not have a target/destination.");

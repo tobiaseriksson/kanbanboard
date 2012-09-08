@@ -1357,33 +1357,38 @@ class kanban extends Controller {
 		$this->load->view('kanban/board', $pagedata);
 	}
 
-	function taskdetails($projectid,$taskid) {
+	function taskDetailsAsAnArray($projectid,$taskid) {
 //		$projectid = $this->input->post('projectid');
 //		$taskid = $this->input->post('taskid');
 		$sql = 'SELECT heading,priority,description,estimation,colortag,sprint_id,workpackage_id FROM kanban_item WHERE project_id = ? AND id = ?';
 		$query = $this->db->query( $sql,array($projectid,$taskid) );
-		$jsonarray = array();
+		$taskDetails = array();
 		if ($query->num_rows() > 0)	{
 			$row = $query->row();	
-			$jsonarray[ 'heading' ] = $row->heading;
-			$jsonarray[ 'taskdescription' ] = $row->description;
-			$jsonarray[ 'priority' ] = $row->priority;
-			$jsonarray[ 'estimation' ] = $row->estimation;	
-			$jsonarray[ 'projectid' ] = $projectid;		
-			$jsonarray[ 'sprintid' ] = $row->sprint_id;	
-			$jsonarray[ 'taskid' ] = $taskid;		
-			$jsonarray[ 'colortag' ] = $row->colortag;
-			$jsonarray[ 'workpackage_id' ] = $row->workpackage_id;			
+			$taskDetails[ 'heading' ] = $row->heading;
+			$taskDetails[ 'taskdescription' ] = $row->description;
+			$taskDetails[ 'priority' ] = $row->priority;
+			$taskDetails[ 'estimation' ] = $row->estimation;	
+			$taskDetails[ 'projectid' ] = $projectid;		
+			$taskDetails[ 'sprintid' ] = $row->sprint_id;	
+			$taskDetails[ 'taskid' ] = $taskid;		
+			$taskDetails[ 'colortag' ] = $row->colortag;
+			$taskDetails[ 'workpackage_id' ] = $row->workpackage_id;			
 		} 
 		$today = date( "Y-m-d" );
 		$sql = 'SELECT new_estimate FROM kanban_progress WHERE item_id = ? AND date_of_progress <= ? ORDER BY date_of_progress DESC LIMIT 1';
 		$query = $this->db->query( $sql, array( $taskid, $today ) );
-		$jsonarray[ 'todays_estimation' ] = $jsonarray[ 'estimation' ];
+		$taskDetails[ 'todays_estimation' ] = $taskDetails[ 'estimation' ];
 		if ($query->num_rows() > 0)	{
 			$row = $query->row();	
-			$jsonarray[ 'todays_estimation' ] = $row->new_estimate;
+			$taskDetails[ 'todays_estimation' ] = $row->new_estimate;
 		}
-		$jsondata = json_encode($jsonarray);
+		return $taskDetails;
+	}
+	
+	function taskdetails($projectid,$taskid) {
+		$taskDetails = kanban::taskDetailsAsAnArray($projectid,$taskid);
+		$jsondata = json_encode( $taskDetails );
 		echo $jsondata; 
 	}
 
@@ -1431,15 +1436,38 @@ class kanban extends Controller {
 		} 
  		echo "task-id=".$taskid."<br>";	
 		echo "inserted into db!";
+		$change = "Added new Task\n";
+		$change = $change."ID: ".$taskid."\n";
+		$change = $change."Heading: ".$heading."\n";
+		$change = $change."Priority: ".$priority."\n";
+		$change = $change."Estimation: ".$estimation."\n";
+		$change = $change."Description: ".$taskdescription."\n";
+		kanban::addToHistory($projectid,$change);
+	}
+	
+	function addToHistory($project_id,$change) {
+		$data = array(
+			'project_id' => $project_id,
+			'who' => 'N/A',
+			'change' => $change
+		);
+		$this->db->insert('kanban_history',$data);
 	}
 
 	function deletetask() {		
+		$projectid = $this->input->post('projectid');
 		$taskid = $this->input->post('taskid');
+		$heading = $this->input->post('heading');
 		$this->db->where('id', $taskid);
-		$this->db->delete('kanban_item');						
+		$this->db->delete('kanban_item');	
+		$change = "Deleted Task\n";
+		$change = $change."ID: ".$taskid."\n";
+		$change = $change."Heading: ".$heading."\n";
+		kanban::addToHistory($projectid,$change);					
 	}
 
 	function updatetask() {
+		$projectid = $this->input->post('projectid');
 		$taskid = $this->input->post('taskid');
 		$heading = $this->input->post('heading');
 		$priority = $this->input->post('priority');
@@ -1453,11 +1481,9 @@ class kanban extends Controller {
 		$workpackage_id = $this->input->post('workpackage_id');
 		$newsprintid = $this->input->post('newsprintid');
 		$today = date( "Y-m-d" );
-		echo "head=".$heading."<br>";
-		echo "prio=".$priority."<br>";	
-		echo "desc=".$taskdescription."<br>";
-		echo "est=".$estimation."<br>";
-		echo "tag=".$colortag."<br>";
+
+		$oldTaskDetails = kanban::taskDetailsAsAnArray($projectid,$taskid);
+
 		$data = array(			
 			'heading' => $heading,
 			'priority' => $priority,
@@ -1474,17 +1500,34 @@ class kanban extends Controller {
 		$query = $this->db->query($sql,array( $taskid,$todays_estimation,$today,$taskid,$todays_estimation,$today) ); 
 
 		echo "db updated!";
+		$change = "Task Updated\n";
+		$change = $change."From :\n";
+		$change = $change."ID: ".$taskid."\n";
+		$change = $change."Heading: ".$oldTaskDetails['heading']."\n";
+		$change = $change."Priority: ".$oldTaskDetails['priority']."\n";
+		$change = $change."Estimation: ".$oldTaskDetails['estimation']."\n";
+		$change = $change."Todays Estimation: ".$oldTaskDetails['todays_estimation']."\n";
+		$change = $change."Description: ".$oldTaskDetails['taskdescription']."\n";
+		$change = $change."\nTo :\n";
+		$change = $change."Heading: ".$heading."\n";
+		$change = $change."Priority: ".$priority."\n";
+		$change = $change."Estimation: ".$estimation."\n";
+		$change = $change."Todays Estimation: ".$todays_estimation."\n";
+		$change = $change."Description: ".$taskdescription."\n";
+		
+		kanban::addToHistory($projectid,$change);
 	}
 
 	function move() {
+		$projectid = $this->input->post('projectid');
 		$from = $this->input->post('from');
 		$to = $this->input->post('to');
 		$last = $this->input->post('last');
-		$task = $this->input->post('task');
+		$taskid = $this->input->post('task');
 		$today = date( "Y-m-d" );
 		echo "from=".$from."<br>";
 		echo "to=".$to."<br>";
-		echo "task=".$task."<br>";	
+		echo "task=".$taskid."<br>";	
 		echo "last=".$last."<br>";	
 		if( $to == $last ) {
 			$data = array(
@@ -1498,11 +1541,25 @@ class kanban extends Controller {
 				'enddate' => '0000-00-00'
 				);		
 		}
-		$this->db->where('id', $task);
+		$this->db->where('id', $taskid);
 		$this->db->update('kanban_item', $data);
 		echo "moved in db!";
+		$fromTitle = 'N/A';
+		$toTitle = 'N/A';
+		$taskidDetails = kanban::taskDetailsAsAnArray($projectid,$taskid);
+		$groupDetails = kanban::groupsAsAnArray($projectid);
+		foreach( $groupDetails as $groupDetail )  {
+			if( $groupDetail['id'] == $from ) $fromTitle = $groupDetail['name'];
+			if( $groupDetail['id'] == $to ) $toTitle = $groupDetail['name'];
+		}
+		$change = "Task Moved\n";
+		$change = $change."ID: ".$taskid."\n";
+		$change = $change."Heading: ".$taskidDetails['heading']."\n";
+		$change = $change."From: ".$fromTitle."\n";
+		$change = $change."To: ".$toTitle."\n";
+		kanban::addToHistory($projectid,$change);
 	}
-
+	
 	function editworkpackage() {
 		$name = $this->input->post('editworkpackage_name');
 		$wpid = $this->input->post('editworkpackage_id');
@@ -1610,6 +1667,7 @@ class kanban extends Controller {
 		
 		echo "inserted into db!";
 	}
+
 
 
 	function addgroup() {
@@ -2327,15 +2385,55 @@ class kanban extends Controller {
 			'comment' => $comment
 			);
 		$this->db->insert('kanban_item_comment', $data);	
+		
+		
+		$taskidDetails = kanban::taskDetailsAsAnArray($projectid,$taskid);
+		$change = "Task Comment added\n";
+		$change = $change."ID: ".$taskid."\n";
+		$change = $change."Heading".$taskidDetails['heading']."\n";
+		$change = $change."New Comment: ".$comment."\n";
+		kanban::addToHistory($projectid,$change);
 	}
 	
 	function deletetaskcomment($projectid, $commentid ) {
 		if( kanban::hasAccess(  $projectid ) != TRUE ) {
 			return;
 		}
+		
+		$sql = 'SELECT id,item_id,timestamp,who,comment FROM kanban_item_comment WHERE id = ? ORDER BY timestamp DESC';
+		$query = $this->db->query( $sql, array($commentid) );
+		if ($query->num_rows() > 0)	{
+			$res = $query->result_array();		
+			// print_r( $release );		
+			$commentid = $res[0]['id'];
+			$taskid = $res[0]['item_id'];
+			$comment = $res[0]['comment'];	
+		} 
+	
 		$this->db->where('id', $commentid);
-		$this->db->delete('kanban_item_comment');		
+		$this->db->delete('kanban_item_comment');	
+		
+		$taskidDetails = kanban::taskDetailsAsAnArray($projectid,$taskid);
+		$change = "Task Comment deleted\n";
+		$change = $change."ID: ".$taskid."\n";
+		$change = $change."Heading".$taskidDetails['heading']."\n";
+		$change = $change."Deleted Comment: ".$comment."\n";
+		kanban::addToHistory($projectid,$change);
 	}
+	
+	function groupsAsAnArray($projectid) {
+		$sql='SELECT id,name,wip FROM kanban_group WHERE project_id = ? ORDER BY displayorder';
+		$query = $this->db->query($sql,array($projectid));
+		$i=0;
+		$groups = array();
+		foreach ($query->result_array() as $row)
+		{
+			$groups[$i]=$row;			
+			$i++;
+		}
+		return $groups;
+	}
+
 }
 
 ?>
