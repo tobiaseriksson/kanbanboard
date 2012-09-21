@@ -132,9 +132,38 @@
 					markers: false,
 					animate:{duration: 1000} 
 				});
+
+
+				/*
+				* parses a date yyyy-mm-dd  e.g. 2012-09-21 as in 21;st of September 2012
+				*
+				*/
+				function parseDate(input) {
+					  var parts = input.match(/(\d+)/g);
+					  // new Date(year, month [, date [, hours[, minutes[, seconds[, ms]]]]])
+					  return new Date(parts[0], parts[1]-1, parts[2]); // months are 0-based
+				}
+
+				var months = [ 'Jan', 'Feb', 'Mar', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ];
+				var startDateString = "<?php echo $startdate; ?>";
+				var startDate = parseDate( startDateString );
+				var startDateAsMilliSecondsSinceEPOC = startDate.getTime();
+				var oneDayInMilliSeconds = 3600 * 24 * 1000;
+				var firstMonthDisplayed = 0;
 				
 				// Add axes
-				chart.addAxis("x",{  min: 0, fixLower: "major", fixUpper: "major"   });
+				var myLabelFunc = function(text, value, precision){
+					var dateInMilliSecondsSinceEPOC = startDateAsMilliSecondsSinceEPOC + ( value * 	oneDayInMilliSeconds );
+					var theDate = new Date( dateInMilliSecondsSinceEPOC );
+					var dayOfMonth = theDate.getDate();
+					if( firstMonthDisplayed <= 0 || dayOfMonth % 10 == 0 || dayOfMonth == 1 ) {
+						var month = months[ theDate.getMonth() ];
+						firstMonthDisplayed = 1;
+						return dayOfMonth + ' ' + month;
+					} 
+					return dayOfMonth;
+				};
+				chart.addAxis("x",{  min: 0, labelFunc: myLabelFunc   });
 				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
 
 				// Add the series of data
