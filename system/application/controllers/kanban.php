@@ -1697,11 +1697,16 @@ class kanban extends Controller {
 		//
 		// add the NEW group to the second position
 		//
+		kanban::addgroup_helper( $projectid, $name, 2, $wip );
+	}
+	
+	
+	function addgroup_helper( $projectid, $name, $displayorder, $wip ) {
 		$data = array(
 			'name' => $name,
 			'wip' => $wip,
 			'project_id' => $projectid,
-			'displayorder' => 2
+			'displayorder' => $displayorder
 			);
 		$this->db->insert('kanban_group', $data);	
 		echo "inserted into db!";
@@ -2052,35 +2057,25 @@ class kanban extends Controller {
 		//
 		// Add 'unassigned', 'Ongoing' and 'finished' groups
 		//		
+		$wip = 0;
 		$name = 'Unassigned';
 		$displayorder = 1;
-		$data = array(
-			'name' => $name,
-			'project_id' => $projectid,
-			'displayorder' => $displayorder
-			);
-		$this->db->insert('kanban_group', $data);
-
+		kanban::addgroup_helper( $projectid, $name, $displayorder, $wip );
+		
 		$name = 'Ongoing';
-		$displayorder = 1;
-		$data = array(
-			'name' => $name,
-			'project_id' => $projectid,
-			'displayorder' => $displayorder
-			);
-		$this->db->insert('kanban_group', $data);
-
+		$displayorder = 2;
+		kanban::addgroup_helper( $projectid, $name, $displayorder, $wip );
+		
 		$name = 'Finished';
-		$displayorder = 1;
-		$data = array(
-			'name' => $name,
-			'project_id' => $projectid,
-			'displayorder' => $displayorder
-			);
-		$this->db->insert('kanban_group', $data);
-
+		$displayorder = 3;
+		kanban::addgroup_helper( $projectid, $name, $displayorder, $wip );
+		
+		//
+		// Add default workpackage
+		// 
+		kanban::addworkpackage_helper( "Default", $projectid );
+		
 		$redirect_to_url="/kanban/project/".$projectid;
-
 		header("Location: ".$redirect_to_url );
 	}
 
