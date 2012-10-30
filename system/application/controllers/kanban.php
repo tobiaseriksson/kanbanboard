@@ -733,8 +733,8 @@ class kanban extends Controller {
 		
 		
 		// fill in the 'new' daily estimations for each day we have information  
-		$sql="SELECT p.item_id as id,datediff(p.date_of_progress, ?) days_since_sprint_start,p.new_estimate as estimation FROM `kanban_item` i, kanban_progress p WHERE p.item_id = i.id AND i.sprint_id = ? ORDER BY item_id,days_since_sprint_start";
-		$query = $this->db->query( $sql,array($startdate,$sprintid) );
+		$sql="SELECT p.item_id as id,datediff(p.date_of_progress, ?) days_since_sprint_start,p.new_estimate as estimation FROM `kanban_item` i, kanban_progress p WHERE p.item_id = i.id AND i.sprint_id = ? AND p.date_of_progress >= ? ORDER BY item_id,days_since_sprint_start";
+		$query = $this->db->query( $sql,array($startdate,$sprintid,$startdate) );
 		if ($query->num_rows() > 0)	{
 			foreach ($query->result_array() as $row)
 			{	
