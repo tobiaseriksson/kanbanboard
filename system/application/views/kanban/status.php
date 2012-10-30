@@ -163,7 +163,7 @@
 					} 
 					return dayOfMonth;
 				};
-				chart.addAxis("x",{  min: 0, labelFunc: myLabelFunc   });
+				chart.addAxis("x",{  min: 0, fixUpper: "major", labelFunc: myLabelFunc   });
 				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
 
 				// Add the series of data
