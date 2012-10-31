@@ -317,8 +317,55 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 <h2>Progress History Matrix</h2>
 <?php 
 		echo "<table border=1px >";
-		echo "<th>Heading</th><th>Orig Est.</th>";
-		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
+		
+		 $endtime = strtotime($enddate);
+		 $starttime = strtotime($startdate);
+		 $totaldays = floor( ($endtime - $starttime) / 86400 ); 
+		 
+		 $monthhtml = '<tr><th></th><th>Month</th>';
+		 $weekhtml = '<tr><th></th><th>Week</th>';
+		 $dayhtml = '<tr><th>Heading</th><th>Date<br>Orig Est.</th>';
+		 $monthsteparraystring = '';
+		 $weeklysteparraystring = '';
+		 $colspanmonth = 1;
+		 $colspanweek = 1;
+		 $t = $starttime;
+		 $currentMonth = date( "m", $t);
+		 $currentWeek = date( "W", $t);
+		 while( $t < $endtime ) {
+		 	$month = date( "m", $t);
+		 	$week = date( "W", $t);
+		 	$date = date("d", $t);
+		 	$dayhtml = $dayhtml.'<th>'.$date.'</th>';
+			if( $month != $currentMonth ) {
+				$monthhtml = $monthhtml . '<th colspan='.($colspanmonth-1).' >'.date("M",($t-86400)).'</th>';
+				$currentMonth = $month;
+				$monthsteparraystring = $monthsteparraystring.($colspanmonth-1).',';
+				$colspanmonth = 1;
+			}
+		 	if( $week != $currentWeek ) {
+				$weekhtml = $weekhtml . '<th colspan='.($colspanweek-1).' >'.date("W",($t-86400)).'</th>';
+				$currentWeek = $week;
+				$weeklysteparraystring = $weeklysteparraystring.($colspanweek-1).',';
+				$colspanweek = 1;
+			}
+		 	$colspanmonth = $colspanmonth + 1;
+		 	$colspanweek = $colspanweek + 1;
+		 	$t = strtotime( "+1 day", $t );
+		 }
+		 
+		 $monthsteparraystring = $monthsteparraystring.$colspanmonth.',';
+		 $weeklysteparraystring = $weeklysteparraystring.$colspanweek.',';
+		 $dayhtml = $dayhtml.'<th>'.date("d", $t).'</th>';
+	  	 $weekhtml = $weekhtml . '<th colspan='.($colspanweek).' >'.date("W",$t).'</th>';
+		 $monthhtml = $monthhtml . '<th colspan='.($colspanmonth).' >'.date("M",$t).'</th>';
+		 echo $monthhtml.'</tr>';
+		 echo $weekhtml.'</tr>';
+		 echo $dayhtml.'</tr>';		
+		##$emptycells="";
+		##for( $i = 0; $i<=$totaldays; $i++) $emptycells=$emptycells."<td></td>";
+		##echo "<tr><th>Heading</th><th>Orig Est.</th>".$emptycells."</tr>";
+		
 		foreach( $progressmatrix as $id => $arr ) {
 			echo "<tr><td>".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
 			$previousvalue=$tasklookup[ $id ][1];
