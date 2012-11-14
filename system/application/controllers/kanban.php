@@ -687,7 +687,7 @@ class kanban extends Controller {
 		$pagedata['diagrameffort'] = $diagrameffort;
 		
 		$totalnumberoftasks = 0;
-		$sql="SELECT id,estimation,heading FROM kanban_item where sprint_id = ? ORDER BY id";
+		$sql="SELECT id,estimation,heading,description FROM kanban_item where sprint_id = ? ORDER BY id";
 		$query = $this->db->query( $sql,array($sprintid) );
 		$totalnumberoftasks = $query->num_rows();
 		
@@ -706,7 +706,8 @@ class kanban extends Controller {
 			$id = intval( $row['id'] );
 			$estimation = intval ( $row['estimation'] );
 			$heading = $row['heading'];
-			$tasklookup[ $id ] = array( $heading, $estimation );
+			$description = $row['description'];
+			$tasklookup[ $id ] = array( $heading, $estimation, $description );
 			$matrix[ $id ] = array();
 			for( $dayIndex = 0; $dayIndex < $days; $dayIndex++ ) {
 				$matrix[ $id ][ $dayIndex ] = -1;

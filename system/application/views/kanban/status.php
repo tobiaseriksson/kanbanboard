@@ -377,7 +377,7 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 		##echo "<tr><th>Heading</th><th>Orig Est.</th>".$emptycells."</tr>";
 		
 		foreach( $progressmatrix as $id => $arr ) {
-			echo "<tr><td>".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
+			echo "<tr><td title=\"".substr($tasklookup[ $id ][2],0,30)."\">".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
 			$previousvalue=$tasklookup[ $id ][1];
 			for( $day = 0; $day < count($arr); $day++ ) {
 				$value = intval( $arr[ $day ] );
