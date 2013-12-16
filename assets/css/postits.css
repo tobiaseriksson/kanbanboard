@@ -83,6 +83,57 @@
 	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
 }
 
+.postit6 { 
+	background-attachment: scroll;
+	background-image: url("/assets/images/simple_postit_purple.png");
+	background-position: 50% 50%;
+	background-repeat: no-repeat;		
+	color: #363636;
+	width: 100%;
+	height: 124px;
+	-moz-box-shadow: 3px 3px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+.postit7 { 
+	background-attachment: scroll;
+	background-image: url("/assets/images/simple_postit_orange.png");
+	background-position: 50% 50%;
+	background-repeat: no-repeat;		
+	color: #363636;
+	width: 100%;
+	height: 124px;
+	-moz-box-shadow: 3px 3px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+.postit8 { 
+	background-attachment: scroll;
+	background-image: url("/assets/images/simple_postit_grey.png");
+	background-position: 50% 50%;
+	background-repeat: no-repeat;		
+	color: #363636;
+	width: 100%;
+	height: 124px;
+	-moz-box-shadow: 3px 3px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
 .inside-postit {
 	margin : 0px 0px 0px 0px;
 	padding : 0px 0px 0px 5px;
@@ -139,14 +190,18 @@
 }
 
 .inside-postit-footer-commenticon {
-	width : 12%;
+	width : 25%;
 	float : left;
 	text-align : left;
 }
 
 .inside-postit-footer-editicon {
-	width : 12%;
+	width : 10%;
 	position : absolute;
 	bottom : 0;
 	right : 0;
 }
+
+
+
+

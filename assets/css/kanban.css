@@ -150,4 +150,6 @@ div.kanbanboard { display: block; color: black; border-style: none; margin: 50px
 	display: inline-block;
 }
 
-
+.grouptitle {
+	margin-top: -5px;
+}
