@@ -5,12 +5,12 @@
 	<! base href="http://kanban.tsoft.se/" />
 	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
-	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.23.custom.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
-	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"
@@ -124,8 +124,32 @@
 					animate:{duration: 1000} 
 				});
 				
+				function parseDate(input) {
+					  var parts = input.match(/(\d+)/g);
+					  // new Date(year, month [, date [, hours[, minutes[, seconds[, ms]]]]])
+					  return new Date(parts[0], parts[1]-1, parts[2]); // months are 0-based
+				}
+
+				var months = [ 'Jan', 'Feb', 'Mar', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ];
+				var startDateString = "<?php echo $startdate; ?>";
+				var startDate = parseDate( startDateString );
+				var startDateAsMilliSecondsSinceEPOC = startDate.getTime();
+				var oneDayInMilliSeconds = 3600 * 24 * 1000;
+				var firstMonthDisplayed = 0;
+				
 				// Add axes
-				chart.addAxis("x",{  min: 0, fixLower: "major", fixUpper: "major"   });
+				var myLabelFunc = function(text, value, precision){
+					var dateInMilliSecondsSinceEPOC = startDateAsMilliSecondsSinceEPOC + ( value * 	oneDayInMilliSeconds );
+					var theDate = new Date( dateInMilliSecondsSinceEPOC );
+					var dayOfMonth = theDate.getDate();
+					if( firstMonthDisplayed <= 0 || dayOfMonth % 10 == 0 || dayOfMonth == 1 ) {
+						var month = months[ theDate.getMonth() ];
+						firstMonthDisplayed = 1;
+						return dayOfMonth + ' ' + month;
+					} 
+					return dayOfMonth;
+				};
+				chart.addAxis("x",{  min: 0, labelFunc: myLabelFunc   });
 				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
 
 				// Add the series of data
@@ -227,10 +251,12 @@
 		$tmp2 = intval( $wpmatrix[ $itemid ][ 5 ] );
 		
 		$wpnewestimate = $wpnewestimate + $tmp2;
-		
-		$tmp3 = 100-(round((100*$tmp2/$tmp1),2));
-		echo "<td>".($tmp3)."%</td>"; // Progress
-		
+		if( $tmp1 > 0 ) {
+			$tmp3 = 100-(round((100*$tmp2/$tmp1),2));
+			echo "<td>".($tmp3)."%</td>"; // Progress
+		} else {
+			echo "<td>N/A</td>"; // Progress
+		}
 		echo "</tr>";
 	}
 	if( $wpname != "" ) {

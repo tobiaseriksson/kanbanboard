@@ -5,12 +5,24 @@
 	<! base href="http://kanban.tsoft.se/" />
 	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
-	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.23.custom.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
-	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript">
+    var djConfig = {
+        parseOnLoad: false,
+        isDebug: false,
+        modulePaths: {
+            "dojo": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo",
+            "dijit": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dijit",
+            "dojox": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojox" 
+        }
+    };
+	</script>
+
+	<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"
@@ -95,6 +107,15 @@
 				$tmpstr = $tmpstr." ];\n";
 				echo $tmpstr;
 				
+				$tmpstr = "var projected2  = [ ";
+				foreach ($diagramprojected2 as $row)
+				{			
+					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
+				}
+				$tmpstr = trim( $tmpstr, "," );
+				$tmpstr = $tmpstr." ];\n";
+				echo $tmpstr;
+				
 				$tmpstr = "var plan  = [ ";
 				foreach ($diagrameffort as $row)
 				{			
@@ -120,15 +141,45 @@
 					markers: false,
 					animate:{duration: 1000} 
 				});
+
+
+				/*
+				* parses a date yyyy-mm-dd  e.g. 2012-09-21 as in 21;st of September 2012
+				*
+				*/
+				function parseDate(input) {
+					  var parts = input.match(/(\d+)/g);
+					  // new Date(year, month [, date [, hours[, minutes[, seconds[, ms]]]]])
+					  return new Date(parts[0], parts[1]-1, parts[2]); // months are 0-based
+				}
+
+				var months = [ 'Jan', 'Feb', 'Mar', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ];
+				var startDateString = "<?php echo $startdate; ?>";
+				var startDate = parseDate( startDateString );
+				var startDateAsMilliSecondsSinceEPOC = startDate.getTime();
+				var oneDayInMilliSeconds = 3600 * 24 * 1000;
+				var firstMonthDisplayed = 0;
 				
 				// Add axes
-				chart.addAxis("x",{  min: 0, fixLower: "major", fixUpper: "major"   });
+				var myLabelFunc = function(text, value, precision){
+					var dateInMilliSecondsSinceEPOC = startDateAsMilliSecondsSinceEPOC + ( value * 	oneDayInMilliSeconds );
+					var theDate = new Date( dateInMilliSecondsSinceEPOC );
+					var dayOfMonth = theDate.getDate();
+					if( firstMonthDisplayed <= 0 || dayOfMonth % 10 == 0 || dayOfMonth == 1 ) {
+						var month = months[ theDate.getMonth() ];
+						firstMonthDisplayed = 1;
+						return dayOfMonth + ' ' + month;
+					} 
+					return dayOfMonth;
+				};
+				chart.addAxis("x",{  min: 0, fixUpper: "major", labelFunc: myLabelFunc   });
 				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
 
 				// Add the series of data
 				chart.addSeries("Baseline",baseline, {plot: "Lines", stroke: {color:"green"} });
 				chart.addSeries("Progress",progress, {plot: "Lines", stroke: {color:"blue", style: "Solid"} });
-				chart.addSeries("Projected",projected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
+				chart.addSeries("<?php echo round( $initialteamefficiency, 0); ?>%efficiency",projected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
+				chart.addSeries("<?php echo round( $teamefficiency, 0); ?>%efficiency",projected2, {plot: "Lines", stroke: {color:"#EE0012", style: "Dash"} });
 				chart.addSeries("Plan",plan, {plot: "Lines", stroke: {color:"red"} });
 				
 				// Render the chart!
@@ -259,6 +310,8 @@
 
 Sprint duration is <?php echo $totaldays; ?> days<br><br>
 
+Sprint Estimation is <?php echo $totalestimation; ?> points<br><br>
+
 Current velocity is <?php echo round( $velocity, 1); ?> points / day<br><br> 
 
 Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based on progress / available resources)<br> 
@@ -274,10 +327,57 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 <h2>Progress History Matrix</h2>
 <?php 
 		echo "<table border=1px >";
-		echo "<th>Heading</th><th>Orig Est.</th>";
-		for( $i=1; $i<=$days; $i++) echo "<th>".$i."</th>";
+		
+		 $endtime = strtotime($enddate);
+		 $starttime = strtotime($startdate);
+		 $totaldays = floor( ($endtime - $starttime) / 86400 ); 
+		 
+		 $monthhtml = '<tr><th></th><th>Month</th>';
+		 $weekhtml = '<tr><th></th><th>Week</th>';
+		 $dayhtml = '<tr><th>Heading</th><th>Date<br>Orig Est.</th>';
+		 $monthsteparraystring = '';
+		 $weeklysteparraystring = '';
+		 $colspanmonth = 1;
+		 $colspanweek = 1;
+		 $t = $starttime;
+		 $currentMonth = date( "m", $t);
+		 $currentWeek = date( "W", $t);
+		 while( $t < $endtime ) {
+		 	$month = date( "m", $t);
+		 	$week = date( "W", $t);
+		 	$date = date("d", $t);
+		 	$dayhtml = $dayhtml.'<th>'.$date.'</th>';
+			if( $month != $currentMonth ) {
+				$monthhtml = $monthhtml . '<th colspan='.($colspanmonth-1).' >'.date("M",($t-86400)).'</th>';
+				$currentMonth = $month;
+				$monthsteparraystring = $monthsteparraystring.($colspanmonth-1).',';
+				$colspanmonth = 1;
+			}
+		 	if( $week != $currentWeek ) {
+				$weekhtml = $weekhtml . '<th colspan='.($colspanweek-1).' >'.date("W",($t-86400)).'</th>';
+				$currentWeek = $week;
+				$weeklysteparraystring = $weeklysteparraystring.($colspanweek-1).',';
+				$colspanweek = 1;
+			}
+		 	$colspanmonth = $colspanmonth + 1;
+		 	$colspanweek = $colspanweek + 1;
+		 	$t = strtotime( "+1 day", $t );
+		 }
+		 
+		 $monthsteparraystring = $monthsteparraystring.$colspanmonth.',';
+		 $weeklysteparraystring = $weeklysteparraystring.$colspanweek.',';
+		 $dayhtml = $dayhtml.'<th>'.date("d", $t).'</th>';
+	  	 $weekhtml = $weekhtml . '<th colspan='.($colspanweek).' >'.date("W",$t).'</th>';
+		 $monthhtml = $monthhtml . '<th colspan='.($colspanmonth).' >'.date("M",$t).'</th>';
+		 echo $monthhtml.'</tr>';
+		 echo $weekhtml.'</tr>';
+		 echo $dayhtml.'</tr>';		
+		##$emptycells="";
+		##for( $i = 0; $i<=$totaldays; $i++) $emptycells=$emptycells."<td></td>";
+		##echo "<tr><th>Heading</th><th>Orig Est.</th>".$emptycells."</tr>";
+		
 		foreach( $progressmatrix as $id => $arr ) {
-			echo "<tr><td>".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
+			echo "<tr><td title=\"".substr($tasklookup[ $id ][2],0,30)."\">".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
 			$previousvalue=$tasklookup[ $id ][1];
 			for( $day = 0; $day < count($arr); $day++ ) {
 				$value = intval( $arr[ $day ] );
@@ -290,6 +390,18 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 			}
 			echo "</tr>";
 		}
+		echo "<tr><td>Total : </td><td>".$totalestimation."</td>";
+		$previousvalue=$totalestimation;
+		for( $day = 0; $day < count($progressmatrixtotal); $day++ ) {
+			$value = intval( $progressmatrixtotal[ $day ] );
+			// echo ",(".$day.")";
+			$style = '';
+			if( $value > $previousvalue ) $style = 'style="background-color:red; color:white;"';
+			if( $value < $previousvalue ) $style = 'style="background-color:green; color:white;"';
+			echo "<td ".$style.">".$value."</td>";
+			$previousvalue=$value;
+		}
+		echo "</tr>";
 		echo "</table>";
 ?>
 <br>

@@ -2,18 +2,19 @@
 <html lang="en"> 
 <head>
 	<meta charset="UTF-8" />
+	<meta http-equiv="refresh" content="600">
 	<! base href="http://kanban.tsoft.se/" />
 	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
-	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
-	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.23.custom.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 	<link type="text/css" href="/assets/css/postits.css" rel="stylesheet" />	
 
-	<script type="text/javascript" src="/assets/js/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
 	<script type="text/javascript" src="/assets/js/raphael-min.js"></script>  
+	<script type="text/javascript" src="/assets/js/bind.js"></script>  <!--  this is included to overcome a limitation in Safaris mobile javascript engine that does not have the bind-funtion implemented  -->
     <script type="text/javascript" src="/assets/js/timeline.js"></script> 
     <script type="text/javascript">
         
@@ -92,7 +93,7 @@ echo " { height: 20px; }\n";
 		<script type="text/javascript">
 
 			function updateWIPWarningForGroup( groupID, showAlert ) {
-				if( showAlert === undefined ) showAler = true;
+				if( showAlert === undefined ) showAlert = true;
 				var wipLimits = [];
 				<?php foreach ($groups as $group) {		
 				echo "wipLimits['".$group['id']."'] = ".$group['wip'].";\n";
@@ -125,7 +126,7 @@ echo " { height: 20px; }\n";
 				$('#kanbanboard ul').each( function(index) {
 					var count = $(this).children().size()-1;
 					$('li:first span:last',this).text("("+count+")");
-					groupID = $(this).attr("id").replace( "sortable", "" );
+					var groupID = $(this).attr("id").replace( "sortable", "" );
 					if( wipLimits[''+groupID] > 0 && count > wipLimits[''+groupID] ) {
 						$('li:first span:first',this).show();
 					} else {
@@ -190,14 +191,16 @@ echo " { height: 20px; }\n";
 						var toObj = this;
 						var task = ui.item.attr("id").replace( "task", "" );
 						var last = <?php echo $lastgroupid; ?>;
-						var dataString = 'from='+ from + '&to=' + to + "&task=" + task + "&last=" + last;
+						var dataString = 'projectid='+ <?php echo $projectid; ?> +'&from='+ from + '&to=' + to + "&task=" + task + "&last=" + last;
 						// $("#errordiv").append("res="+dataString);
 						if( to == "" ) {
-							$("#errordiv").append("Could not move Task, it does not have a target/destination.");
-							return;
+							$("#error-message").html("Could not move Task, it does not have a target/destination.");
+					    	$('#dialog-error-message').dialog('open');
+					    	return;
 						}
 						if( task == "" ) {
-							$("#errordiv").append("Could not move Task, it does not have a valid Task ID.");
+							$("#error-message").html("Could not move Task, it does not have a valid Task ID.");
+					    	$('#dialog-error-message').dialog('open');
 							return;
 						}
 						// alert ("moved");return false;
@@ -206,18 +209,23 @@ echo " { height: 20px; }\n";
 						  url: "/kanban/move",  
 						  data: dataString,  
 						  success: function(data) {  
-						    	// $("#errordiv").html("This is the result"+data);
+						    	// $("#error-message").html("This is the result"+data);
+						    	// $('#dialog-error-message').dialog('open');
 							  	// location.reload();
 							    resortGroup( toObj );
+							    return;
 						  }, 
 					      error: function(x,e) {  
-					            $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					            $("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+						    	$('#dialog-error-message').dialog('open');
+						    	return;
 					      }   
 						}); 
 						updateWIPWarningForGroup( from, false );
 						updateWIPWarningForGroup( to, true );
 						updateTaskCountForGroup( from );
 						updateTaskCountForGroup( to );
+						return;
 				}
 			}).disableSelection();
 		});
@@ -243,28 +251,32 @@ echo " { height: 20px; }\n";
 			$( 'li', group ).not(':first').each( function() {
 					var prio = $('div.inside-postit-footer-prio',this).text(); // .match( /\d+$/ );
 					prio = parseInt( prio.replace(/[^\d.,]/g, "") );
+					var age = $('div.inside-postit-footer-age',this).text(); // .match( /\d+$/ );
+					age = parseInt( age.replace(/[^\d.,]/g, "") );
 					html = $(this);
-					arrayOfTasks[ i++ ] = new Array( prio, html );
+					arrayOfTasks[ i++ ] = new Array( prio, age, html );
 				} );
-			arrayOfTasks.sort( sortOnPrioAlgorithm );
+			arrayOfTasks.sort( sortOnPrioAndAgeAlgorithm );
 			arrayOfTasks.reverse(); // Highest prio first
 			html = $( 'li:first', group ); // Group-Header first
 			$(group).html( html );
 			// add the Tasks back one by one in the right order
 			$.each( arrayOfTasks, function( key, val) { 
-				$(group).append( val[1] ); 
+				$(group).append( val[2] ); 
 				} 
 			);
 			
 		}
 
-		// objX is array( prio, obj ) 
-		function sortOnPrioAlgorithm( objA, objB ) {
+		// objX is array( prio, age, obj ) 
+		function sortOnPrioAndAgeAlgorithm( objA, objB ) {
 			if( objA[0] < objB[0] ) return -1;
 			if( objA[0] > objB[0] ) return 1;
+			if( objA[1] < objB[1] ) return -1;
+			if( objA[1] > objB[1] ) return 1;
 			return 0;
 		} 
-			
+		
 	</script>
 
 
@@ -282,6 +294,18 @@ echo " { height: 20px; }\n";
 				}
 			}
 		   });
+
+		   $( "#dialog-error-message" ).dialog({
+			   	width: 400,
+				resizable: true,
+				modal: true,
+				autoOpen: false,
+				buttons: {
+					Ok: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			});
 		});
 
 		$('#taskcommentform').submit(function() {
@@ -295,7 +319,8 @@ echo " { height: 20px; }\n";
 						$("#taskcommentform").reset();
 				  },
 				  error: function(x,e) {  
-					    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+						$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				    	$('#dialog-error-message').dialog('open');
 					  }
 				});
 			  return false;
@@ -319,15 +344,22 @@ echo " { height: 20px; }\n";
 						$('#task'+$('#taskid').val()).remove();
 					  },
 					  error: function(x,e) {  
-						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+							$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					    	$('#dialog-error-message').dialog('open');
 						  }
 					});  
 					$( this ).dialog( "close" );
+					return;
 				},
 				Cancel: function() {
 					$( this ).dialog( "close" );
+					return;
 				},
 				Ok: function() {
+					if( $("#taskid").val() <= 0 ) {
+						$("#error-message").html("Failed to update, the task information was corrupted!");
+				    	$('#dialog-error-message').dialog('open');
+					}
 					var dataString = $("#updatetask").serialize();
 					$.ajax({  
 					  type: "POST",  
@@ -337,10 +369,12 @@ echo " { height: 20px; }\n";
 					    location.reload();
 					  },
 					  error: function(x,e) {  
-						    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+							$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					    	$('#dialog-error-message').dialog('open');
 						  }
 					});  
 					$( this ).dialog( "close" );
+					return;
 				}
 			}
 		   });
@@ -353,6 +387,7 @@ echo " { height: 20px; }\n";
 			buttons: {
 				Cancel: function() {
 					$( this ).dialog( "close" );
+					return;
 				},
 				Ok: function() {
 					var dataString = $("#newtask").serialize();
@@ -364,10 +399,12 @@ echo " { height: 20px; }\n";
 						location.reload();
 					  },
 					  error: function(x,e) {  
-					    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+							$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+					    	$('#dialog-error-message').dialog('open');
 					  }  
 					});  
 					$( this ).dialog( "close" );
+					return;
 				}
 			}
 		   });
@@ -382,13 +419,27 @@ echo " { height: 20px; }\n";
 		$("#dialog-task-comments").load("/kanban/taskcommentsformandlegend/"+projectid+"/"+taskid, function(response, status, xhr) {
 			  if (status == "error") {
 			    var msg = "Sorry but there was an error: ";
-			    $("#errordiv").html(msg + xhr.status + " " + xhr.statusText);
+				$("#error-message").html(msg + xhr.status + " " + xhr.statusText);
+		    	$('#dialog-error-message').dialog('open');
 			  }
 		});
 	}
-	
+
+	function resetTaskDetailsInEditForm() {
+		$("#groupresult").html("reset");
+		$("#heading").val( "" );
+		$("#taskdescription").val( "" );
+		$("#priority").val( 100 );
+		$("#estimation").val( 0 );
+		$("#todays_estimation").val( 0 );
+		$("#taskid").val( 0 );
+		$("#colortag").val( 0 );			
+		$("#newsprintid").val( 0 );  	
+		$("#workpackage_id").val( 0 );  	
+	}
 	
 	function fillInFormTaskDetails( taskid ) {
+		resetTaskDetailsInEditForm();
 		var projectid = <?php echo $projectid; ?>;
 		var dataString = "";
 		$.ajax({  
@@ -399,37 +450,21 @@ echo " { height: 20px; }\n";
 			$("#groupresult").html("success="+data.heading);
 			$("#heading").val( data.heading);
 			$("#taskdescription").val( data.taskdescription);
-			$("#priority").val( data.priority);
 			$("#estimation").val( data.estimation);
 			$("#todays_estimation").val( data.todays_estimation);
 			$("#priority").val( data.priority);
-			$("#projectid").val( data.projectid);
-			$("#sprintid").val( data.colortag);
 			$("#taskid").val( data.taskid);
 			$("#colortag").val( data.colortag);			
-			$("#sprintid").val( data.sprintid);			
 			$("#newsprintid").val( data.sprintid);  	
 			$("#workpackage_id").val( data.workpackage_id);  				     
 		  }, 
 		  error: function(x,e) {  
-		    $("#groupresult").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+				$("#error-message").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+		    	$('#dialog-error-message').dialog('open');
 		  }  
 		});  
 	}
 	</script>
-
-
-		
-		<script src="/assets/ticker/includes/jquery.ticker.js" type="text/javascript"></script>
-		<script type="text/javascript">
-			$(function () {
-				$('#js-news').ticker({
-					controls: false,
-					fadeInSpeed: 600,
-					titleText: 'Latest !'
-				});
-			});
-		</script>	
 
 		<script type="text/javascript">
 			$(function () {
@@ -506,7 +541,7 @@ $i=1;
 $groupid=-1;
 foreach ($groups as $group) {		
 	echo '<ul id="sortable'.$group['id'].'" class="connectedSortable">';
-	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik"><span title="WIP Limit Reached" class="ui-icon ui-icon-alert wip-warning-icon"></span>'.$group['name'].'<span>()</span></li>';
+	echo '<li id="grouptitle'.$group['id'].'" class="ui-state-default rubrik"><span title="WIP Limit Reached" class="ui-icon ui-icon-alert wip-warning-icon"></span><span class="grouptitle">'.$group['name'].'</span><span>()</span></li>';
 	$groupid = $group['id'];
 	foreach ($tasks as $row)
 	{					 
@@ -516,7 +551,7 @@ foreach ($groups as $group) {
 <div class="inside-postit">
 <div class="inside-postit-header-and-text">
 <div class="inside-postit-header">'.$row['heading'].'</div>
-<div class="inside-postit-text">'.$row['description'].'</div>
+<div class="inside-postit-text">'.nl2br($row['description']).'</div>
 </div>
 <div class="inside-postit-footer">
 <div class="inside-postit-footer-prio" title="Prio">
@@ -566,7 +601,7 @@ foreach ($groups as $group) {
 					<input name="todays_estimation" id="todays_estimation" value="0"  size="3" />
 				</td></tr>
 				<tr><td> Color Tag :</td><td>
-					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
+					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option><option value="6">Purple</option><option value="7">Orange</option><option value="8">Grey</option></select>
 					</td></tr>
 				<tr><td nowrap> Workpackage :</td><td>
 					<select name="workpackage_id" id="workpackage_id">
@@ -614,7 +649,7 @@ foreach ($groups as $group) {
 						<input name="estimation" id="newtask_estimation" value="0"  size="3"  />
 					</td></tr>
 				    <tr><td> Color Tag :</td><td>
-					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option></select>
+					<select name="colortag" ><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option><option value="6">Purple</option><option value="7">Orange</option><option value="8">Grey</option></select>
 					</td></tr>			
 					<tr><td nowrap> Workpackage :</td><td>
 					<select name="workpackage_id" id="workpackage_id">
@@ -635,7 +670,16 @@ foreach ($groups as $group) {
 	</div>
 </div>
 
-
+<div id="dialog-error-message" title="Error!">
+	<p>
+			<div class="ui-widget">
+				<div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
+					<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
+					<strong>Alert:</strong> <div id="error-message">bla bla bla!</div> </p>
+				</div>
+			</div>
+	</p>
+</div>
 
 <div id="dialog-task-comments" title="Comments">	
 </div>
