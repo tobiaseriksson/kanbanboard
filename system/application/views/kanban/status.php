@@ -178,8 +178,8 @@
 				// Add the series of data
 				chart.addSeries("Baseline",baseline, {plot: "Lines", stroke: {color:"green"} });
 				chart.addSeries("Progress",progress, {plot: "Lines", stroke: {color:"blue", style: "Solid"} });
-				chart.addSeries("<?php echo round( $initialteamefficiency, 0); ?>%efficiency",projected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
-				chart.addSeries("<?php echo round( $teamefficiency, 0); ?>%efficiency",projected2, {plot: "Lines", stroke: {color:"#EE0012", style: "Dash"} });
+				chart.addSeries("<?php echo round( $initialteamefficiency, 0); ?>%-efficiency",projected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
+				chart.addSeries("<?php echo round( $teamefficiency, 0); ?>%-efficiency",projected2, {plot: "Lines", stroke: {color:"#EE0012", style: "Dash"} });
 				chart.addSeries("Plan",plan, {plot: "Lines", stroke: {color:"red"} });
 				
 				// Render the chart!

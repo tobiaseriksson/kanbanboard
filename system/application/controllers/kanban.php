@@ -948,17 +948,17 @@ class kanban extends Controller {
 				$points = $points - ( $value * $pagedata['initialteamefficiency'] / 100 );
 				$diagramprojected[$i] =  array(  $day,  $points );
 				$i = $i + 1;
-				// echo "d=".$day.",v=".$value.",calc=".$value.",".$teamefficiency.",p=".$points."<br>";
+				// echo "TeamInitialEfficiency: d=".$day.",v=".$value.",calc=".$value.",".$teamefficiency.",p=".$points."<br>";
 			}
 		}
 		$pagedata['diagramprojected'] = $diagramprojected;
 		
-		## one more time, with the calculated team eafficiency 
+		## one more time, with the calculated team efficiency 
 		$diagramprojected2 = array();
 		$i=0;
 		$points = 0;
 		if( $days > 0 ) $points = $diagramactual[ $days-1 ][1];
-		$diagramprojected[$i] =  array( $days-1, $points );
+		$diagramprojected2[$i] =  array( $days-1, $points );
 		$i = $i + 1;
 		//echo "days=".$days."<br>";
 		foreach ($query->result_array() as $row)
@@ -969,7 +969,7 @@ class kanban extends Controller {
 				$points = $points - ( $value * $pagedata['teamefficiency'] / 100 );
 				$diagramprojected2[$i] =  array(  $day,  $points );
 				$i = $i + 1;
-				// echo "d=".$day.",v=".$value.",calc=".$value.",".$teamefficiency.",p=".$points."<br>";
+				// echo "TeamActualEffeciency: d=".$day.",v=".$value.",calc=".$value.",".$teamefficiency.",p=".$points."<br>";
 			}
 		}
 		$pagedata['diagramprojected2'] = $diagramprojected2;
