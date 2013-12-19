@@ -162,6 +162,7 @@ echo " { height: 20px; }\n";
 					$("#priority").ForceNumericOnly();
 					$("#estimation").ForceNumericOnly();
 					$("#todays_estimation").ForceNumericOnly();
+					$("#todays_time_reporting").ForceNumericOnly();
 
 					$("#newtask_priority").ForceNumericOnly();
 					$("#newtask_estimation").ForceNumericOnly();
@@ -432,6 +433,7 @@ echo " { height: 20px; }\n";
 		$("#priority").val( 100 );
 		$("#estimation").val( 0 );
 		$("#todays_estimation").val( 0 );
+		$("#todays_time_reporting").val( 0 );
 		$("#taskid").val( 0 );
 		$("#colortag").val( 0 );			
 		$("#newsprintid").val( 0 );  	
@@ -452,6 +454,7 @@ echo " { height: 20px; }\n";
 			$("#taskdescription").val( data.taskdescription);
 			$("#estimation").val( data.estimation);
 			$("#todays_estimation").val( data.todays_estimation);
+			$("#todays_time_reporting").val( data.todays_time_reporting);
 			$("#priority").val( data.priority);
 			$("#taskid").val( data.taskid);
 			$("#colortag").val( data.colortag);			
@@ -599,6 +602,9 @@ foreach ($groups as $group) {
 				</td></tr>
 				<tr><td> Remaining Today :</td><td>
 					<input name="todays_estimation" id="todays_estimation" value="0"  size="3" />
+				</td></tr>
+				<tr><td> Used Time Today :</td><td>
+					<input name="todays_time_reporting" id="todays_time_reporting" value="0"  size="3" />
 				</td></tr>
 				<tr><td> Color Tag :</td><td>
 					<select name="colortag" id="colortag"><option value="1">Yellow</option><option value="2">Green</option><option value="3">Red</option><option value="4">Blue</option><option value="5">Pink</option><option value="6">Purple</option><option value="7">Orange</option><option value="8">Grey</option></select>

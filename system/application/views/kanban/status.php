@@ -85,8 +85,8 @@
 			//
 			// Define the data
 			<?php 
-				$tmpstr = "var baseline  = [ ";
-				foreach ($diagrambaseline as $row)
+				$tmpstr = "var sprintGoal  = [ ";
+				foreach ($diagramSprintGoal as $row)
 				{			
 					$tmpstr = $tmpstr."{ x: ".$row[0].",y: ".$row[1]." },";
 					if( $row[1] < 0 ) break;
@@ -182,7 +182,7 @@
 				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
 
 				// Add the series of data
-				chart.addSeries("Baseline",baseline, {plot: "Lines", stroke: {color:"green"} });
+				chart.addSeries("Sprint-Goal",sprintGoal, {plot: "Lines", stroke: {color:"green"} });
 				chart.addSeries("Progress",progress, {plot: "Lines", stroke: {color:"blue", style: "Solid"} });
 				chart.addSeries("<?php echo round( $initialteamefficiency, 0); ?>%-efficiency",projected, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
 				chart.addSeries("<?php echo round( $teamefficiency, 0); ?>%-efficiency",projected2, {plot: "Lines", stroke: {color:"#EE0012", style: "Dash"} });
@@ -238,10 +238,10 @@
 			* This will create a matrix (array of arrays with a week separator for every Monday)
 			* weekSize is either 5 or 7
 			*/
-			function createWeekLines(startDow,weekSize,baseline) {
+			function createWeekLines(startDow,weekSize,sprintGoal) {
 				var result = new Array();
-				var maxDays = baseline[1].x;
-				var maxY = baseline[0].y;
+				var maxDays = sprintGoal[1].x;
+				var maxY = sprintGoal[1].y;
 				var dow = startDow;
 				console.log("dow"+dow);
 				var day = 0;
@@ -371,7 +371,7 @@
 					return resultArray;
 				}
 
-				function convertBaselineTo5DayWeek( startDayOfWeek, arr ) {
+				function convertSprintGoalTo5DayWeek( startDayOfWeek, arr ) {
 					var k = (arr[1].y - arr[0].y) / (arr[1].x - arr[0].x);
 					var result = new Array();
 					newArrayIndex = arr[0].x - (sevenDayWeekOffset( projectStartDayOfWeek, arr[0].x) * 2);
@@ -406,14 +406,14 @@
 					projected = shiftStartDateInArrayForward( projected, numberOfDaysToShiftForward);
 					projected2 = shiftStartDateInArrayForward( projected2, numberOfDaysToShiftForward );
 					plan = shiftStartDateInArrayForward( plan, numberOfDaysToShiftForward );
-					baseline[1].x = baseline[1].x - numberOfDaysToShiftForward;
+					sprintGoal[1].x = sprintGoal[1].x - numberOfDaysToShiftForward;
 				}
 
 				var progress5DayArray = removeSaturdaysAndSundaysFrom7DayWeekArray( projectStartDayOfWeek, progress );
 				var projected5DayArray = removeSaturdaysAndSundaysFrom7DayWeekArray( projectStartDayOfWeek, projected );
 				var projected5DayArray2 = removeSaturdaysAndSundaysFrom7DayWeekArray( projectStartDayOfWeek, projected2 );
 				var plan5DayArray = removeSaturdaysAndSundaysFrom7DayWeekArray( projectStartDayOfWeek, plan );
-				var baseline5Day = convertBaselineTo5DayWeek( projectStartDayOfWeek, baseline );
+				var sprintGoal5Day = convertSprintGoalTo5DayWeek( projectStartDayOfWeek, sprintGoal );
 
 				function convert5DayTo7DayWeek( arr ) {
 					var i = 0;
@@ -451,16 +451,16 @@
 				chart.addAxis("y", {  min: 0, vertical: true, fixLower: "major", fixUpper: "major"  });
 
 				// Add the series of data
-				chart.addSeries("Baseline",baseline5Day, {plot: "Lines", stroke: {color:"green"} });
+				chart.addSeries("Sprint-Goal",sprintGoal5Day, {plot: "Lines", stroke: {color:"green"} });
 				chart.addSeries("Progress",progress5DayArray, {plot: "Lines", stroke: {color:"blue", style: "Solid"} });
 				chart.addSeries("<?php echo round( $initialteamefficiency, 0); ?>%-efficiency",projected5DayArray, {plot: "Lines", stroke: {color:"#2E64FE", style: "Dash"} });
 				chart.addSeries("<?php echo round( $teamefficiency, 0); ?>%-efficiency",projected5DayArray2, {plot: "Lines", stroke: {color:"#EE0012", style: "Dash"} });
 				chart.addSeries("Plan",plan5DayArray, {plot: "Lines", stroke: {color:"red"} });
 
 				weekSize=5;
-				weekSeparators = createWeekLines(projectStartDayOfWeek,weekSize,baseline5Day);
+				weekSeparators = createWeekLines(projectStartDayOfWeek,weekSize,sprintGoal5Day);
 				for( var i = 0; i < weekSeparators.length; i++ ){
-					// console.log("week="+weekSeparators[i].weekName+",x1="+weekSeparators[i].values[0].x);
+					console.log("week="+weekSeparators[i].weekName+",x1="+weekSeparators[i].values[0].x+",y1="+weekSeparators[i].values[0].y+",x2="+weekSeparators[i].values[1].x+",y2="+weekSeparators[i].values[1].y);
 					chart.addSeries(weekSeparators[i].weekName, weekSeparators[i].values, {plot: "Lines", stroke: {color:"#eeeeee"} });					
 				}
 
@@ -707,6 +707,100 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 			if( $value < $previousvalue ) $style = 'style="background-color:green; color:white;"';
 			echo "<td ".$style.">".$value."</td>";
 			$previousvalue=$value;
+		}
+		echo "</tr>";
+		echo "</table>";
+		echo "</div>";
+?>
+<br>
+<br>
+<h2>Reported Hours Matrix</h2>
+<?php 
+		echo '<div id="reportedhoursmatix" class="historymatrix">';
+		echo '<table border=1px >';
+		
+		 $endtime = strtotime($enddate);
+		 $starttime = strtotime($startdate);
+		 $totaldays = floor( ($endtime - $starttime) / 86400 ); 
+		 
+		 $monthhtml = '<tr><th></th><th colspan=2>Month</th>';
+		 $weekhtml = '<tr><th></th><th colspan=2>Week</th>';
+		 $dayhtml = '<tr><th>Heading</th><th colspan=2>Date<br>Orig Est./Act.</th>';
+		 $monthsteparraystring = '';
+		 $weeklysteparraystring = '';
+		 $colspanmonth = 1;
+		 $colspanweek = 1;
+		 $t = $starttime;
+		 $currentMonth = date( "m", $t);
+		 $currentWeek = date( "W", $t);
+		 while( $t < $endtime ) {
+		 	$month = date( "m", $t);
+		 	$week = date( "W", $t);
+		 	$date = date("d", $t);
+		 	$dayhtml = $dayhtml.'<th>'.$date.'</th>';
+			if( $month != $currentMonth ) {
+				$monthhtml = $monthhtml . '<th colspan='.($colspanmonth-1).' >'.date("M",($t-86400)).'</th>';
+				$currentMonth = $month;
+				$monthsteparraystring = $monthsteparraystring.($colspanmonth-1).',';
+				$colspanmonth = 1;
+			}
+		 	if( $week != $currentWeek ) {
+				$weekhtml = $weekhtml . '<th colspan='.($colspanweek-1).' >'.date("W",($t-86400)).'</th>';
+				$currentWeek = $week;
+				$weeklysteparraystring = $weeklysteparraystring.($colspanweek-1).',';
+				$colspanweek = 1;
+			}
+		 	$colspanmonth = $colspanmonth + 1;
+		 	$colspanweek = $colspanweek + 1;
+		 	$t = strtotime( "+1 day", $t );
+		 }
+		 
+		 $monthsteparraystring = $monthsteparraystring.$colspanmonth.',';
+		 $weeklysteparraystring = $weeklysteparraystring.$colspanweek.',';
+		 $dayhtml = $dayhtml.'<th>'.date("d", $t).'</th>';
+	  	 $weekhtml = $weekhtml . '<th colspan='.($colspanweek).' >'.date("W",$t).'</th>';
+		 $monthhtml = $monthhtml . '<th colspan='.($colspanmonth).' >'.date("M",$t).'</th>';
+		 echo $monthhtml.'</tr>';
+		 echo $weekhtml.'</tr>';
+		 echo $dayhtml.'</tr>';		
+		##$emptycells="";
+		##for( $i = 0; $i<=$totaldays; $i++) $emptycells=$emptycells."<td></td>";
+		##echo "<tr><th>Heading</th><th>Orig Est.</th>".$emptycells."</tr>";
+		$sums_by_day = array();
+		for( $day = 0; $day < $totaldays; $day++ ){
+			$sums_by_day[ $day ] = 0;
+		}
+		$totalsum=0;
+		foreach( $reported_hours as $id => $arr ) {
+			echo "<tr><td nowrap title=\"".substr($tasklookup[ $id ][2],0,30)."\">".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
+			$original_estimate=$tasklookup[ $id ][1];
+			$sum = 0;
+			$html="";
+			for( $day = 0; $day < count($arr); $day++ ) {
+				$value = intval( $arr[ $day ] );
+				$sums_by_day[$day]=$sums_by_day[$day]+$value;
+				$sum=$sum+$value;
+				$style = '';
+				if( $value > 0 ) $style = 'style="background-color:green; color:white;"';
+				if( $sum > $original_estimate ) $style = 'style="background-color:red; color:white;"';
+				$html=$html."<td ".$style.">".$value."</td>";
+			}
+			$style = '';
+			if( $sum > 0 ) $style = 'style="background-color:green; color:white;"';
+			if( $sum > $original_estimate ) $style = 'style="background-color:red; color:white;"';
+			echo "<td ".$style.">".$sum."</td>";
+			echo $html;
+			echo "</tr>";
+			$totalsum=$totalsum+$sum;
+		}
+		echo "<tr><td>Total : </td><td>".$totalestimation."</td><td>".$totalsum."</td>";
+		$previousvalue=$totalestimation;
+		for( $day = 0; $day < count($sums_by_day); $day++ ) {
+			$sum = intval( $sums_by_day[ $day ] );
+			// echo ",(".$day.")";
+			$style = '';
+			if( $sum > $totalestimation ) $style = 'style="background-color:red; color:white;"';
+			echo "<td ".$style.">".$sum."</td>";
 		}
 		echo "</tr>";
 		echo "</table>";

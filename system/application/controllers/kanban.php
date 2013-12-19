@@ -709,12 +709,31 @@ class kanban extends Controller {
 			$description = $row['description'];
 			$tasklookup[ $id ] = array( $heading, $estimation, $description );
 			$matrix[ $id ] = array();
+			$reported_hours[ $id ] = array();
 			for( $dayIndex = 0; $dayIndex < $days; $dayIndex++ ) {
 				$matrix[ $id ][ $dayIndex ] = -1;
+				$reported_hours[ $id ][ $dayIndex ] = 0;
 			}
 			$matrix[ $id ][ 0 ] = $estimation; 
 		}
 		
+		$sql='SELECT r.item_id as id,r.hours as hours, r.reporting_date, DATEDIFF(r.reporting_date,?) as days_since_reporting FROM kanban_time_reporting r,kanban_item i WHERE i.id = r.item_id AND i.sprint_id = ? AND r.reporting_date >= ? ORDER BY i.id,days_since_reporting';
+		$query = $this->db->query( $sql,array($startdate,$sprintid,$startdate) );
+		if ($query->num_rows() > 0)	{
+			foreach ($query->result_array() as $row)
+			{	
+				$id = intval( $row['id'] );
+				$hours = intval ( $row['hours'] );
+				$dayIndex = intval( $row['days_since_reporting'] );
+				$arraySize = count( $matrix[ $id ] );
+				if( $dayIndex >= 0 && $dayIndex <= $arraySize ) {
+					$reported_hours[ $id ][ $dayIndex ] = $hours; 
+				} 				
+			}
+		}
+
+		$pagedata['reported_hours'] = $reported_hours;
+
 		/*
 		echo "<h2>Presetup</h2>";
 		echo "<table border=1px >";
@@ -974,11 +993,11 @@ class kanban extends Controller {
 		}
 		$pagedata['diagramprojected2'] = $diagramprojected2;
 		
-		$diagrambaseline = array();
-		$diagrambaseline[0] = array( 0, $totalestimation );
-		$diagrambaseline[1] = array( $totaldays, 0 );
+		$diagramSprintGoal = array();
+		$diagramSprintGoal[0] = array( $totaldays, 0 );
+		$diagramSprintGoal[1] = array( $totaldays, $totalestimation  );
 		
-		$pagedata['diagrambaseline'] = $diagrambaseline;
+		$pagedata['diagramSprintGoal'] = $diagramSprintGoal;
 		
 		$this->load->view('kanban/status', $pagedata);
 	}
@@ -1346,15 +1365,15 @@ class kanban extends Controller {
 		$totaldays = round( ($e - $s) / 86400 ); 
 		$pagedata['totaldays'] = $totaldays;
 		$pointsperday = round( $totalestimation / $totaldays, 2 );
-		$diagrambaseline = array();
+		$diagramSprintGoal = array();
 		$days = array();
-		$baseline = $totalestimation;
+		$sprintGoal = $totalestimation;
 		for( $i = 0; $i < $totaldays; $i++ ) {
-			$diagrambaseline[ $i ] = round( $baseline, 2 );
+			$diagramSprintGoal[ $i ] = round( $sprintGoal, 2 );
 			$days[ $i ] = $i;
-			$baseline = $baseline - $pointsperday;
+			$sprintGoal = $sprintGoal - $pointsperday;
 		}
-		$pagedata['diagrambaseline'] = $diagrambaseline;
+		$pagedata['diagramSprintGoal'] = $diagramSprintGoal;
 		$pagedata['days'] = $days;
 		$sql="SELECT sum(estimation) as tot,datediff(enddate,?) as day FROM `kanban_item` where sprint_id = ? and not enddate = '0000-00-00' group by day";
 		$diagramactual = array();
@@ -1396,12 +1415,20 @@ class kanban extends Controller {
 			$taskDetails[ 'workpackage_id' ] = $row->workpackage_id;			
 		} 
 		$today = date( "Y-m-d" );
-		$sql = 'SELECT new_estimate FROM kanban_progress WHERE item_id = ? AND date_of_progress <= ? ORDER BY date_of_progress DESC LIMIT 1';
-		$query = $this->db->query( $sql, array( $taskid, $today ) );
+		$sql = 'SELECT new_estimate FROM kanban_progress WHERE item_id = ? AND date_of_progress <= CURDATE() ORDER BY date_of_progress DESC LIMIT 1';
+		$query = $this->db->query( $sql, array( $taskid ) );
 		$taskDetails[ 'todays_estimation' ] = $taskDetails[ 'estimation' ];
 		if ($query->num_rows() > 0)	{
 			$row = $query->row();	
 			$taskDetails[ 'todays_estimation' ] = $row->new_estimate;
+		}
+		## Picks up the todays reported hours if they exists so that it is possible to update it, otherwise 0
+		$sql = 'SELECT hours FROM kanban_time_reporting WHERE item_id = ? AND reporting_date <= CURDATE()';
+		$query = $this->db->query( $sql, array( $taskid ) );
+		$taskDetails[ 'todays_time_reporting' ] = 0;
+		if ($query->num_rows() > 0)	{
+			$row = $query->row();	
+			$taskDetails[ 'todays_time_reporting' ] = $row->hours;
 		}
 		return $taskDetails;
 	}
@@ -1497,6 +1524,8 @@ class kanban extends Controller {
 		if( is_numeric( $estimation ) != TRUE )  $estimation = 0;
 		$todays_estimation = $this->input->post('todays_estimation');
 		if( is_numeric( $todays_estimation ) != TRUE )  $todays_estimation = 0;
+		$todays_time_reporting = $this->input->post('todays_time_reporting');
+		if( is_numeric( $todays_time_reporting ) != TRUE )  $todays_time_reporting = 0;
 		$colortag = $this->input->post('colortag');
 		$workpackage_id = $this->input->post('workpackage_id');
 		$newsprintid = $this->input->post('newsprintid');
@@ -1518,6 +1547,9 @@ class kanban extends Controller {
 		
 		$sql="INSERT INTO kanban_progress (item_id,new_estimate,date_of_progress) VALUES (?,?,?) ON DUPLICATE KEY UPDATE item_id =?, new_estimate = ?, date_of_progress = ?";
 		$query = $this->db->query($sql,array( $taskid,$todays_estimation,$today,$taskid,$todays_estimation,$today) ); 
+
+		$sql="INSERT INTO kanban_time_reporting (item_id,hours,reporting_date) VALUES (?,?,?) ON DUPLICATE KEY UPDATE item_id =?, hours = ?, reporting_date = ?";
+		$query = $this->db->query($sql,array( $taskid,$todays_time_reporting,$today,$taskid,$todays_time_reporting,$today) ); 
 
 		echo "db updated!";
 		$change = "Task Updated\n";
