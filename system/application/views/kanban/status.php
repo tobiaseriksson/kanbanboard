@@ -413,6 +413,12 @@
 				var plan5DayArray = removeSaturdaysAndSundaysFrom7DayWeekArray( projectStartDayOfWeek, plan );
 				var sprintGoal5Day = convertSprintGoalTo5DayWeek( projectStartDayOfWeek, sprintGoal );
 
+				// If we look at the 5day Burndown on a weekend, then the removal of Saturday and Sunday will 
+				// result in that there will be a gap in the diagram bewteem the Actual Progress and the two Progress lines
+				// to overcome this little problem, we simply prepend the last array-element of the Actual Progress to the beginning of the two Projected lines.
+				if( projected5DayArray[ projected5DayArray.length-1 ].x > progress5DayArray[ progress5DayArray.length-1 ].x ) projected5DayArray.unshift( progress5DayArray[ progress5DayArray.length-1 ] );
+				if( projected5DayArray2[ projected5DayArray2.length-1 ].x > progress5DayArray[ progress5DayArray.length-1 ].x ) projected5DayArray2.unshift( progress5DayArray[ progress5DayArray.length-1 ] );
+
 				function convert5DayTo7DayWeek( arr ) {
 					var i = 0;
 					var result = new Array();
