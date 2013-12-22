@@ -18,6 +18,12 @@ class kanban extends Controller {
 		$this->load->view('kanban/bloghome',$pagedata);
 	}
 	
+	function tabs()
+	{
+		$pagedata = array();
+		$pagedata['errormessage'] = '';
+		$this->load->view('kanban/tabs',$pagedata);
+	}
 	
 	function index() {
 		$pagedata = array();

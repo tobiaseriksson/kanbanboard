@@ -3,9 +3,12 @@
 <head>
 	<meta charset="UTF-8" />
 	<title>The '<?php echo $projectname; ?>' Kanban Board</title>	
-	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.1.custom.css" rel="stylesheet" />	
-	<script type="text/javascript" src="/assets/js/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.1.custom.min.js"></script>
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.10.3.custom.css" rel="stylesheet" />
+
+	<script type="text/javascript" src="/assets/js/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.10.3.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
+
 	<script src="/assets/js/raphael-min.js" type="text/javascript" charset="utf-8"></script> 
 	<script src="/assets/js/g.raphael-min.js" type="text/javascript" charset="utf-8"></script> 
 	<script src="/assets/js/g.line-min.js" type="text/javascript" charset="utf-8"></script> 

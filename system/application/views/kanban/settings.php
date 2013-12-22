@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
-	<! base href="http://kanban.tsoft.se/" />
-	<base href="<?php echo site_url( '/' ); ?>" />
 	<title>The '<?php echo $projectname; ?>' Board</title>	
-	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.8.23.custom.css" rel="stylesheet" />
+	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.10.3.custom.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
-	<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
-	<script type="text/javascript" src="/assets/js/jquery-ui-1.8.23.custom.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="/assets/js/jquery-ui-1.10.3.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
+
+<?php $request_uri = getenv("REQUEST_URI"); ?>
 
 	<style type="text/css">
 		#wrapper {
@@ -588,12 +588,12 @@ jQuery(function($){
 	
 		<div id="tabs">
 			<ul>
-				<li><a href="#general-tab">General</a></li>
-				<li><a href="#group-tab">Groups</a></li>
-				<li><a href="#wp-tab">Work Packages</a></li>
-				<li><a href="#sprints-tab">Sprints</a></li>
-				<li><a href="#import-tab">Import</a></li>
-				<li><a href="#projects-tab">Projects</a></li>
+				<li><a href="<?=$request_uri?>#general-tab">General</a></li>
+				<li><a href="<?=$request_uri?>#group-tab">Groups</a></li>
+				<li><a href="<?=$request_uri?>#wp-tab">Work Packages</a></li>
+				<li><a href="<?=$request_uri?>#sprints-tab">Sprints</a></li>
+				<li><a href="<?=$request_uri?>#import-tab">Import</a></li>
+				<li><a href="<?=$request_uri?>#projects-tab">Projects</a></li>
 			</ul>
 
 			<div id="general-tab">
