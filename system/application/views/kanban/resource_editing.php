@@ -102,18 +102,33 @@
 	<div id="wrapper">
 		<div id="settingsdiv">
 				<h2>Resource Editing</h2>
-				Populate with points/day : <input id="hourperday" type="text" value="8" size="2" />
-				M<input type="checkbox" name="dow" value="1" />
-				T<input type="checkbox" name="dow" value="2" />
-				W<input type="checkbox" name="dow" value="3" />
-				T<input type="checkbox" name="dow" value="4" />
-				F<input type="checkbox" name="dow" value="5" />
-				S<input type="checkbox" name="dow" value="6" />
-				S<input type="checkbox" name="dow" value="7" />
-				<select id="updateselection">
-					<option value="0">All</option>
-				</select>
-				<button id="updatedays">Update</button>
+				<table border=0>
+					<tr><td>Populate with points/day :</td><td><input id="hourperday" type="text" value="8" size="2" /></td></tr>
+					<tr><td>Day Of Week :</td><td>
+					M<input type="checkbox" name="dow" value="1" />
+					T<input type="checkbox" name="dow" value="2" />
+					W<input type="checkbox" name="dow" value="3" />
+					T<input type="checkbox" name="dow" value="4" />
+					F<input type="checkbox" name="dow" value="5" />
+					S<input type="checkbox" name="dow" value="6" />
+					S<input type="checkbox" name="dow" value="7" />
+					</td></tr>
+					<tr><td>Who :</td><td>
+					<select id="updateselection">
+						<option value="0">All</option>
+					</select>
+					</td></tr>
+					<tr><td>Start Date :</td><td>
+					<input id="startdate"  name="startdate" value="<?=$startdate?>" size=12 />
+					</td></tr>
+					<tr><td>End Date :</td><td>
+					<input id="enddate"  name="enddate" value="<?=$enddate?>" size=12 />
+					</td></tr>
+					<tr><td></td><td>
+					<button id="updatedays">Update</button>
+					</td></tr>
+				</table>
+				<br>
 				<br/>
 				<table id="ttab" class="resourcetablestyle" border="1px" contenteditable="true">
 				<?php 
@@ -221,6 +236,69 @@
 				
 				<br/>
 				
+
+		<script>
+
+			/*
+			* parses a date yyyy-mm-dd  e.g. 2012-09-21 as in 21;st of September 2012
+			*
+			*/
+			function parseDate(input) {
+				  var parts = input.match(/(\d+)/g);
+				  // new Date(year, month [, date [, hours[, minutes[, seconds[, ms]]]]])
+				  return new Date(parts[0], parts[1]-1, parts[2]); // months are 0-based
+			}
+
+			var oneDayInMilliSeconds = 3600 * 24 * 1000;
+			var startDateString = "<?php echo $startdate; ?>";
+			var startDate = parseDate( startDateString );
+
+			var endDateString = "<?php echo $enddate; ?>";
+			var endDate = parseDate( endDateString );
+
+	/* English/UK initialisation for the jQuery UI date picker plugin. */
+/* Written by Stuart. */
+		jQuery(function($){
+			$.datepicker.regional['en-GB'] = {
+				closeText: 'Done',
+				prevText: 'Prev',
+				nextText: 'Next',
+				currentText: 'Today',
+				monthNames: ['January','February','March','April','May','June',
+				'July','August','September','October','November','December'],
+				monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+				'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+				dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+				dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+				dayNamesMin: ['Su','Mo','Tu','We','Th','Fr','Sa'],
+				weekHeader: 'Wk',
+				dateFormat: 'yy-mm-dd',
+				firstDay: 1,
+				isRTL: false,
+				showMonthAfterYear: false,
+				yearSuffix: ''};
+			$.datepicker.setDefaults($.datepicker.regional['en-GB']);
+		});
+
+			$(function() {
+				$.datepicker.setDefaults($.datepicker.regional['en-GB']);
+				$( "#startdate" ).datepicker({ minDate: startDate, maxDate: endDateString });
+				$( "#enddate" ).datepicker({ minDate: startDate, maxDate: endDateString });
+				$( "#startdate").datepicker('setDate', startDate);
+				$( "#enddate").datepicker('setDate', endDateString);
+			});
+
+
+			$(function() {
+				var numberOfSprints = $("#deletesprint_sprintid option").size();
+				// $("#debugresult").html("sprints = "+numberOfSprints);
+				if( numberOfSprints <= 1 ) {
+					$('#deletesprint input[type=submit]', this).attr('disabled', 'disabled');
+				}
+			});
+			
+			</script>
+					
 				
 		<script type="text/javascript"> 	
 			$(function() {
@@ -332,18 +410,30 @@
 					var value = $('#hourperday').val();
 					value = parseInt( value );
 					if( isNaN( value ) ) value = 0;		
+
+					var periodStartDate = parseDate( $('#startdate').val() );
+					if( periodStartDate < startDate ) periodStartDate = startDate;
+					if( periodStartDate > endDate ) periodStartDate = endDate;
+					if( periodEndDate < startDate ) periodEndDate = startDate;
+					if( periodEndDate > endDate ) periodEndDate = endDate;
+					
+					var periodEndDate = parseDate( $('#enddate').val() );
+					var startDay = (periodStartDate.getTime() - startDate.getTime()) / oneDayInMilliSeconds;
+					var endDay = (periodEndDate.getTime() - startDate.getTime()) / oneDayInMilliSeconds;
 					var selectedUser = $('#updateselection option:selected').attr('value');
 					// $('body').append( 'sel = '+selectedUser );
 					var i = 1;
 					$('#ttab tr:gt(2)').each(function(){
 						var x = dayOfWeekForStartDate;
+						var day = 0;
 						if (selectedUser == 0 || selectedUser == i) {
 							$(this).find('td').each(function(){
-								if (inArray(x++, dow) == 0) {
+								if (inArray(x++, dow) == 0 && day >= startDay && day <= endDay ) {
 									$(this).html(value);
 								}
 								if (x > 7) 
 									x = 1;
+								day++;
 							});
 						}
 						i++;
