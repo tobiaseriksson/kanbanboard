@@ -807,7 +807,7 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 			$style = '';
 			if( $sum > 0 ) $style = 'style="background-color:green; color:white;"';
 			if( $sum > $original_estimate ) $style = 'style="background-color:red; color:white;"';
-			echo "<td ".$style.">".$sum."</td>";
+			echo "<th ".$style.">".$sum."</th>";
 			echo $html;
 			echo "</tr>";
 			$totalsum=$totalsum+$sum;
