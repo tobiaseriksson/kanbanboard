@@ -7,24 +7,11 @@
 	<link type="text/css" href="/assets/ticker/styles/ticker-style.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
 
-	<script type="text/javascript">
-    var djConfig = {
-        parseOnLoad: false,
-        isDebug: false,
-        modulePaths: {
-            "dojo": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo",
-            "dijit": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dijit",
-            "dojox": "https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojox" 
-        }
-    };
-	</script>
-
 	<script type="text/javascript" src="/assets/js/jquery-1.10.2.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.10.3.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
+ 	<script src="https://ajax.googleapis.com/ajax/libs/dojo/1.9.2/dojo/dojo.js" data-dojo-config="isDebug: false,parseOnLoad: true"></script> 
 
-	<script src="https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"
-				data-dojo-config="isDebug: false,parseOnLoad: true">
 	</script>
 	
 	<style type="text/css">
@@ -59,7 +46,7 @@
 			height:500px;
 			overflow: hidden;
 		}
-		
+
 		.historymatrix {
 			overflow:scroll;
     		overflow-y:hidden;
@@ -141,7 +128,7 @@
 			//
 			// Plot 7-Day Week Burndown Chart
 			//
-			dojo.ready(function() {
+			function drawSevenDayBurndownChart() {
 				
 				// Create the chart within it's "holding" node
 				var chart = new dojox.charting.Chart2D("burndownchart",{ title: "7 Day Week" } );
@@ -191,7 +178,7 @@
 				// Add Legend to the bottom
 				var outflowinflowlegend = new dojox.charting.widget.Legend({chart: chart}, "burndownchartlegend");
 				
-			});
+			}
 
 
 			
@@ -241,12 +228,10 @@
 				var maxDays = sprintGoal[1].x;
 				var maxY = sprintGoal[1].y;
 				var dow = startDow;
-				console.log("dow"+dow);
 				var day = 0;
 				if( dow > 1) day = day + ((weekSize+1)-dow);
 				while(day<maxDays) {
 					result.push( { weekName: 'day '+day, values: new Array({x:day,y:0},{x:day,y:maxY}) } ); 
-					console.log("day "+day);
 					day=day+weekSize;
 				}
 				return result;
@@ -464,7 +449,6 @@
 				weekSize=5;
 				weekSeparators = createWeekLines(projectStartDayOfWeek,weekSize,sprintGoal5Day);
 				for( var i = 0; i < weekSeparators.length; i++ ){
-					console.log("week="+weekSeparators[i].weekName+",x1="+weekSeparators[i].values[0].x+",y1="+weekSeparators[i].values[0].y+",x2="+weekSeparators[i].values[1].x+",y2="+weekSeparators[i].values[1].y);
 					chart.addSeries(weekSeparators[i].weekName, weekSeparators[i].values, {plot: "Lines", stroke: {color:"#eeeeee"} });					
 				}
 
@@ -567,8 +551,20 @@
 </script>
 
 <script type="text/javascript">
+	var sevenDayBurndownChartInitilized = false;
 	$(function() {
-		$( "#burndown-tabs" ).tabs();
+		$('#burndown-tabs').tabs({
+            activate: function(event ,ui){
+            	// This has been introduced so that when we draw the diagram which is not visiable 
+            	// when the page is loaded, it will be correctly displayed when the user clicks 
+            	// the tab, cause it is only THEN when the browser knows the size of the DIV it 
+            	// should do the drawing inside.
+                if( sevenDayBurndownChartInitilized == false && ui.newTab.index() == 1 ) {
+                	sevenDayBurndownChartInitilized = true;
+					drawSevenDayBurndownChart();
+                }
+            }
+		});		
 	});
 </script>
 
@@ -621,12 +617,12 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 		<li><a href="#sevenday-tab">7 Day Burndown</a></li>
 	</ul>
 	<div id="fiveday-tab">
-		<div id="burndownchart5day" class="diagram">
-		</div>
+			<div id="burndownchart5day" class="diagram">
+			</div>
 	</div>	
 	<div id="sevenday-tab">
-		<div id="burndownchart" class="diagram">
-		</div>
+			<div id="burndownchart" class="diagram">
+			</div>
 	</div>
 </div>
 <div id="burndownchartlegend"></div>
