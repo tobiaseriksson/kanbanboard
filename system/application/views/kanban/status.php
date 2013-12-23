@@ -52,6 +52,27 @@
     		overflow-y:hidden;
 		}
 
+		table.resourcetablestyle
+		{
+		border-width: 0 0 1px 1px;
+		border-spacing: 0;
+		border-collapse: collapse;
+		border-style: solid;
+		}
+
+		.resourcetablestyle td, .resourcetablestyle th
+		{
+		margin: 0;
+		padding: 4px;
+		border-width: 1px 1px 0 0;
+		border-style: solid;
+		}
+
+		.resourcetablestyle th
+		{
+		background-color:#eeeeee;
+		} 
+
     </style>
     
 <script>
@@ -630,8 +651,8 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 <br>
 <h2>Progress History Matrix</h2>
 <?php 
-		echo '<div id="historymatix" class="historymatrix">';
-		echo '<table border=1px >';
+		echo '<div id="historymatix" class="historymatix">';
+		echo '<table class="resourcetablestyle">';
 		
 		 $endtime = strtotime($enddate);
 		 $starttime = strtotime($startdate);
@@ -682,7 +703,7 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 		##echo "<tr><th>Heading</th><th>Orig Est.</th>".$emptycells."</tr>";
 		
 		foreach( $progressmatrix as $id => $arr ) {
-			echo "<tr><td nowrap title=\"".substr($tasklookup[ $id ][2],0,30)."\">".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
+			echo "<tr><th nowrap style='text-align:left' title=\"".substr($tasklookup[ $id ][2],0,30)."\">".$tasklookup[ $id ][0]."</th><th>".$tasklookup[ $id ][1]."</th>";
 			$previousvalue=$tasklookup[ $id ][1];
 			for( $day = 0; $day < count($arr); $day++ ) {
 				$value = intval( $arr[ $day ] );
@@ -695,7 +716,7 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 			}
 			echo "</tr>";
 		}
-		echo "<tr><td>Total : </td><td>".$totalestimation."</td>";
+		echo "<tr><th>Total : </th><th>".$totalestimation."</th>";
 		$previousvalue=$totalestimation;
 		for( $day = 0; $day < count($progressmatrixtotal); $day++ ) {
 			$value = intval( $progressmatrixtotal[ $day ] );
@@ -703,7 +724,7 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 			$style = '';
 			if( $value > $previousvalue ) $style = 'style="background-color:red; color:white;"';
 			if( $value < $previousvalue ) $style = 'style="background-color:green; color:white;"';
-			echo "<td ".$style.">".$value."</td>";
+			echo "<th ".$style.">".$value."</th>";
 			$previousvalue=$value;
 		}
 		echo "</tr>";
@@ -714,8 +735,8 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 <br>
 <h2>Reported Hours Matrix</h2>
 <?php 
-		echo '<div id="reportedhoursmatix" class="historymatrix">';
-		echo '<table border=1px >';
+		echo '<div id="reportedhoursmatix" class="historymatix" >';
+		echo '<table class="resourcetablestyle" >';
 		
 		 $endtime = strtotime($enddate);
 		 $starttime = strtotime($startdate);
@@ -770,7 +791,7 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 		}
 		$totalsum=0;
 		foreach( $reported_hours as $id => $arr ) {
-			echo "<tr><td nowrap title=\"".substr($tasklookup[ $id ][2],0,30)."\">".$tasklookup[ $id ][0]."</td><td>".$tasklookup[ $id ][1]."</td>";
+			echo "<tr><th nowrap style='text-align:left' title=\"".substr($tasklookup[ $id ][2],0,30)."\">".$tasklookup[ $id ][0]."</th><th>".$tasklookup[ $id ][1]."</th>";
 			$original_estimate=$tasklookup[ $id ][1];
 			$sum = 0;
 			$html="";
@@ -791,14 +812,14 @@ Average Team Efficiency is <?php echo round( $teamefficiency, 1); ?> %<br>(based
 			echo "</tr>";
 			$totalsum=$totalsum+$sum;
 		}
-		echo "<tr><td>Total : </td><td>".$totalestimation."</td><td>".$totalsum."</td>";
+		echo "<tr><th style='text-align:left' >Total : </th><th>".$totalestimation."</th><th>".$totalsum."</th>";
 		$previousvalue=$totalestimation;
 		for( $day = 0; $day < count($sums_by_day); $day++ ) {
 			$sum = intval( $sums_by_day[ $day ] );
 			// echo ",(".$day.")";
 			$style = '';
 			if( $sum > $totalestimation ) $style = 'style="background-color:red; color:white;"';
-			echo "<td ".$style.">".$sum."</td>";
+			echo "<th ".$style.">".$sum."</th>";
 		}
 		echo "</tr>";
 		echo "</table>";
