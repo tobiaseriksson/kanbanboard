@@ -60,11 +60,6 @@
 		}
 	</style>
 	
-	<script type="text/javascript"> 	
-			// $(function() {
-			//	document.execCommand("enableObjectResizing", false, false);
-			// });
-	</script>
 	<script type="text/javascript">
 
   var _gaq = _gaq || [];
@@ -130,7 +125,7 @@
 				</table>
 				<br>
 				<br/>
-				<table id="ttab" class="resourcetablestyle" border="1px" contenteditable="true">
+				<table id="ttab" class="resourcetablestyle" border="1px">
 				<?php 
 				 $endtime = strtotime($enddate);
 				 $starttime = strtotime($startdate);
@@ -230,14 +225,161 @@
 			
 				<tr><th nowrap><input id="newname" type="text" value="name" size="4" /><button id="addResource">Add</button></th><th colspan="<?php echo ($totaldays+2); ?>"></th></tr>
 				</table>
+				<br>
 				<button id="submitchanges">Submit Changes</button><img id="progressimage" width="20" height="20" src="assets/images/ajax-loader_transp.gif"></img>
-				<button id="updatecolors">Colorize</button>
-				<button id="summarize">Summarize</button>
 				
 				<br/>
 				
 
-		<script>
+
+		<script type="text/javascript"> 	
+
+		var monthStepArray = Array( <?php echo rtrim( $monthsteparraystring, ',' ); ?> );
+		var weekStepArray = Array( <?php echo rtrim( $weeklysteparraystring, ',' ); ?> );
+		var projectid = <?php echo $projectid; ?>;
+		var dateStr = '<?php echo $startdate; ?>';
+		var dateArray = dateStr.split('-'); // 2011-12-28
+		var startDate = new Date(dateArray[0],dateArray[1]-1,dateArray[2]);
+		var dayOfWeekForStartDate = startDate.getDay();
+		var numberOfDays = <?php echo $totaldays; ?>;
+
+		//
+		// Colorizes the table, such that 0 is RED and >0 is GREEN
+		//
+		function colorize() {
+			var i = 1;
+			$('#ttab tr:gt(2)').each(function(){
+					$(this).find('td').each(function(){
+						var value = parseInt( $(this).html().replace(/[^\d.,]/g, "") );
+						if( value == 0 ) {
+							$(this).css("background-color", "#ffbbbb");
+						} else {
+							$(this).css("background-color", "#bbffbb");
+						} 
+					});
+				});
+		}
+		
+		//
+		// Goes through all the cells, and summarizes the "hours" by week and month
+		//
+		function summarize() {
+			var i = 1;
+			var monthlySumArray = new Array();
+			var weeklySumArray = new Array();
+			for( i = 0; i < monthStepArray.length; i++ ) monthlySumArray[i] = 0;
+			for( i = 0; i < weekStepArray.length; i++ ) weeklySumArray[i] = 0;
+			var w = 0;
+			var m = 0;
+			var monthStep = 0;
+			var weekStep = 0;
+			var total = 0;
+			$('#ttab tr').not(':lt(3)').not(':last').each(function(){
+					var sum = 0;
+					m = 0;
+					w = 0;
+					monthStep = monthStepArray[m]-1;
+					weekStep = weekStepArray[w]-1;
+					i = 16;
+					$(this).find('td').each(function(){
+						var value = parseInt( $(this).html().replace(/[^\d.]/g, "") );
+						sum = sum + value;
+						total = total + value;
+						monthlySumArray[m] = monthlySumArray[m] + value;
+						weeklySumArray[w] = weeklySumArray[w] + value;
+						// i++;
+						// if( i > 30 ) i = 1;
+						// $('body').append( '<br>i = '+i+',m = '+m+',w = '+w+',value = '+value+',msa = '+monthlySumArray[m]+',wsa = '+weeklySumArray[w]+',ms = '+monthStep+',ws = '+weekStep);
+						monthStep--;
+						weekStep--;
+						if( monthStep < 0 ) {
+							m++
+							monthStep = monthStepArray[m]-1;
+						}
+						if( weekStep < 0 ) {
+							w++;
+							weekStep = weekStepArray[w]-1;
+						}
+							
+					});
+					$( 'th:last', this ).text( sum );
+			});
+			var sum = 0;
+			$($('#ttab tr:last').prev().prev()).each(function(){
+				var w = -1;
+				$(this).find('th').not(':last').each(function(){
+					if( w >= 0 ) {
+						$(this).text( weeklySumArray[w] );
+						sum = sum + weeklySumArray[w];
+					}
+					w++;
+				});
+			});
+			$('th:last', $('#ttab tr:last').prev().prev()).text( sum );
+			sum = 0;
+			$($('#ttab tr:last').prev()).each(function(){
+				var m = -1;
+				$(this).find('th').not(':last').each(function(){
+					if( m >= 0 ) {
+						$(this).text( monthlySumArray[m] );
+						sum = sum + monthlySumArray[m];
+					}
+					m++;
+				});
+			});
+			$('th:last', $('#ttab tr:last').prev()).text( sum );
+		}
+		
+		function inArray( value, arr ) {
+			for( var i=0; i < arr.length; i++ ) {
+				if( arr[i] == value ) return 0;
+			}
+			return -1;
+		}
+
+		//
+		// Tries to parse an integer and if it fails, it will return the default value
+		//
+		function validateNumber( value, defaultValue ) {
+			var tmp = parseInt( value );
+			return isNaN(tmp) ? defaultValue : tmp;
+		}
+
+		//
+		// Make the cells editable, but only those that 
+		//
+		function makeCellsEditable(onlyLastRow) {
+			var selection = "#ttab tr:gt(2) td";
+			if( onlyLastRow ) selection = "#ttab tr:nth-last-child(4) td"; // as a matter of fact, the last 3 rows contains summary etc, so 4;th from the last is what is meant
+			$(selection).click(function () {
+				var originalValue = $(this).text();
+				// $(this).addClass("cellEditing");
+				$(this).html("<input type='text' size=2 value='" + originalValue + "' />");
+				$(this).children().first().focus();
+				$(this).children().first().keypress(function (e) {
+				if (e.which == 13) {
+					var value = $(this).val();
+					$(this).parent().text( validateNumber( value, originalValue ) );
+					colorize();
+					summarize();
+					// $(this).parent().removeClass("cellEditing");
+				}
+				});
+
+				$(this).children().first().blur(function(){
+					var value = $(this).val();
+					$(this).parent().text( validateNumber( value, originalValue ) );
+					colorize();
+					summarize();
+					// $(this).parent().removeClass("cellEditing");
+				});
+			});
+		}
+
+		$(function () {
+			makeCellsEditable(false);
+		});
+
 
 			/*
 			* parses a date yyyy-mm-dd  e.g. 2012-09-21 as in 21;st of September 2012
@@ -303,22 +445,7 @@
 		<script type="text/javascript"> 	
 			$(function() {
 				$('#progressimage').hide();
-				var monthStepArray = Array( <?php echo rtrim( $monthsteparraystring, ',' ); ?> );
-				var weekStepArray = Array( <?php echo rtrim( $weeklysteparraystring, ',' ); ?> );
-				var projectid = <?php echo $projectid; ?>;
-				var dateStr = '<?php echo $startdate; ?>';
-				var dateArray = dateStr.split('-'); // 2011-12-28
-				var startDate = new Date(dateArray[0],dateArray[1]-1,dateArray[2]);
-				// $('body').append( 'startdate = '+startDate );
-				var dayOfWeekForStartDate = startDate.getDay();
-				// if( dayOfWeekForStartDate == 0 ) dayOfWeekForStartDate = 7;
-				// $('body').append( 'dow = '+dayOfWeekForStartDate );
-				
-				// var numberOfDays = $('#ttab tbody>tr:eq(2) th').length - 1;
-				var numberOfDays = <?php echo $totaldays; ?>;
-
-				// $('body').append( 'number of days = '+numberOfDays );
-				
+								
 				populateUserSelection();
 
 				colorize();
@@ -363,7 +490,7 @@
 							$('#progressimage').hide();
 						},
 				  		success: function(data) {  
-							$('body').append( '<br>result = '+data );
+							// $('body').append( '<br>result = '+data );
 							populateUserSelection();			     
 				  		}, 
 				  		error: function(x,e) {  
@@ -389,7 +516,8 @@
 							}
 							$('<tr><th id="'+data.id+'">'+newname+'</th>'+cells+'<th>0</th></tr>').insertBefore( $('#ttab tbody>tr:last').prev().prev() );
 							populateUserSelection();
-							colorize(); 			     
+							colorize();
+							makeCellsEditable(true);     
 				  		}, 
 				  		error: function(x,e) {  
 				    		$('body').append( "failed with; "+x.status+", e="+e+", response="+x.responseText );
@@ -442,103 +570,6 @@
 					summarize();
 				});
 
-
-				$("#updatecolors").click( function() {
-						colorize();
-					});
-
-				$("#summarize").click( function() {
-					summarize();
-				});
-
-				function colorize() {
-					var i = 1;
-					$('#ttab tr:gt(2)').each(function(){
-							$(this).find('td').each(function(){
-								var value = parseInt( $(this).html().replace(/[^\d.,]/g, "") );
-								if( value == 0 ) {
-									$(this).css("background-color", "#ffbbbb");
-								} else {
-									$(this).css("background-color", "#bbffbb");
-								} 
-							});
-						});
-				}
-				
-
-				function summarize() {
-					var i = 1;
-					var monthlySumArray = new Array();
-					var weeklySumArray = new Array();
-					for( i = 0; i < monthStepArray.length; i++ ) monthlySumArray[i] = 0;
-					for( i = 0; i < weekStepArray.length; i++ ) weeklySumArray[i] = 0;
-					var w = 0;
-					var m = 0;
-					var monthStep = 0;
-					var weekStep = 0;
-					var total = 0;
-					$('#ttab tr').not(':lt(3)').not(':last').each(function(){
-							var sum = 0;
-							m = 0;
-							w = 0;
-							monthStep = monthStepArray[m]-1;
-							weekStep = weekStepArray[w]-1;
-							i = 16;
-							$(this).find('td').each(function(){
-								var value = parseInt( $(this).html().replace(/[^\d.]/g, "") );
-								sum = sum + value;
-								total = total + value;
-								monthlySumArray[m] = monthlySumArray[m] + value;
-								weeklySumArray[w] = weeklySumArray[w] + value;
-								// i++;
-								// if( i > 30 ) i = 1;
-								// $('body').append( '<br>i = '+i+',m = '+m+',w = '+w+',value = '+value+',msa = '+monthlySumArray[m]+',wsa = '+weeklySumArray[w]+',ms = '+monthStep+',ws = '+weekStep);
-								monthStep--;
-								weekStep--;
-								if( monthStep < 0 ) {
-									m++
-									monthStep = monthStepArray[m]-1;
-								}
-								if( weekStep < 0 ) {
-									w++;
-									weekStep = weekStepArray[w]-1;
-								}
-									
-							});
-							$( 'th:last', this ).text( sum );
-					});
-					var sum = 0;
-					$($('#ttab tr:last').prev().prev()).each(function(){
-						var w = -1;
-						$(this).find('th').not(':last').each(function(){
-							if( w >= 0 ) {
-								$(this).text( weeklySumArray[w] );
-								sum = sum + weeklySumArray[w];
-							}
-							w++;
-						});
-					});
-					$('th:last', $('#ttab tr:last').prev().prev()).text( sum );
-					sum = 0;
-					$($('#ttab tr:last').prev()).each(function(){
-						var m = -1;
-						$(this).find('th').not(':last').each(function(){
-							if( m >= 0 ) {
-								$(this).text( monthlySumArray[m] );
-								sum = sum + monthlySumArray[m];
-							}
-							m++;
-						});
-					});
-					$('th:last', $('#ttab tr:last').prev()).text( sum );
-				}
-				
-				function inArray( value, arr ) {
-					for( var i=0; i < arr.length; i++ ) {
-						if( arr[i] == value ) return 0;
-					}
-					return -1;
-				}
 			});
 		</script> 
 		
