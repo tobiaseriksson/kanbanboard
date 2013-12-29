@@ -2352,6 +2352,35 @@ class kanban extends Controller {
 		// echo "<br>RESULT: OK!";
 	}
 	
+	function deleteresource($projectid) {
+	
+		kanban::redirectIfNoAccess( $projectid );
+	
+		$id = $this->input->post('id');
+
+		$this->db->where('id', $id );
+		$this->db->delete('kanban_resource');	
+
+
+		$this->db->where('resource_id', $id );
+		$this->db->delete('kanban_resource_schedule');	
+	}
+
+	function renameresource($projectid) {
+	
+		kanban::redirectIfNoAccess( $projectid );
+	
+		$id = $this->input->post('id');
+		$newname = $this->input->post('newname');
+
+
+		$data = array(			
+			'name' => $newname
+			);
+		$this->db->where('id', $id);
+		$this->db->update('kanban_resource', $data);
+
+	}
 	
 	function populateResourceSchedule( $projectid, $resourceid ) {
 		

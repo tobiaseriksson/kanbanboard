@@ -58,6 +58,8 @@
 		{
 			background-color:#eeeeee;
 		}
+
+		.ui-menu { width: 150px; }
 	</style>
 	
 	<script type="text/javascript">
@@ -376,6 +378,20 @@
 			});
 		}
 
+		//
+		// Makes all the resource names clickable, i.e. a menu with Rename and Delete will pop-up
+		//
+		var selectedResource = null;
+		function makeMenuAppearOnClick( onlyLastRow ) {
+			var selection = "#ttab tr:gt(2) th[id]";
+			if( onlyLastRow == true ) selection = "#ttab tr:nth-last-child(4) th[id]";
+			$(selection).click(function (e) {
+				$("#menu").show();
+		        $("#menu").offset({left:e.pageX,top:e.pageY});
+		        selectedResource = $(this);
+			});
+		}
+
 		$(function () {
 			makeCellsEditable(false);
 		});
@@ -438,11 +454,17 @@
 					$('#deletesprint input[type=submit]', this).attr('disabled', 'disabled');
 				}
 			});
-			
-			</script>
-					
-				
-		<script type="text/javascript"> 	
+		
+			function populateUserSelection() {
+				$('#updateselection').html('<option value="0">All</option>');
+				var i = 1;
+				$('#ttab tr:gt(2)').each(function(){
+					if ($('th:first', this).attr('id') > 0) {
+						$('#updateselection').append('<option value="' + (i++) + '">' + $('th:first', this).text() + '</select>');
+					}
+				})
+			}
+
 			$(function() {
 				$('#progressimage').hide();
 								
@@ -451,17 +473,7 @@
 				colorize();
 				
 				summarize();
-				
-				function populateUserSelection() {
-					$('#updateselection').html('<option value="0">All</option>');
-					var i = 1;
-					$('#ttab tr:gt(2)').each(function(){
-						if ($('th:first', this).attr('id') > 0) {
-							$('#updateselection').append('<option value="' + (i++) + '">' + $('th:first', this).text() + '</select>');
-						}
-					})
-				}
-				
+						
 				$("#submitchanges").click( function() {
 					$('#progressimage').show();
 					var data = '';		
@@ -517,7 +529,8 @@
 							$('<tr><th id="'+data.id+'">'+newname+'</th>'+cells+'<th>0</th></tr>').insertBefore( $('#ttab tbody>tr:last').prev().prev() );
 							populateUserSelection();
 							colorize();
-							makeCellsEditable(true);     
+							makeCellsEditable(true);    
+							makeMenuAppearOnClick(true); 
 				  		}, 
 				  		error: function(x,e) {  
 				    		$('body').append( "failed with; "+x.status+", e="+e+", response="+x.responseText );
@@ -572,10 +585,138 @@
 
 			});
 		</script> 
-		
-			
+
+
+<script>
+//
+// This section handles the popup-menu for the resources (names)
+// and makes it possible to rename and delete resources 
+//
+$(function() {
+
+	$("#dialog-confirm-delete-resource").dialog({
+		width: 300,
+		resizable: false,
+		modal: true,
+		autoOpen: false,
+		buttons: {
+			Cancel: function() {
+				$( this ).dialog( "close" );
+				console.log("Delete canceled");
+			},
+			Ok: function() {
+				$( this ).dialog( "close" );
+				console.log("Delete AJAX call ...");
+				var newname = $('#newname').val();
+				var id = $("#resource-to-delete-id").val();
+				var dataStr = 'id='+id;
+				$.ajax({  
+					dataType: "text", 
+			 		type: "POST",  
+			  		url: "/kanban/deleteresource/"+projectid,  
+			  		data: dataStr,  
+			  		success: function(data) {  
+						$( "#"+$("#resource-to-delete-id").val() ).parent().remove();
+						populateUserSelection();
+						console.log("Delete OK");
+			  		}, 
+			  		error: function(x,e) {  
+			    		$('body').append( "Delete of resource failed with; "+x.status+", e="+e+", response="+x.responseText );
+			    		console.log("Delete failed...");
+			  		}  
+				}); 
+			}
+		}
+	});
+
+	$("#dialog-rename-resource").dialog({
+		width: 300,
+		resizable: false,
+		modal: true,
+		autoOpen: false,
+		buttons: {
+			Cancel: function() {
+				$( this ).dialog( "close" );
+				console.log("Rename canceled");
+			},
+			Ok: function() {
+				$( this ).dialog( "close" );
+				console.log("Rename AJAX call ...");
+				var newname = $("#resource-new-name").val();
+				var id = $("#resource-to-rename-id").val();
+				var dataStr = 'id='+id+'&newname='+newname;
+				$.ajax({  
+					dataType: "text", 
+			 		type: "POST",  
+			  		url: "/kanban/renameresource/"+projectid,  
+			  		data: dataStr,  
+			  		success: function(data) {  
+						$( "#"+$("#resource-to-rename-id").val() ).text( $("#resource-new-name").val() );
+						populateUserSelection();
+						console.log("Rename OK");
+			  		}, 
+			  		error: function(x,e) {  
+			    		$('body').append( "Rename of resource failed with; "+x.status+", e="+e+", response="+x.responseText );
+						console.log("Rename failed...");
+			  		}  
+				}); 
+			}
+		}
+	});
+
+	$( "#menu" ).menu( {
+		select: function( event, ui ) {
+			var menuSelection = $(ui.item).text();
+			// console.log("ui:"+menuSelection );
+			if( menuSelection == "Rename" ) {
+				console.log( "Renaming: "+$(selectedResource).text()+", id = "+$(selectedResource).attr("id") );
+				$("#dialog-rename-resource").dialog( "open" );
+				$("#resource-to-rename").text( $(selectedResource).text() );
+				$("#resource-new-name").val($(selectedResource).text() );
+				$("#resource-to-rename-id").val($(selectedResource).attr("id"));
+			}
+			if( menuSelection == "Delete" ) {
+				console.log( "Deleting; "+$(selectedResource).text()+", id = "+$(selectedResource).attr("id") );
+				$("#dialog-confirm-delete-resource").dialog( "open" );
+				$("#resource-to-delete").text( $(selectedResource).text() );
+				$("#resource-to-delete-id").val($(selectedResource).attr("id"));
+
+			}
+			selectedResource = null;
+			$( "#menu" ).hide();
+		}
+	});
+	$( "#menu" ).hide();
+	$( "#menu" ).on( "mouseleave", function() {
+		$( "#menu" ).hide();
+		selectedResource = null;
+	});
+
+	makeMenuAppearOnClick( false );
+
+});
+</script>
+
 		</div>
 	</div>
+
+
+
+<ul id="menu">
+<li><a href="#">Rename</a></li>
+<li><a href="#">Delete</a></li>
+</ul>
+
+
+<div id="dialog-confirm-delete-resource" title="Delete Resource?">
+<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>This will delete the resource "<span id="resource-to-delete"></span>". Are you sure?</p><input type=hidden id="resource-to-delete-id" value=0 />
+</div>
+
+<div id="dialog-rename-resource" title="Rename Resource?">
+<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Please specify the new name for "<span id="resource-to-rename"></span>". <input type=text id="resource-new-name" value="" size="10"/></p><input type=hidden id="resource-to-rename-id" value=0 />
+</div>
+
+
 
 </body>
 </html>
