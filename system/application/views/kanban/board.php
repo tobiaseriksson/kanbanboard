@@ -489,7 +489,7 @@ echo " { height: 20px; }\n";
 					$(this).css( 'height',maxheight );
 				});
 				// the intention here is to make sure that the groups are not wrapped within the kanbanboard-DIV when the browser window is smaller than the kanbanboard-DIV
-				var width = allgroups.length * (maxwidth+20); 
+				var width = allgroups.length * maxwidth + maxwidth; 
 				$('#kanbanboard').width( width );
 			});
 		</script>	
