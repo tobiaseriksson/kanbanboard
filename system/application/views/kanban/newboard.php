@@ -1006,7 +1006,34 @@ function layoutGroupsAndTheirTasks() {
 				}
 			}
 		});
+
+  $('#searchfield').click( function(event) {
+    $('#searchfield').val('');
+  });
+
+    $('#searchfield').keyup( function(event) {
+    // console.log("Text:"+$('#searchfield').val());
+    var searchString = $('#searchfield').val();
+    taskList.each( function( task ) {
+        var title = task.get('heading');        
+        var result = title.search( new RegExp(searchString, "i") );
+        // console.log(title+', '+searchString+', res='+result);
+        if( result < 0 ) {
+          var description = task.get('description');
+          result = description.search( new RegExp(searchString, "i") );
+        }
+        if( result < 0 ) {
+          $('#draggableTask'+task.get('id')).hide();
+        } else {
+          $('#draggableTask'+task.get('id')).show();
+        }
+    });
+  });
+
+
+
 	});
+
 
 	function loadTaskComments( taskid ) {
 		var projectid = <?php echo $projectid; ?>;
@@ -1091,6 +1118,7 @@ function layoutGroupsAndTheirTasks() {
 
 <button id="dense">Dense/Collapse</button>
 <button id="groupby">Group By Owner</button>
+<input id="searchfield" type=text value="Search"/>
 
 <div id="kanbanboard" class="board">
 </div>
