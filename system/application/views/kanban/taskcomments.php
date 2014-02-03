@@ -1,26 +1,3 @@
-<script type="text/javascript">
-$(function() {
-	
-	$('#taskcommentform').submit(function() {
-		var dataString = $("#taskcommentform").serialize();
-			$.ajax({  
-			  type: "POST",  
-			  url: "/kanban/addtaskcomment",  
-			  data: dataString,  
-			  success: function(data) {  				     
-					loadTaskComments( $("#taskcommentform input[name=taskid]").val() );
-					$("#taskcommentform").reset();
-			  },
-			  error: function(x,e) {  
-				    $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
-				  }
-		});
-	  return false;
-	});		
-
-});
-</script>
-
 
 <form id="taskcommentform" action="" method="post">
 	<input type="hidden" name="projectid" id="projectid" value="<?php echo $projectid; ?>" />
@@ -30,7 +7,7 @@ $(function() {
 		Comment :<br/>
 		<textarea name="comment" id="comment" cols="80" rows="7">Some comment...</textarea>
 		<br/>
-		<input type="submit" name="Submit" value="submit" />
+		<button id="submitform" onclick="submitCommentsForm(); return false;">Submit Comment</button>
 	</div>
 </form>
 
@@ -49,3 +26,23 @@ foreach ($taskcomments as $comment) {
 <?php
 }
 ?>
+
+<script>
+
+    function submitCommentsForm() {
+      var dataString = $("#taskcommentform").serialize();
+      $.ajax({  
+      type: "POST",  
+      url: "/kanban/addtaskcomment",  
+      data: dataString,  
+      success: function(data) {              
+        loadTaskComments( $("#taskcommentform input[name=taskid]").val() );
+        $("#taskcommentform").reset();
+      },
+      error: function(x,e) {  
+          $("#errordiv").html("failed with; "+x.status+", e="+e+", response="+x.responseText);
+        }
+      });    
+    }
+    
+</script>

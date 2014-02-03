@@ -517,6 +517,7 @@ echo " { height: 20px; }\n";
 <div id="dock">
 	<ul>
 		<li><a href="" onclick="$('#dialog-new-task').dialog('open'); return false; ">New Task</a></li>	
+		<li><a href="<?php echo site_url( '/kanban/newboard/'.$projectid.'/'.$sprintid ); ?>">New Board</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/status/'.$projectid.'/'.$sprintid ); ?>">Status</a></li>
 		<li><a href="<?php echo site_url( '/kanban/settings/'.$projectid.'/'.$sprintid ); ?>">Settings</a></li>		
 		<li><a href="<?php echo site_url( '/kanban/selectproject'); ?>">Projects</a></li>
@@ -534,7 +535,7 @@ echo " { height: 20px; }\n";
 <div id="errordiv"></div>
 
 <div id="timelinecanvas"></div>  
-
+<a href="<?php echo site_url( '/kanban/newboard/'.$projectid.'/'.$sprintid ); ?>">Try out the NEW board layout!</a>
 <div class="kanbanboard" id="kanbanboard">
 
 <?php

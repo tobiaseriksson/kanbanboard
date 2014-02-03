@@ -182,7 +182,7 @@
 <body bgcolor=white>
 <div id="dock">
 	<ul>
-		<li><a href="<?php echo site_url( '/kanban/project/'.$projectid.'/'.$sprintid ); ?>">Board</a></li>	
+		<li><a href="<?php echo site_url( '/kanban/newboard/'.$projectid.'/'.$sprintid ); ?>">Board</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/status/'.$projectid.'/'.$sprintid ); ?>">Sprint-Status</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/settings/'.$projectid.'/'.$sprintid ); ?>">Settings</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/selectproject'); ?>">Projects</a></li>

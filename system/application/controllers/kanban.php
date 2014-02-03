@@ -8,6 +8,7 @@ class kanban extends Controller {
 		$this->load->helper('xml');    
 		$this->load->helper('url');
 		$this->load->library('session');
+		$this->load->model('Kanbanmodel','kanbanmodel',TRUE);
 		
 	}
 	
@@ -1176,6 +1177,88 @@ class kanban extends Controller {
 		$this->load->view('kanban/settings', $pagedata);
 	}
 
+
+	function newboard($projectid,$sprintid=0) {
+
+		kanban::redirectIfNoAccess( $projectid );
+	
+		if( $sprintid==0 ) $sprintid = $this->kanbanmodel->getCurrentSprintIDOrDefaultToLast( $projectid );
+
+		$pagedata = array();
+		##
+		## Project Details
+		##
+		$pagedata['projectid'] = $projectid;
+		$pagedata['sprintid'] = $sprintid;	
+		$res = $this->kanbanmodel->getProjectDetails( $projectid );
+		$projectname = $res[0]['name'];	
+		$projectstartdate =  $res[0]['startdate'];	
+		$pagedata['projectname'] = $projectname;	
+		##
+		## Sprint Details
+		##
+		$res = $this->kanbanmodel->getSprintDetails($sprintid);
+		$sprintname = $res[0]['name'];
+		$startdate = $res[0]['startdate'];
+		$enddate = $res[0]['enddate'];	
+		$pagedata['sprintname'] = $sprintname;	
+		$pagedata['startdate'] = $startdate;	
+		$pagedata['enddate'] = $enddate;	
+		##
+		## Groups
+		##
+		$pagedata['groups'] = $this->kanbanmodel->getGroups($projectid);
+		##
+		## Tasks
+		##
+		$tasks = $this->kanbanmodel->getTasks($sprintid);
+		##
+		## Comment Count
+		##
+		$commentcounts = $this->kanbanmodel->getCommentCountForAllTasksInASprint($sprintid);
+		foreach( $commentcounts as $cc ) {
+			$tasks[ $cc['taskid'] ]['comments'] = $cc['count'];
+		}
+		##
+		## List all known estimations (picking the latest)
+		##
+		$estimations = $this->kanbanmodel->getLatestEstimations($sprintid);
+		foreach( $estimations as $est ) {
+			$tasks[ $est['item_id'] ]['latest_estimation'] = $est['new_estimate'];
+		}
+		##
+		## List all Time Reports for TODAY
+		##
+		$timereports = $this->kanbanmodel->getTodaysTimeReports($sprintid);
+		foreach( $timereports as $tr ) {
+			$tasks[ $tr['item_id'] ]['todays_time_reporting'] = $tr['hours'];
+		}
+		##
+		## Workpages (list)
+		##
+		$pagedata['workpackages'] = $this->kanbanmodel->getAvailableWorkPackages($projectid);
+		##
+		## list of Resources
+		##
+		$pagedata['resources'] = $this->kanbanmodel->getAvailableResources($projectid);
+		##
+		## List all Sprints in this project
+		##
+		$pagedata['sprints'] = $this->kanbanmodel->getAvailableSprints($projectid);
+
+		##
+		## List all the timeline items
+		##
+		$projectStartAndEnd = $this->kanbanmodel->getProjectStartAndEndDates($projectid);
+		$pagedata['timelineitems'] = $this->kanbanmodel->getTimeLineItems($projectid,$projectStartAndEnd[0],$projectStartAndEnd[1]);
+
+		##
+		## Render View (the board)
+		##
+		$pagedata['tasks'] = $tasks;
+		$this->load->view('kanban/newboard', $pagedata);
+	}
+
 	function project($projectid,$sprintid=0)    {
 	
 
@@ -1300,7 +1383,7 @@ class kanban extends Controller {
 		
 		$now = strtotime("now");
 		$tasks = array();
-		$sql='SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,added,enddate FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.project_id = ? AND k.sprint_id = ? ORDER BY displayorder,priority DESC,added ASC,heading DESC';
+		$sql='SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,added,enddate,owner_id FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.project_id = ? AND k.sprint_id = ? ORDER BY displayorder,priority DESC,added ASC,heading DESC';
 		$query = $this->db->query($sql,array($projectid,$sprintid));
 		$i=0;
 		foreach ($query->result_array() as $row)
@@ -1405,7 +1488,7 @@ class kanban extends Controller {
 	function taskDetailsAsAnArray($projectid,$taskid) {
 //		$projectid = $this->input->post('projectid');
 //		$taskid = $this->input->post('taskid');
-		$sql = 'SELECT heading,priority,description,estimation,colortag,sprint_id,workpackage_id FROM kanban_item WHERE project_id = ? AND id = ?';
+		$sql = 'SELECT heading,priority,description,estimation,colortag,sprint_id,workpackage_id,owner_id FROM kanban_item WHERE project_id = ? AND id = ?';
 		$query = $this->db->query( $sql,array($projectid,$taskid) );
 		$taskDetails = array();
 		if ($query->num_rows() > 0)	{
@@ -1419,6 +1502,7 @@ class kanban extends Controller {
 			$taskDetails[ 'taskid' ] = $taskid;		
 			$taskDetails[ 'colortag' ] = $row->colortag;
 			$taskDetails[ 'workpackage_id' ] = $row->workpackage_id;			
+			$taskDetails[ 'ownerid' ] = $row->owner_id;			
 		} 
 		$today = date( "Y-m-d" );
 		$sql = 'SELECT new_estimate FROM kanban_progress WHERE item_id = ? AND date_of_progress <= CURDATE() ORDER BY date_of_progress DESC LIMIT 1';
@@ -1487,8 +1571,6 @@ class kanban extends Controller {
 			// print_r( $release );		
 			$taskid = $res[0]['lastid'];	
 		} 
- 		echo "task-id=".$taskid."<br>";	
-		echo "inserted into db!";
 		$change = "Added new Task\n";
 		$change = $change."ID: ".$taskid."\n";
 		$change = $change."Heading: ".$heading."\n";
@@ -1557,7 +1639,6 @@ class kanban extends Controller {
 		$sql="INSERT INTO kanban_time_reporting (item_id,hours,reporting_date) VALUES (?,?,?) ON DUPLICATE KEY UPDATE item_id =?, hours = ?, reporting_date = ?";
 		$query = $this->db->query($sql,array( $taskid,$todays_time_reporting,$today,$taskid,$todays_time_reporting,$today) ); 
 
-		echo "db updated!";
 		$change = "Task Updated\n";
 		$change = $change."From :\n";
 		$change = $change."ID: ".$taskid."\n";

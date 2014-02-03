@@ -565,7 +565,7 @@ jQuery(function($){
 <body>
 <div id="dock">
 	<ul>
-		<li><a href="<?php echo site_url( '/kanban/project/'.$projectid.'/'.$sprintid ); ?>">Board</a></li>	
+		<li><a href="<?php echo site_url( '/kanban/newboard/'.$projectid.'/'.$sprintid ); ?>">Board</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/status/'.$projectid.'/'.$sprintid ); ?>">Status</a></li>
 		<li><a href="<?php echo site_url( '/kanban/timeline/'.$projectid.'/'.$sprintid ); ?>">Timeline</a></li>	
 		<li><a href="<?php echo site_url( '/kanban/resources/'.$projectid.'/'.$sprintid ); ?>">Resources</a></li>	
