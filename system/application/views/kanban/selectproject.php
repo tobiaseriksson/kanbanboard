@@ -56,7 +56,7 @@
 <div>
 <?php
 foreach ($projects as $project) {		
-	echo '<A HREF="/kanban/project/'.$project['id'].'">'.$project['name'].'</A>';
+	echo '<A HREF="/kanban/newboard/'.$project['id'].'">'.$project['name'].'</A>';
 	echo '<br>';
 }
 ?>	
