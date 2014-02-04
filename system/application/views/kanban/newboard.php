@@ -390,6 +390,7 @@
   
   var groupBy = false;
   var dense = true;
+  var DENSEFRACTION = 0.8;
   var draggingOnGoing = false;
   var groups = new Array();
   var defaultTaskWidth = 120;
@@ -625,7 +626,7 @@ function layoutGroupsAndTheirTasks() {
     var ownerList = findTasksPerOwnerPerGroup();
     cheatingMaxY = 0;
     if( groupBy == true ) {
-      var denseFraction=0.9;
+      var denseFraction=DENSEFRACTION;
       if( dense ) denseFraction = 4;
       var element = $('.group').first();
       var top = yPosition + element.outerHeight() + defaultSpace;
@@ -681,7 +682,7 @@ function layoutGroupsAndTheirTasks() {
 
   function layoutTasksSub(tasks,xPositionForGroup,yPosition,xxl){
     if( dense ) denseFraction = 4;
-    else denseFraction=0.9;
+    else denseFraction=DENSEFRACTION;
     var index = 100;
     var toggle = 1;
     _.each( tasks, function( task ) {
@@ -793,7 +794,7 @@ function layoutGroupsAndTheirTasks() {
               },
               error:function(model,response) 
               {
-                console.log('FAILED to store model on server!');
+                console.log('FAILED to Move Task, server; ');
                 var reasonForFailure = '';
                 for( var propName in response ) {
                   reasonForFailure = reasonForFailure+', ' + propName+' = '+response[propName];
@@ -903,7 +904,11 @@ function layoutGroupsAndTheirTasks() {
           taskList.remove(task);
           task.destroy({
             error: function(model, response) {
-              $("#error-message").html("Failed to delete the task ("+response+")");
+              var reasonForFailure = '';
+              for( var propName in response ) {
+                reasonForFailure = reasonForFailure+', ' + propName+' = '+response[propName];
+              }
+              $("#error-message").html("Failed to delete; "+reasonForFailure);
               $('#dialog-error-message').dialog('open');
             },
             success: function(model, response) {
@@ -949,7 +954,7 @@ function layoutGroupsAndTheirTasks() {
             },
             error:function(model,response) 
             {
-                console.log('FAILED to store model on server!');
+                console.log('FAILED to update model on server!');
                 var reasonForFailure = '';
                 for( var propName in response ) {
                   reasonForFailure = reasonForFailure+', ' + propName+' = '+response[propName];
@@ -995,8 +1000,11 @@ function layoutGroupsAndTheirTasks() {
             },
             error:function(model,response) 
             {
-              console.log('FAILED to store model on server!');
-              $("#error-message").html("Failed to update; "+response);
+              console.log('FAILED to store Task on server!');var reasonForFailure = '';
+                for( var propName in response ) {
+                  reasonForFailure = reasonForFailure+', ' + propName+' = '+response[propName];
+                }
+                $("#error-message").html("Failed to update; "+reasonForFailure);
               $('#dialog-error-message').dialog('open');
             }
           });

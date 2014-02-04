@@ -99,7 +99,7 @@ class Kanbanrestapi extends REST_Controller
         $change = $change."Estimation: ".$estimation."\n";
         $change = $change."Description: ".$description."\n";
         
-        // $this->kanbanmodel->addToHistory($projectid,$change);
+        $this->kanbanmodel->addToHistory($projectid,$change);
     
         $message = array('id' => $taskid, 'taskid' => $taskid );
         
@@ -181,6 +181,7 @@ class Kanbanrestapi extends REST_Controller
         $change = $change."Todays Estimation: ".$oldTaskDetails['todays_estimation']."\n";
         $change = $change."Reported Hours Today: ".$oldTaskDetails['todays_time_reporting']."\n";
         $change = $change."Description: ".$oldTaskDetails['description']."\n";
+        $change = $change."Group: ".$oldTaskDetails['group_id']."\n";
         $change = $change."\nTo :\n";
         $change = $change."Heading: ".$heading."\n";
         $change = $change."Owner: ".$newOwner."\n";
@@ -189,8 +190,9 @@ class Kanbanrestapi extends REST_Controller
         $change = $change."Todays Estimation: ".$todays_estimation."\n";
         $change = $change."Reported Hours Today: ".$todays_time_reporting."\n";
         $change = $change."Description: ".$description."\n";
+        $change = $change."Group: ".$group."\n";
         
-        // $this->kanbanmodel->addToHistory($projectid,$change);
+        $this->kanbanmodel->addToHistory($projectid,$change);
     
         $message = array('message' => 'Task updated!');
         
@@ -199,6 +201,11 @@ class Kanbanrestapi extends REST_Controller
     
     function task_delete()
     {
+        $projectid = $this->session->userdata('projectid');
+        if( is_numeric( $projectid ) != TRUE || $projectid <= 0 ) {
+            $this->response(array('error' => 'Project ID is invalid!('.$projectid.')' ), 405);
+            return;
+        }  
         $urlPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $tmp = explode( '/', $urlPath );
         $taskid = $tmp[ count($tmp)-1 ];
@@ -206,11 +213,12 @@ class Kanbanrestapi extends REST_Controller
             $this->response(array('error' => 'Task ID is invalid!('.$taskid.')'.$urlPath.','.$tmp), 403);
             return;
         }
+        $taskDetails = $this->kanbanmodel->taskDetailsAsAnArray($projectid,$taskid);
         $this->kanbanmodel->deleteTask($taskid);
         $change = "Deleted Task\n";
         $change = $change."ID: ".$taskid."\n";
-        // $change = $change."Heading: ".$heading."\n";
-        // $this->kanbanmodel->addToHistory($projectid,$change);   
+        $change = $change."Heading: ".$taskDetails['heading']."\n";
+        $this->kanbanmodel->addToHistory($projectid,$change);   
 
         $message = array('message' => $change);
         $this->response($message, 200); // 200 being the HTTP response code

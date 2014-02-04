@@ -45,6 +45,9 @@ class kanban extends Controller {
 	}
 	
 	function about($projectid,$sprintid=0) {
+
+		$this->session->set_userdata('projectid', $projectid);
+
 		$pagedata = array();
 		$pagedata['projectid'] = $projectid;
 		$pagedata['sprintid'] = $sprintid;	
@@ -235,6 +238,8 @@ class kanban extends Controller {
 	function wpstatus($projectid,$sprintid=0) {
 	
 		kanban::redirectIfNoAccess( $projectid );
+
+		$this->session->set_userdata('projectid', $projectid);
 	
 		$pagedata = array();
 		
@@ -535,6 +540,8 @@ class kanban extends Controller {
 	function status($projectid,$sprintid=0) {
 	
 		kanban::redirectIfNoAccess( $projectid );
+
+		$this->session->set_userdata('projectid', $projectid);
 	
 		$pagedata = array();
 		
@@ -1013,7 +1020,7 @@ class kanban extends Controller {
 
 		kanban::redirectIfNoAccess( $projectid );
 	
-	
+		$this->session->set_userdata('projectid', $projectid);
 	
 		$pagedata = array();
 		
@@ -1073,8 +1080,9 @@ class kanban extends Controller {
 	
 	function settings($projectid,$sprintid=0) {
 	
-
 		kanban::redirectIfNoAccess( $projectid );
+
+		$this->session->set_userdata('projectid', $projectid);
 	
 		$user_id = $this->session->userdata('id');
 		
@@ -1181,6 +1189,8 @@ class kanban extends Controller {
 	function newboard($projectid,$sprintid=0) {
 
 		kanban::redirectIfNoAccess( $projectid );
+
+		$this->session->set_userdata('projectid', $projectid);
 	
 		if( $sprintid==0 ) $sprintid = $this->kanbanmodel->getCurrentSprintIDOrDefaultToLast( $projectid );
 
@@ -1264,6 +1274,7 @@ class kanban extends Controller {
 
 		kanban::redirectIfNoAccess( $projectid );
 	
+		$this->session->set_userdata('projectid', $projectid);
 		    
 		if( $sprintid <=0 ) {
 		
@@ -1311,6 +1322,7 @@ class kanban extends Controller {
 
 		kanban::redirectIfNoAccess( $projectid );
 	
+		$this->session->set_userdata('projectid', $projectid);
 		    
 		$pagedata = array();
 		$pagedata['projectid'] = $projectid;
@@ -2355,6 +2367,8 @@ class kanban extends Controller {
 	function resources($projectid,$sprintid=0) {
 	
 		kanban::redirectIfNoAccess( $projectid );
+
+		$this->session->set_userdata('projectid', $projectid);
 	
 		$pagedata = array();
 		

@@ -130,7 +130,7 @@ class Kanbanmodel extends Model {
 	{
 //		$projectid = $this->input->post('projectid');
 //		$taskid = $this->input->post('taskid');
-		$sql = 'SELECT heading,priority,description,estimation,colortag,sprint_id,workpackage_id,owner_id FROM kanban_item WHERE project_id = ? AND id = ?';
+		$sql = 'SELECT heading,priority,description,estimation,colortag,sprint_id,workpackage_id,owner_id,group_id FROM kanban_item WHERE project_id = ? AND id = ?';
 		$query = $this->db->query( $sql,array($projectid,$taskid) );
 		$taskDetails = array();
 		if ($query->num_rows() > 0)	{
@@ -144,7 +144,8 @@ class Kanbanmodel extends Model {
 			$taskDetails[ 'taskid' ] = $taskid;		
 			$taskDetails[ 'colortag' ] = $row->colortag;
 			$taskDetails[ 'workpackage_id' ] = $row->workpackage_id;			
-			$taskDetails[ 'ownerid' ] = $row->owner_id;			
+			$taskDetails[ 'ownerid' ] = $row->owner_id;					
+			$taskDetails[ 'group_id' ] = $row->group_id;			
 		} 
 		$today = date( "Y-m-d" );
 		$sql = 'SELECT new_estimate FROM kanban_progress WHERE item_id = ? AND date_of_progress <= CURDATE() ORDER BY date_of_progress DESC LIMIT 1';
