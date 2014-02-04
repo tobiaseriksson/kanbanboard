@@ -588,12 +588,12 @@ jQuery(function($){
 	
 		<div id="tabs">
 			<ul>
-				<li><a href="<?=$request_uri?>#general-tab">General</a></li>
-				<li><a href="<?=$request_uri?>#group-tab">Groups</a></li>
-				<li><a href="<?=$request_uri?>#wp-tab">Work Packages</a></li>
-				<li><a href="<?=$request_uri?>#sprints-tab">Sprints</a></li>
-				<li><a href="<?=$request_uri?>#import-tab">Import</a></li>
-				<li><a href="<?=$request_uri?>#projects-tab">Projects</a></li>
+				<li><a href="<?php echo $request_uri; ?>#general-tab">General</a></li>
+				<li><a href="<?php echo $request_uri; ?>#group-tab">Groups</a></li>
+				<li><a href="<?php echo $request_uri; ?>#wp-tab">Work Packages</a></li>
+				<li><a href="<?php echo $request_uri; ?>#sprints-tab">Sprints</a></li>
+				<li><a href="<?php echo $request_uri; ?>#import-tab">Import</a></li>
+				<li><a href="<?php echo $request_uri; ?>#projects-tab">Projects</a></li>
 			</ul>
 
 			<div id="general-tab">
