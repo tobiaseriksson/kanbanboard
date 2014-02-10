@@ -100,7 +100,7 @@
 		<div id="settingsdiv">
 				<h2>Resource Editing</h2>
 				<table border=0>
-					<tr><td>Populate with points/day :</td><td><input id="hourperday" type="text" value="8" size="2" /></td></tr>
+					<tr><td>Populate with points/day :</td><td><input id="hourperday" type="text" value="8" size="2" /></td><td width=20px></td><td rowspan=5><img src="/assets/images/edit-resource-cell.png"><br><i>Edit individual cells by clicking on them.</i></td><td width=20px></td><td rowspan=5><img src="/assets/images/edit-resource-popup-menu.png"><br><i>Rename or Delete Resources by clicking on the name.</i></td></tr>
 					<tr><td>Day Of Week :</td><td>
 					M<input type="checkbox" name="dow" value="1" />
 					T<input type="checkbox" name="dow" value="2" />
