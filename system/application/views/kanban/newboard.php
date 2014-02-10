@@ -651,8 +651,8 @@ function layoutGroupsAndTheirTasks() {
   }
 
   function sortArrayOfTasksBasedOnPrio( x, y ) {
-    var xPrio = x.get('prio');
-    var yPrio = y.get('prio');
+    var xPrio = x.get('priority');
+    var yPrio = y.get('priority');
     if( xPrio > yPrio ) return -1;
     if( xPrio < yPrio ) return 1;
     return 0;
@@ -733,14 +733,15 @@ function layoutGroupsAndTheirTasks() {
       ownerList.each( function( owner ){
         var yPosition = $('#owner-area-'+owner.get('id')).position().top + 10;
         var tasks = taskList.where( {group:groupId,owner:owner.get('owner')} );
-        tasks.sort( sortArrayOfTasksBasedOnPrio );
-        var taskLastYPosition = layoutTasksSub(tasks,xPositionForGroup,yPosition,xxl);
+        var sortedTasks = tasks.sort( sortArrayOfTasksBasedOnPrio );
+        var taskLastYPosition = layoutTasksSub(sortedTasks,xPositionForGroup,yPosition,xxl);
       });
     }
     else {
       var tasks = taskList.where( {group:groupId} );
-      tasks.sort( sortArrayOfTasksBasedOnPrio );
-      layoutTasksSub(tasks,xPositionForGroup,yPosition,xxl);
+      var sortedTasks = tasks.sort( sortArrayOfTasksBasedOnPrio );
+      _.each( sortedTasks, function( t ) { console.log( t.get('heading')+' : '+t.get('priority') ); } );
+      layoutTasksSub(sortedTasks,xPositionForGroup,yPosition,xxl);
     }
   }
 
@@ -949,6 +950,9 @@ function layoutGroupsAndTheirTasks() {
               if( oldOwner != owner ) {
                 toggleGroupBy();
                 toggleGroupBy();
+              } 
+              else {
+                layoutGroupsAndTheirTasks();
               }
             },
             error:function(model,response) 
