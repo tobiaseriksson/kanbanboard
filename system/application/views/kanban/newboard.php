@@ -470,10 +470,10 @@
     },
     updateTaskHTML : function() {
       var obj = $("#draggableTask"+this.get('id'));
-      console.log('found '+$(obj).attr('id'));
-      console.log('found '+$(obj).attr('class'));
+      // console.log('found '+$(obj).attr('id'));
+      // console.log('found '+$(obj).attr('class'));
       $(obj).attr("class","ui-widget-content draggableTask shadow ui-draggable "+getColor(this.get('colortag'))+"-card");
-      console.log('found '+$(obj).attr('class'));
+      // console.log('found '+$(obj).attr('class'));
       $("#heading",obj).html(this.get('heading'));
       $("#description",obj).html(this.get('description'));
       $("#priority",obj).html(this.get('priority'));
@@ -701,7 +701,7 @@ function layoutGroupsAndTheirTasks() {
     _.each( uniqueOwnerNames, function( ownerName ) { 
       var arrayOfGroupTaskCount = [];
       var max = 0;
-      console.log('name: '+ownerName);
+      // console.log('name: '+ownerName);
       groupList.each( function( group ){ 
         var groupId = group.get('id');
         var tasks = taskList.where({owner: ownerName, group: groupId });
@@ -740,7 +740,7 @@ function layoutGroupsAndTheirTasks() {
     else {
       var tasks = taskList.where( {group:groupId} );
       var sortedTasks = tasks.sort( sortArrayOfTasksBasedOnPrio );
-      _.each( sortedTasks, function( t ) { console.log( t.get('heading')+' : '+t.get('priority') ); } );
+      // _.each( sortedTasks, function( t ) { console.log( t.get('heading')+' : '+t.get('priority') ); } );
       layoutTasksSub(sortedTasks,xPositionForGroup,yPosition,xxl);
     }
   }
@@ -1049,13 +1049,6 @@ function layoutGroupsAndTheirTasks() {
     }
     console.log('Done!');
   }
-
- 
-
-  printCookies();
-
-
-
 
 	});
 
