@@ -10,6 +10,7 @@
 	<script type="text/javascript" src="/assets/js/jquery-1.10.2.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery-ui-1.10.3.custom.min.js"></script>
 	<script type="text/javascript" src="/assets/js/jquery.ui.touch-punch.js"></script>
+  <script src="/assets/js/jquery.cookie.js"></script>
   <script src="/assets/js/underscore-min.js"></script>
   <script src="/assets/js/backbone-min.js"></script>
   <script type="text/javascript" src="/assets/js/raphael-min.js"></script>
@@ -358,29 +359,6 @@
   background: -ms-radial-gradient(circle, #F1F2DA, #CC33FF);
 
   /* Opera couldn't do radial gradients, then at some point they started supporting the -webkit- syntax, how it kinda does but it's kinda broken (doesn't do sizing) */
-}
-
-.special-gradient {
-{
-  /* fallback */
-  background-color: #F1F2DA;
-  background-image: url(images/radial_fancy.png);
-  background-position: 80% 20%;
-  background-repeat: no-repeat;
-
-  /* Safari 4-5, Chrome 1-9 */
-  background: -webkit-gradient(radial, 80% 20%, 0, 80% 40%, 100, from(#1a82f7), to(#F1F2DA));
-
-  /* Safari 5.1+, Chrome 10+ */
-  background: -webkit-radial-gradient(80% 20%, closest-corner, #1a82f7, #F1F2DA);
-
-  /* Firefox 3.6+ */
-  background: -moz-radial-gradient(80% 20%, closest-corner, #1a82f7, #F1F2DA);
-
-  /* IE 10 */
-  background: -ms-radial-gradient(80% 20%, closest-corner, #1a82f7, #F1F2DA);
-
-  /* Opera cannot do radial gradients yet */
 }
 
   </style>
@@ -846,16 +824,21 @@ function layoutGroupsAndTheirTasks() {
     console.log("clicked dense button");
     if( dense ) dense = false;
     else dense = true;
+    $.cookie('dense', dense );
     layoutGroupsAndTheirTasks();
   });
 
   function toggleGroupBy() {
+    var groupByCookieValue = 'N/A';
     if( groupBy ) {
       groupBy = false;
       $('.owner-area').remove();
+      groupByCookieValue = 'no grouping';
     }else {
       groupBy = true; 
+      groupByCookieValue = 'owner';
     }
+    $.cookie('groupBy', groupByCookieValue );
     layoutGroupsAndTheirTasks();
   }
 
@@ -863,6 +846,22 @@ function layoutGroupsAndTheirTasks() {
     console.log("clicked Group By button");
     toggleGroupBy();
   });
+
+  var denseCookieValue = $.cookie('dense');
+  if( denseCookieValue == undefined ) {
+    dense = false;
+  } else {
+    if( denseCookieValue == 'true' ) dense = true;
+    else dense = false;
+  }
+
+  var groupByCookieValue = $.cookie('groupBy');
+  if( groupByCookieValue == undefined ) {
+    groupBy = false;
+  } else {
+    if( groupByCookieValue == 'owner' ) groupBy = true;
+    else groupBy = false;
+  }
 
   renderGroupsAndTheirTasks();
   makeTaskDraggable(0);
@@ -1019,7 +1018,7 @@ function layoutGroupsAndTheirTasks() {
     $('#searchfield').val('');
   });
 
-    $('#searchfield').keyup( function(event) {
+  $('#searchfield').keyup( function(event) {
     // console.log("Text:"+$('#searchfield').val());
     var searchString = $('#searchfield').val();
     taskList.each( function( task ) {
@@ -1037,6 +1036,20 @@ function layoutGroupsAndTheirTasks() {
         }
     });
   });
+
+  function printCookies() {
+    var cookies = $.cookie();
+    console.log('List of cookies:');
+    for( var prop in cookies ) {
+      console.log(prop+' '+cookies[prop]);
+    }
+    console.log('Done!');
+  }
+
+ 
+
+  printCookies();
+
 
 
 
