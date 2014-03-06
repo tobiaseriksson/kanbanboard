@@ -144,6 +144,12 @@ class Kanbanrestapi extends REST_Controller
         $ownerid = $this->put('ownerid');
         if( is_numeric( $ownerid ) != TRUE )  $ownerid = 0;
 
+        $groups = $this->kanbanmodel->getGroups($projectid);
+        $numberOfGroups = count( $groups );
+        if( $numberOfGroups >  1 ) {
+            if( $groups[ $numberOfGroups-1 ]['id'] == $group ) $todays_estimation = 0;
+        }
+
         $oldTaskDetails = $this->kanbanmodel->taskDetailsAsAnArray($projectid,$taskid);
         $today = date( "Y-m-d" );
 
