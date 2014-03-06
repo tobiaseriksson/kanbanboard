@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="900"/>
 	<title>The '<?php echo $projectname; ?>' Board</title>	
 	<link type="text/css" href="/assets/css/smoothness/jquery-ui-1.10.3.custom.css" rel="stylesheet" />
 	<link type="text/css" href="/assets/css/kanban.css" rel="stylesheet" />	
