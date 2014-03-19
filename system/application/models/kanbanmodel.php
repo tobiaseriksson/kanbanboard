@@ -19,7 +19,7 @@ class Kanbanmodel extends Model {
 			$res = $query->result_array();		
 			$sprintid = $res[0]['id'];
 		}  else {
-			$query = $this->db->query('SELECT max(id) as id FROM `kanban_sprint` where project_id = ?',array($projectid));
+			$query = $this->db->query('SELECT id, datediff(startdate,CURRENT_DATE) as days FROM `kanban_sprint` where project_id = ? ORDER BY days DESC limit 1',array($projectid));
 			$sprintid=0;
 			if ($query->num_rows() > 0)	{
 				$res = $query->result_array();		
