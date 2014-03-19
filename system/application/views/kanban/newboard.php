@@ -376,7 +376,7 @@
   var defaultTaskHeight = 120;
   var defaultSpace = 20;
   var taskCountForXXL = 5;
-  var cheatingMaxY = 0;
+  var cheatingMaxY = 320;
 
   function getColor(index) {
     var colors=[];
@@ -603,7 +603,6 @@ function layoutGroupsAndTheirTasks() {
     var xPosition = defaultSpace*2;
     var yPosition = defaultSpace;
     var ownerList = findTasksPerOwnerPerGroup();
-    cheatingMaxY = 0;
     if( groupBy == true ) {
       var denseFraction=DENSEFRACTION;
       if( dense ) denseFraction = 4;
