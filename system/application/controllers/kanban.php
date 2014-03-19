@@ -715,6 +715,7 @@ class kanban extends Controller {
 		// prepare the matrix, with TASK number of rows, and DAYS number of columns, where the first value is the initial estimation
 		$matrix = array();
 		$tasklookup = array();
+		$reported_hours = array();
 		foreach ($query->result_array() as $row)
 		{	
 			$id = intval( $row['id'] );
