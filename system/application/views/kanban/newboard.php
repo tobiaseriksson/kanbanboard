@@ -526,9 +526,11 @@
 		## $sql='SELECT k.id as taskid,heading,description,group_id,name as groupname,priority,estimation,colortag,added,enddate,ownerid FROM kanban_item k,kanban_group g WHERE group_id = g.id AND k.sprint_id = ? ORDER BY displayorder,priority DESC,added ASC,heading DESC';	
 		if( $task['colortag'] <= 0 && $task['colortag'] >= 9 ) $color = 'yellow';
 		else $color = $colors[ $task['colortag'] ];
-    $description = str_replace(array("\r\n", "\r", "\n"), '\n', $task['description']);
+    $description = addslashes($task['description']);
+    $description = str_replace(array("\r\n", "\r", "\n"), '\n', $description );
+    $heading = addslashes($task['heading']);
     // trim(preg_replace('/\s+/', ' ', nl2br($task['description'])));
-		$html=$html."new Task({id:".$task['taskid'].",heading:'".$task['heading']."',description:'".$description."',priority:".$task['priority'].",color:'".$color."',colortag:'".$task['colortag']."',group:".$task['group_id'].",ownerid:".$task['owner_id'].",owner: getOwner(".$task['owner_id']."),estimation:".$task['estimation'].",added:'".$task['added']."',enddate:'".$task['enddate']."',comments:".$task['comments'].",age:".$task['age'].",workpackage_id:".$task['workpackage_id'].",todays_estimation:".$task['latest_estimation'].",todays_time_reporting:".$task['todays_time_reporting'].",sprintid:".$task['sprint_id']."}),\n";
+		$html=$html."new Task({id:".$task['taskid'].",heading:'".$heading."',description:'".$description."',priority:".$task['priority'].",color:'".$color."',colortag:'".$task['colortag']."',group:".$task['group_id'].",ownerid:".$task['owner_id'].",owner: getOwner(".$task['owner_id']."),estimation:".$task['estimation'].",added:'".$task['added']."',enddate:'".$task['enddate']."',comments:".$task['comments'].",age:".$task['age'].",workpackage_id:".$task['workpackage_id'].",todays_estimation:".$task['latest_estimation'].",todays_time_reporting:".$task['todays_time_reporting'].",sprintid:".$task['sprint_id']."}),\n";
 	}
 	$html=rtrim($html, ",\n");
 	echo $html;
